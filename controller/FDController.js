@@ -1031,16 +1031,16 @@ exports.getCityList = async (req, res) => {
 
 exports.getAddressList = async (req, res) => {
   try {
-    var method_name = await Service.getCallingMethodName();
-    var apiEndpointInput = JSON.stringify(req.body);
-    apiTrack = await Service.trackApi(
-      req.query.user_id,
-      method_name,
-      apiEndpointInput,
-      req.query.device_id,
-      req.query.device_info,
-      req.ip
-    );
+    // var method_name = await Service.getCallingMethodName();
+    // var apiEndpointInput = JSON.stringify(req.body);
+    // apiTrack = await Service.trackApi(
+    //   req.query.user_id,
+    //   method_name,
+    //   apiEndpointInput,
+    //   req.query.device_id,
+    //   req.query.device_info,
+    //   req.ip
+    // );
     const { user_id, id, city, user_name, mobile_number } = req.query;
     var query = {}
     if (id) {
@@ -1059,7 +1059,7 @@ exports.getAddressList = async (req, res) => {
       query.mobile_number = mobile_number
     }
     const result = await FDService.getAddressList(query)
-    if (result) {
+    if (result.length != 0) {
       const data = []
       for (let i in result) {
         var state = await FDService.stateList(result[i].state)
@@ -1085,12 +1085,13 @@ exports.getAddressList = async (req, res) => {
       return res.status(200).send({
         HasError: false,
         message: "Address list fetched succesfully.",
-        data: data
+        result: data
       })
     } else {
       return res.status(500).send({
-        HasError: true,
-        message: "Failed to fetch data",
+        HasError: false,
+        message: "No address found",
+        result: []
       })
     }
   } catch (error) {
