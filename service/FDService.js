@@ -521,15 +521,15 @@ exports.createAppointment = async (user_id, start_time) => {
           customer_id,
           start_time,
           end_time,
-          appointment_date,
+          appointment_date, // book date
           total_fees,
           transaction_id,
           status,
-          created_at,
+          created_at, // current data
           updated_at
         ) VALUES (
-          ${user_id},
-          0,
+          ${user_id}, // fd id
+          0, // user id for login user
           '${start_time}',
           '${end_time}',
           current_date, -- Assuming you want to use the current date as the appointment date
