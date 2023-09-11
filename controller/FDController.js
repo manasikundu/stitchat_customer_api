@@ -210,7 +210,7 @@ exports.fashionDesignerList = async (req, res) => {
               day_name:
                 dayValue !== null && dayValue >= 1 && dayValue <= 7
                   ? daysOfWeekConfig.find((config) => config.value === dayValue)
-                      .day
+                    .day
                   : "Unknown Day",
               time: time,
               availability: availabilityText,
@@ -715,10 +715,10 @@ exports.fashionDesignerTimeSlot = async (req, res) => {
       // Initialize timerange object based on availabilityCheck
       var timerange = availabilityCheck
         ? {
-            morning: await generateSlotResponse(morningSlots),
-            afternoon: await generateSlotResponse(afternoonSlots),
-            evening: await generateSlotResponse(eveningSlots),
-          }
+          morning: await generateSlotResponse(morningSlots),
+          afternoon: await generateSlotResponse(afternoonSlots),
+          evening: await generateSlotResponse(eveningSlots),
+        }
         : {};
 
       var daySlot = {
@@ -1028,13 +1028,11 @@ exports.getCityList = async (req, res) => {
   }
 };
 
-// get address list
+
 exports.getAddressList = async (req, res) => {
   try {
     var method_name = await Service.getCallingMethodName();
     var apiEndpointInput = JSON.stringify(req.body);
-
-    // Track API hit
     apiTrack = await Service.trackApi(
       req.query.user_id,
       method_name,
@@ -1043,95 +1041,63 @@ exports.getAddressList = async (req, res) => {
       req.query.device_info,
       req.ip
     );
-
-    var user_id = req.body.user_id;
-
-    // Check if 'user_id' is provided and is a valid integer
-    if (user_id !== undefined && !Number.isInteger(parseInt(user_id))) {
-      return res.status(400).json({
-        // result: null,
-        HasError: true,
-        StatusCode: 400,
-        message: "Invalid parameter.",
-      });
+    const { user_id, id, city, user_name, mobile_number } = req.query;
+    var query = {}
+    if (id) {
+      query.id = id
     }
+    if (user_id) {
+      query.user_id = user_id
+    }
+    if (city) {
+      query.city = city
+    }
+    if (user_name) {
+      query.first_name = { [Op.iLike]: user_name + '%' }
+    }
+    if (mobile_number) {
+      query.mobile_number = mobile_number
+    }
+    const result = await FDService.getAddressList(query)
+    if (result) {
+      const data = []
+      for (let i in result) {
+        var state = await FDService.stateList(result[i].state)
+        var cityName = await FDService.cityList(result[i].city);
 
-    var addressList = await FDService.getAddressList(user_id);
-
-    // Check if there are no addresses
-    if (addressList.length === 0) {
-      return res.status(200).json({
-        result: {
-          addressList: [],
-        },
+        var formattedAddress = {}
+        formattedAddress.id = result[i].id,
+          formattedAddress.first_name = result[i].first_name,
+          formattedAddress.last_name = result[i].last_name,
+          formattedAddress.user_id = result[i].user_id,
+          formattedAddress.street = result[i].street,
+          formattedAddress.landmark = result[i].landmark,
+          formattedAddress.state = result[i].state,
+          formattedAddress.state_name = state.name,
+          formattedAddress.city = result[i].city,
+          formattedAddress.city_name = cityName.name,
+          formattedAddress.mobile_number = result[i].mobile_number,
+          formattedAddress.pincode = result[i].pincode,
+          formattedAddress.is_primary = result[i].is_primary,
+          formattedAddress.is_verify = result[i].is_verify,
+          data.push(formattedAddress)
+      }
+      return res.status(200).send({
         HasError: false,
-        StatusCode: 200,
-        message: "No addresses found.",
-      });
+        message: "Address list fetched succesfully.",
+        data: data
+      })
+    } else {
+      return res.status(500).send({
+        HasError: true,
+        message: "Failed to fetch data",
+      })
     }
-    console.log(addressList)
-    // Fetch state and city names
-    for (var address of addressList) {
-      var state = await FDService.getStateList(address.state);
-      var city = await FDService.getCityList(address.city);
-
-      address.state_name = state ? state[0].name : "";
-      address.city_name = city ? city[0].name : "";
-    }
-
-    var responseData = addressList.map((address) => {
-      var formattedAddress = {
-        id: address.id,
-        first_name: address.first_name,
-        last_name: address.last_name,
-        user_id: address.user_id,
-        street: address.street,
-        landmark: address.landmark,
-        state: address.state,
-        state_name: address.state_name,
-        city: address.city,
-        city_name: address.city_name,
-        mobile_number: address.mobile_number,
-        pincode: address.pincode,
-        is_primary: address.is_primary,
-        is_verify: address.is_verify,
-      };
-
-      if (address.verify_date) {
-        formattedAddress.verify_date = moment(
-          address.verify_date,
-          "YYYY-MM-DD HH:mm:ss"
-        ).format("DD-MM-YYYY HH:mm A");
-      } else {
-        formattedAddress.verify_date = "";
-      }
-
-      if (address.created_at) {
-        formattedAddress.add_date = moment(
-          address.created_at,
-          "YYYY-MM-DD HH:mm:ss"
-        ).format("DD-MM-YYYY HH:mm A");
-      } else {
-        formattedAddress.add_date = "";
-      }
-
-      return formattedAddress;
-    });
-
-    return res.status(200).json({
-      result: {
-        addressList: responseData,
-      },
-      HasError: false,
-      StatusCode: 200,
-      message: "Address list retrieved successfully.",
-    });
   } catch (error) {
-    console.log(error);
-    return res.status(500).json({
+    console.log(error)
+    return res.status(500).send({
       HasError: true,
-      StatusCode: 500,
-      message: "Some error occurred. Please try again.",
+      message: error.message
     });
   }
-};
+}
