@@ -8,5 +8,9 @@ router.post("/verifyOTP", Controller.verifyOTP);
 router.get("/apiTrack", Controller.apiTrackList);
 router.post("/login", Controller.logIn);
 router.get("/verifyToken", Controller.verifyToken);
+router.post("/userProfile", Controller.userProfile);
+router.patch("/updateProfile", Controller.updateProfile);
+
+
 
 module.exports = router;

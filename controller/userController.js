@@ -63,14 +63,14 @@ exports.insertMobileNumber = async (req, res) => {
       req.ip
     );
 
-    var otp; 
+    var otp;
 
     if (existingUser) {
       // Mobile number exists, check if an OTP is already generated and valid
       if (
         otpCache[existingUser.mobile_number] &&
         Date.now() - otpCache[existingUser.mobile_number].timestamp <
-          OTP_EXPIRY_TIME
+        OTP_EXPIRY_TIME
       ) {
         // If the OTP is still valid, return the existing OTP
         otp = otpCache[existingUser.mobile_number].value;
@@ -113,7 +113,7 @@ exports.insertMobileNumber = async (req, res) => {
         value: otp,
         timestamp: Date.now(),
       };
-      
+
       var newUser = await Service.insertNewUserWithOTP(newUserData,
         otp,)
       if (newUser) {
@@ -160,14 +160,14 @@ exports.verifyOTP = async (req, res) => {
     } else {
       // Retrieve the user by mobile number from the database
       var user = await Users.findOne({ where: { mobile_number } });
-      
+
       if (!user) {
         return res.status(400).send({
           HasError: true,
           StatusCode: 400,
           Message: "User with the provided mobile number not found.",
         });
-        } else if (user.otp.toString() !== otp.toString()) {
+      } else if (user.otp.toString() !== otp.toString()) {
         return res.status(400).send({
           HasError: true,
           StatusCode: 400,
@@ -415,7 +415,7 @@ exports.logIn = async (req, res) => {
         });
       }
     }
-    
+
   } catch (error) {
     console.log(error);
     return res.status(500).send({
@@ -440,7 +440,7 @@ exports.verifyToken = (req, res, next) => {
       var token = b_token.replace(/^Bearer\s+/, "");
       // Verify token
       var decoded = jwt.verify(token, secretKey);
-      
+
       // Check if the decoded mobile_number matches the request mobile_number
       if (decoded.mobile_number !== req.body.mobile_number) {
         return res.status(401).send({
@@ -459,7 +459,7 @@ exports.verifyToken = (req, res, next) => {
         });
       }
     }
-    
+
   } catch (error) {
     console.log(error);
     return res.status(401).send({
@@ -470,3 +470,58 @@ exports.verifyToken = (req, res, next) => {
   }
 };
 
+exports.userProfile = async (req, res) => {
+  try {
+    const mobile = req.body.mobile_number
+    const result1 = await Service.getUserDetails(mobile)
+    if (result1) {
+      const result2 = await Service.boutiqueMap(result1.id)
+      if (result2) {
+        const result3 = await Boutique.findOne({ where: { id: result2.boutique_id } })
+        const customerInfo = {}
+        customerInfo.id = result1.id
+        customerInfo.first_name = result1.first_name ? result1.first_name : ''
+        customerInfo.last_name = result1.last_name ? result1.last_name : ''
+        customerInfo.mobile_number = result1.mobile_number ? result1.mobile_number : ''
+        customerInfo.email_id = result1.email_id ? result1.email_id : ''
+        customerInfo.user_type_id = result1.user_type_id ? result1.user_type_id : ''
+        customerInfo.user_type_name = result1.user_type_name ? result1.user_type_name : ''
+        customerInfo.created_by_user_id = result1.created_by_user_id ? result1.created_by_user_id : ''
+        customerInfo.device_id = result1.device_id ? result1.device_id : ''
+        customerInfo.device_info = result1.device_info ? result1.device_info : ''
+        customerInfo.fcm_token = result1.fcm_token ? result1.fcm_token : ''
+        customerInfo.fire_auth_token = result1.fire_auth_token ? result1.fire_auth_token : ''
+        customerInfo.status_id = result1.status_id ? result1.status_id : ''
+        customerInfo.status_name = result1.status_name ? result1.status_name : ''
+        customerInfo.prefix = result1.prefix ? result1.prefix : ''
+        customerInfo.parent_id = result1.parent_id ? result1.parent_id : ''
+        customerInfo.role = result1.role ? result1.role : ''
+        customerInfo.profile_photo = result1.profile_photo ? result1.profile_photo : ''
+        customerInfo.id_proof = result1.id_proof ? result1.id_proof : ''
+        customerInfo.gift_coin = result1.gift_coin ? result1.gift_coin : ''
+
+        const boutiqueInfo = {}
+        boutiqueInfo.id = result3.id
+        boutiqueInfo.boutique_name = result3.boutique_name ? result3.boutique_name : ''
+        boutiqueInfo.boutique_code = result3.boutique_code ? result3.boutique_code : ''
+        boutiqueInfo.boutique_logo = result3.boutique_logo ? result3.boutique_logo : ''
+        boutiqueInfo.contact_number = result3.contact_number ? result3.contact_number : ''
+        boutiqueInfo.coutry_state = result3.coutry_state ? result3.coutry_state : ''
+
+        res.status(200).send({ HasError: false, customerInfo: customerInfo, boutiqueInfo: boutiqueInfo })
+      }
+    }
+  } catch (error) {
+    console.log(error)
+    res.status(500).send({ message: "Something went wrong.", HasError: true })
+  }
+}
+
+exports.updateProfile = async (req, res) => {
+  try {
+
+  } catch (error) {
+    console.log(error)
+    res.status(500).send({ message: "Something went wrong.", HasError: true })
+  }
+}
