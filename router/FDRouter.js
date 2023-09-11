@@ -8,6 +8,6 @@ router.post("/fashionDesignerTimeSlot", designersController.fashionDesignerTimeS
 router.post("/addNewAddress", designersController.addNewAddress)
 router.get("/getStateList", designersController.getStateList)
 router.post("/getCityList", designersController.getCityList)
-router.post("/addressList", designersController.getAddressList)
+router.get("/addressList", designersController.getAddressList)
 
 module.exports = router;

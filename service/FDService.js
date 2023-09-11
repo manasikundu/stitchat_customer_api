@@ -165,7 +165,7 @@ exports.getFDDesignerDetails = async (FD_user_id) => {
       where: {
         // id: FD_user_id,
         user_type_id: {
-          [Op.or]: [6, 8], 
+          [Op.or]: [6, 8],
         },
       },
       include: [
@@ -180,7 +180,7 @@ exports.getFDDesignerDetails = async (FD_user_id) => {
           ],
           where: {
             user_id: FD_user_id,
-            
+
           },
         }
       ],
@@ -306,7 +306,7 @@ exports.addAddress = async (address_id, addressData) => {
 }
 
 
-// Define a function to retrieve states 
+// Define a function to retrieve states
 exports.getStateList = async (id) => {
   try {
     var country_id = 1;
@@ -315,28 +315,35 @@ exports.getStateList = async (id) => {
       country_id: country_id,
       status: status,
     };
-
     if (id !== undefined) {
       whereClause.id = id;
     }
-
     var states = await State.findAll({
       attributes: ['id', 'name'],
       where: whereClause,
     });
-
     // Map the result to return an array of JSON objects
     var stateList = states.map((states) => ({
       id: states.id,
       name: states.name,
     }));
-
     return stateList;
   } catch (error) {
     return error;
   }
 }
-
+exports.stateList = async (stateId) => {
+  const result = await State.findOne({ where: { id: stateId } })
+  return result
+}
+exports.cityList = async (cityId) => {
+  const result = await City.findOne({ where: { id: cityId } })
+  return result
+}
+exports.getAddressList = async (query) => {
+  const result = await UsersAddress.findAll({ where: query })
+  return result
+}
 
 // city list
 exports.getCityList = async (state_id) => {
@@ -358,24 +365,6 @@ exports.getCityList = async (state_id) => {
   }
 };
 
-// address list
-exports.getAddressList = async (user_id) => {
-  try {
-    var whereClause = {};
-
-    if (user_id !== undefined) {
-      whereClause.user_id = user_id;
-    }
-
-    var address = await UsersAddress.findAll({
-      where: whereClause,
-    });
-
-    return address;
-  } catch (error) {
-    return error;
-  }
-};
 
 
 // appointment add and edit
