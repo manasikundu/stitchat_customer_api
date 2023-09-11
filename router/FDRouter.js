@@ -9,5 +9,6 @@ router.post("/addNewAddress", designersController.addNewAddress)
 router.get("/getStateList", designersController.getStateList)
 router.post("/getCityList", designersController.getCityList)
 router.get("/addressList", designersController.getAddressList)
+router.post("/bookAppointment", designersController.bookAppointment)
 
 module.exports = router;

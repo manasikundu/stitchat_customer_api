@@ -1101,3 +1101,124 @@ exports.getAddressList = async (req, res) => {
     });
   }
 }
+
+// book appointment
+exports.bookAppointment = async (req, res) => {
+  try {
+    var {
+      fashion_designer_id,
+      user_id,
+      appointment_date,
+      start_time,
+      end_time,
+      address_id,
+      total_fees,
+    } = req.body;
+
+    // Create the appointmentData object
+    var appointmentData = {
+      user_id: fashion_designer_id, 
+      customer_id: user_id,
+      appointment_date: moment(appointment_date).format("YYYY-MM-DD"),
+      start_time: start_time,
+      end_time: end_time, 
+      total_fees: total_fees,
+      transaction_id: 0,
+      status: 0,
+      address_id: address_id,
+    };
+
+    // Check if the requested slot is available
+    var isSlotAvailable = await FDService.slotAvailability(
+      fashion_designer_id,
+      start_time,
+      end_time
+    );
+
+    if (isSlotAvailable) {
+      // Book the appointment
+      var appointment = await FDService.bookAppointment(appointmentData);
+
+      // Generate the appointment_code
+      var appointment_code =
+        "STAFA" + user_id + fashion_designer_id + appointment.id;
+
+      // Update the appointment with the appointment_code
+      await appointment.update({ appointment_code });
+      
+      return res.status(200).send({
+        HasError: false,
+        StatusCode: 200,
+        Message: 'Thank you for booking the slot.',
+      });
+    } else {
+      // Slot is already booked
+      return res.status(400).send({
+        HasError: true,
+        StatusCode: 400,
+        Message: 'Slot is already booked. Please select another time slot.',
+      });
+    }
+  } catch (error) {
+    console.log(error)
+    return res.status(500).send({
+      HasError: true,
+      StatusCode: 500,
+      Message: 'Failed to book appointment',
+    });
+  }
+};
+
+// exports.bookAppointment = async (req, res) => {
+//   try {
+//     var { user_id, start_time } = req.body;
+
+//     // Create the appointmentData object
+//     var appointmentData = {
+//       user_id: user_id, // fd id
+//       customer_id: 0, // user id for the logged-in user
+//       start_time: start_time,
+//       end_time: end_time,
+//       appointment_date: moment().format("YYYY-MM-DD"),
+//       total_fees: 0,
+//       transaction_id: 0,
+//       status: 0,
+//     };
+
+//     // Calculate the end time by adding 30 minutes to the start time
+//     var end_time = moment(start_time, "HH:mm:ss")
+//       .add(30, "minutes")
+//       .format("HH:mm:ss");
+
+//     // Check if the requested slot is available
+//     var isSlotAvailable = await FDService.slotAvailability(
+//       user_id,
+//       start_time,
+//       end_time
+//     );
+
+//     if (isSlotAvailable) {
+//       // Book the appointment
+//       var appointment = await appointmentService.bookAppointment(appointmentData);
+      
+//       return res.status(200).send({
+//         HasError: false,
+//         StatusCode: 200,
+//         Message: 'Thank you for booking the slot.',
+//       });
+//     } else {
+//       // Slot is already booked
+//       return res.status(400).send({
+//         HasError: true,
+//         StatusCode: 400,
+//         Message: 'Slot is already booked. Please select another time slot.',
+//       });
+//     }
+//   } catch (error) {
+//     return res.status(500).send({
+//       HasError: true,
+//       StatusCode: 500,
+//       Message: 'Failed to book appointment',
+//     });
+//   }
+// };

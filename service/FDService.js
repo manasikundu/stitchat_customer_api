@@ -6,15 +6,15 @@ let Users = require("../model/userModel");
 var sequelize = require("../dbConnection");
 let DesignerDetails = require("../model/FDModel");
 let FashionDesignerWeeklySchedule = require("../model/weeklySchleduleModel");
-let UsersAddress = require("../model/userAddressModel")
+let UsersAddress = require("../model/userAddressModel");
 let Boutique = require("../model/userBoutiqueInfoModel");
 const { query } = require("express");
 let moment = require("moment");
-var State = require("../model/stateModel")
-var City = require("../model/cityModel")
+var State = require("../model/stateModel");
+var City = require("../model/cityModel");
 var Country = require("../model/countryModel");
 const { add } = require("date-fns");
-var Appointment = require("../model/appointmentModel")
+var Appointment = require("../model/appointmentModel");
 
 exports.fashionDesignerList = async () => {
   try {
@@ -180,9 +180,8 @@ exports.getFDDesignerDetails = async (FD_user_id) => {
           ],
           where: {
             user_id: FD_user_id,
-
           },
-        }
+        },
       ],
       raw: true,
     });
@@ -225,12 +224,7 @@ exports.getDesignerUserDetailsByUserId = async (user_id) => {
 exports.getDesignerWeeklySchedulesByUserId = async (FD_user_id) => {
   try {
     var designerWeeklySchedules = await FashionDesignerWeeklySchedule.findAll({
-      attributes: [
-        "week_day",
-        "start_time",
-        "end_time",
-        "check_availability",
-      ],
+      attributes: ["week_day", "start_time", "end_time", "check_availability"],
       where: {
         user_id: FD_user_id,
       },
@@ -269,7 +263,7 @@ exports.getDesignerDetailsByUserIdAndBoutiqueId = async (user_id) => {
           where: {
             user_id,
           },
-        }
+        },
       ],
       raw: true,
     });
@@ -292,7 +286,9 @@ exports.addAddress = async (address_id, addressData) => {
     if (address_id) {
       // Update an existing address record in the database
       // var updatedAddress = await UsersAddress.update({ where: { id: address_id }, ...addressData });
-      var updatedAddress = await UsersAddress.update(addressData, { where: { id: address_id } });
+      var updatedAddress = await UsersAddress.update(addressData, {
+        where: { id: address_id },
+      });
       return updatedAddress;
     } else {
       // Create a new address record in the database
@@ -303,8 +299,7 @@ exports.addAddress = async (address_id, addressData) => {
   } catch (error) {
     return error;
   }
-}
-
+};
 
 // Define a function to retrieve states
 exports.getStateList = async (id) => {
@@ -319,7 +314,7 @@ exports.getStateList = async (id) => {
       whereClause.id = id;
     }
     var states = await State.findAll({
-      attributes: ['id', 'name'],
+      attributes: ["id", "name"],
       where: whereClause,
     });
     // Map the result to return an array of JSON objects
@@ -331,19 +326,19 @@ exports.getStateList = async (id) => {
   } catch (error) {
     return error;
   }
-}
+};
 exports.stateList = async (stateId) => {
-  const result = await State.findOne({ where: { id: stateId } })
-  return result
-}
+  const result = await State.findOne({ where: { id: stateId } });
+  return result;
+};
 exports.cityList = async (cityId) => {
-  const result = await City.findOne({ where: { id: cityId } })
-  return result
-}
+  const result = await City.findOne({ where: { id: cityId } });
+  return result;
+};
 exports.getAddressList = async (query) => {
-  const result = await UsersAddress.findAll({ where: query })
-  return result
-}
+  const result = await UsersAddress.findAll({ where: query });
+  return result;
+};
 
 // city list
 exports.getCityList = async (state_id) => {
@@ -364,26 +359,6 @@ exports.getCityList = async (state_id) => {
     return error;
   }
 };
-
-
-
-// appointment add and edit
-exports.createNewAppointment = async (appointment_id, appointmentData) => {
-  try {
-    if (appointment_id) {
-      // Update an existing appointment record in the database
-      var updatedAppointment = await Appointment.update(appointmentData, { where: { id: appointment_id } });
-      return updatedAppointment;
-    } else {
-      // Create a new appointment record in the database
-      var newAppointment = await Appointment.create(appointmentData);
-      // console.log(newAddress)
-      return newAppointment;
-    }
-  } catch (error) {
-    return error;
-  }
-}
 
 //  search fashion designer by boutique id for location search
 exports.getFashionDesignersByBoutiqueId = async (boutiqueId) => {
@@ -479,7 +454,6 @@ exports.isSlotAvailable = async (user_id, startTime, endTime) => {
     `;
 
     var result = await db.query(query);
-    // console.log("is slot available :", result[0]);
 
     return result[0];
   } catch (error) {
@@ -488,8 +462,54 @@ exports.isSlotAvailable = async (user_id, startTime, endTime) => {
   }
 };
 
-// Create an appointment for a fashion designer
-exports.createAppointment = async (user_id, start_time) => {
+// book appointment in ORM
+exports.slotAvailability = async (user_id, start_time, end_time) => {
+  try {
+    var query = `
+    SELECT status
+      FROM public.sarter__fashion_designer_appointment
+      WHERE user_id = ${user_id}
+      AND start_time <= '${end_time}'
+      AND end_time > '${start_time}'
+    `;
+    var result = await db.query(query);
+
+    if (result[0]) {
+      console.log('Query result:', result[0]);
+      return result[0].length === 0;
+    } else {
+      console.error('Unexpected query result:', result);
+      return false; 
+    }
+    } catch (error) {
+    return error;
+  }
+};
+
+exports.bookAppointment = async (appointmentData) => {
+  try {
+    // Check if the requested slot is available
+    var isSlotAvailable = await exports.slotAvailability(
+      appointmentData.user_id,
+      appointmentData.start_time,
+      appointmentData.end_time
+    );
+    console.log(isSlotAvailable);
+
+    if (isSlotAvailable) {
+      // Create a new appointment record using Sequelize
+      var bookAppointment = await Appointment.create(appointmentData);
+
+      return bookAppointment;
+    }
+  } catch (error) {
+    console.error(error);
+    return error;
+  }
+};
+
+// book appointment with out ORM
+exports.bookAppointmentNew = async (user_id, start_time) => {
   try {
     // Calculate the end time by adding 30 minutes to the start time
     var end_time = moment(start_time, "HH:mm:ss")
@@ -532,7 +552,6 @@ exports.createAppointment = async (user_id, start_time) => {
       `;
 
       var result = await db.query(query);
-      // console.log("is slot available : ", result)
 
       return result;
     }
@@ -541,7 +560,6 @@ exports.createAppointment = async (user_id, start_time) => {
     return error;
   }
 };
-
 
 // Get availability slots for a fashion designer
 exports.getAvailability = async (user_id) => {
@@ -697,4 +715,3 @@ exports.getCategoryAndItem = async (categoryType, boutiqueId) => {
     return error;
   }
 };
-

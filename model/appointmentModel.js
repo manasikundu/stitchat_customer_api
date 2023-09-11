@@ -19,26 +19,22 @@ var Appointment = sequelize.define(
       defaultValue: 0,
     },
     appointment_code: {
-      type: DataTypes.STRING(100), 
-      collate: 'pg_catalog."default"', 
+      type: DataTypes.STRING(100),
+      collate: 'pg_catalog."default"',
     },
     start_time: {
       type: DataTypes.TIME,
-      allowNull: true, 
+      allowNull: true,
     },
     end_time: {
       type: DataTypes.TIME,
-      allowNull: true, 
+      allowNull: true,
     },
     appointment_date: {
-      type: DataTypes.DATEONLY, 
+      type: DataTypes.DATEONLY,
     },
     total_fees: {
-      type: DataTypes.DECIMAL(10, 2), 
-      defaultValue: 0,
-    },
-    transaction_id: {
-      type: DataTypes.INTEGER,
+      type: DataTypes.DECIMAL(10, 2),
       defaultValue: 0,
     },
     status: {
@@ -47,19 +43,27 @@ var Appointment = sequelize.define(
       comment: '0 - Pending, 1 - Approve, 2 - Reject/Cancel, 3 - Completed',
     },
     created_at: {
-      type: DataTypes.STRING(255), 
-      collate: 'pg_catalog."default"', 
+      type: DataTypes.STRING(255),
+      collate: 'pg_catalog."default"',
     },
     updated_at: {
+      type: DataTypes.STRING(255),
+      collate: 'pg_catalog."default"',
+    },
+    transaction_id: {
       type: DataTypes.STRING(255), 
-      collate: 'pg_catalog."default"', 
+      collate: 'pg_catalog."default"',
+    },
+    address_id: {
+      type: DataTypes.INTEGER,
+      defaultValue: 0,
     },
   },
   {
     sequelize,
     modelName: "sarter__fashion_designer_appointment",
     tableName: "sarter__fashion_designer_appointment",
-    timestamps: false, 
+    timestamps: false,
   }
 );
 
