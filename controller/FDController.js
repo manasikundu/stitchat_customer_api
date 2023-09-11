@@ -1069,7 +1069,7 @@ exports.getAddressList = async (req, res) => {
         message: "No addresses found.",
       });
     }
-
+    console.log(addressList)
     // Fetch state and city names
     for (var address of addressList) {
       var state = await FDService.getStateList(address.state);
