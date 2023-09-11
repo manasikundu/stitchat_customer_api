@@ -6,6 +6,7 @@ var { Op } = require("sequelize");
 let FCM = require("fcm-node");
 let crypto = require("crypto");
 let ApiTrack = require("../model/apiTrackModel");
+const { Mobile } = require("aws-sdk");
 
 exports.generateOTP = () => {
   return crypto.randomInt(100000, 999999).toString();
@@ -172,3 +173,13 @@ exports.checkMobile = async (
   }
 };
 
+
+exports.getUserDetails = async (mobile_number) => {
+  const result = await Users.findOne({ where: { mobile_number: mobile_number } })
+  return result
+}
+exports.boutiqueMap = async (user_id) => {
+  const result = await db.query(`select * from sarter__boutique_customer_map where user_id=${user_id}`)
+  return result[0][0]
+  
+}

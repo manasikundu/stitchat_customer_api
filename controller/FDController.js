@@ -507,8 +507,7 @@ exports.fashionDesignerTimeSlot = async (req, res) => {
     // var availabilityText;
     var weekSchedules = designerDetails.map((designer) => {
       var weekDay = designer["weekly_schedule.week_day"];
-      var availabilityText =
-        designer["weekly_schedule.check_availability"] === 1 ? true : false;
+      var availabilityText = designer["weekly_schedule.check_availability"] === 1 ? true : false;
       var startTime = designer["weekly_schedule.start_time"];
       var endTime = designer["weekly_schedule.end_time"];
       var dayName = daysOfWeekConfig.find(
@@ -612,6 +611,9 @@ exports.fashionDesignerTimeSlot = async (req, res) => {
       return responses;
     };
 
+    // Define a global variable to track the first day with availability
+    var firstAvailabilityFound = false;
+
     // Function to generate slot response for a specific date
     var generateSlotResponseForDate = async (date) => {
       // Determine the day of the week (e.g., Monday, Tuesday)
@@ -622,19 +624,14 @@ exports.fashionDesignerTimeSlot = async (req, res) => {
         (slot) => daysOfWeekConfig[slot.week_day - 1].day === dayOfWeek
       );
 
-      // Initialize availabilityCheck and selected as false by default
+      // Initialize availabilityCheck as false by default
       var availabilityCheck = false;
-      var slot_selected = false;
 
       // Iterate through the array and find the availability for the given day
       for (var slot of weekSchedules) {
         if (slot.level === date.format("dddd")) {
           availabilityCheck = slot.availability;
-          if (availabilityCheck && !slot_selected) {
-            // Check if selected is false
-            // Set selected to true for the first true availability
-            slot_selected = true;
-          }
+          break;
         }
       }
 
@@ -645,70 +642,65 @@ exports.fashionDesignerTimeSlot = async (req, res) => {
 
       if (availabilityCheck) {
         // Get the fashion designer's start_time and end_time for the day
-        var fashionDesignerDay = availabilitySlotsForDay.find(
-          (slot) => slot.week_day === moment(date).isoWeekday()
+        var fashionDesignerDay = availabilitySlotsForDay[0]; // Assume the first slot
+        var fashionDesignerStartTime = moment(
+          fashionDesignerDay.start_time,
+          "HH:mm:ss"
+        );
+        var fashionDesignerEndTime = moment(
+          fashionDesignerDay.end_time,
+          "HH:mm:ss"
         );
 
-        if (fashionDesignerDay) {
-          var fashionDesignerStartTime = moment(
-            fashionDesignerDay.start_time,
-            "HH:mm:ss"
-          );
-          var fashionDesignerEndTime = moment(
-            fashionDesignerDay.end_time,
-            "HH:mm:ss"
-          );
+        // Calculate the dynamic startTime and endTime based on the fashion designer's time
+        var startTime = fashionDesignerStartTime.clone();
+        var endTime = fashionDesignerEndTime.clone();
 
-          // Calculate the dynamic startTime and endTime based on the fashion designer's time
-          var startTime = fashionDesignerStartTime.clone();
-          var endTime = fashionDesignerEndTime.clone();
+        while (startTime < endTime) {
+          var slotEndTime = moment(startTime, "HH:mm:ss")
+            .add(30, "minutes")
+            .format("HH:mm:ss");
 
-          while (startTime < endTime) {
-            var slotEndTime = moment(startTime, "HH:mm:ss")
-              .add(30, "minutes")
-              .format("HH:mm:ss");
-
+          if (
+            moment(startTime, "HH:mm:ss").isBetween(
+              fashionDesignerStartTime,
+              fashionDesignerEndTime
+            )
+          ) {
             if (
               moment(startTime, "HH:mm:ss").isBetween(
-                fashionDesignerStartTime,
-                fashionDesignerEndTime
+                moment("08:00:00", "HH:mm:ss"),
+                moment("12:00:00", "HH:mm:ss")
               )
             ) {
-              if (
-                moment(startTime, "HH:mm:ss").isBetween(
-                  moment("08:00:00", "HH:mm:ss"),
-                  moment("12:00:00", "HH:mm:ss")
-                )
-              ) {
-                morningSlots.push({
-                  start_time: startTime.format("HH:mm:ss"),
-                  end_time: slotEndTime,
-                });
-              } else if (
-                moment(startTime, "HH:mm:ss").isBetween(
-                  moment("12:00:00", "HH:mm:ss"),
-                  moment("17:00:00", "HH:mm:ss")
-                )
-              ) {
-                afternoonSlots.push({
-                  start_time: startTime.format("HH:mm:ss"),
-                  end_time: slotEndTime,
-                });
-              } else if (
-                moment(startTime, "HH:mm:ss").isBetween(
-                  moment("17:00:00", "HH:mm:ss"),
-                  moment("20:00:00", "HH:mm:ss")
-                )
-              ) {
-                eveningSlots.push({
-                  start_time: startTime.format("HH:mm:ss"),
-                  end_time: slotEndTime,
-                });
-              }
+              morningSlots.push({
+                start_time: startTime.format("HH:mm:ss"),
+                end_time: slotEndTime,
+              });
+            } else if (
+              moment(startTime, "HH:mm:ss").isBetween(
+                moment("12:00:00", "HH:mm:ss"),
+                moment("17:00:00", "HH:mm:ss")
+              )
+            ) {
+              afternoonSlots.push({
+                start_time: startTime.format("HH:mm:ss"),
+                end_time: slotEndTime,
+              });
+            } else if (
+              moment(startTime, "HH:mm:ss").isBetween(
+                moment("17:00:00", "HH:mm:ss"),
+                moment("20:00:00", "HH:mm:ss")
+              )
+            ) {
+              eveningSlots.push({
+                start_time: startTime.format("HH:mm:ss"),
+                end_time: slotEndTime,
+              });
             }
-
-            startTime = moment(slotEndTime, "HH:mm:ss");
           }
+
+          startTime = moment(slotEndTime, "HH:mm:ss");
         }
       }
 
@@ -721,12 +713,19 @@ exports.fashionDesignerTimeSlot = async (req, res) => {
         }
         : {};
 
+      // Determine if this is the first day with availability
+      var selected = false;
+      if (availabilityCheck && !firstAvailabilityFound) {
+        selected = true;
+        firstAvailabilityFound = true;
+      }
+
       var daySlot = {
         weekday: moment(date).isoWeekday(),
         date: date.format("YYYY-MM-DD"),
         dayname: date.format("dddd"),
         availability: availabilityCheck,
-        selected: slot_selected,
+        selected: selected, // Set selected based on firstAvailabilityFound
         timerange: timerange,
       };
 
@@ -808,6 +807,7 @@ exports.fashionDesignerTimeSlot = async (req, res) => {
       .send({ error: "An error occurred while fetching designer details." });
   }
 };
+
 
 // add and update address
 exports.addNewAddress = async (req, res) => {
