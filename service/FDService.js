@@ -462,7 +462,7 @@ exports.isSlotAvailable = async (user_id, startTime, endTime) => {
   }
 };
 
-// book appointment in ORM
+// book appointment 
 exports.slotAvailability = async (user_id, start_time, end_time) => {
   try {
     var query = `
@@ -475,11 +475,10 @@ exports.slotAvailability = async (user_id, start_time, end_time) => {
     var result = await db.query(query);
 
     if (result[0]) {
-      console.log('Query result:', result[0]);
       return result[0].length === 0;
     } else {
       console.error('Unexpected query result:', result);
-      return false; 
+      // return false; 
     }
     } catch (error) {
     return error;
@@ -508,58 +507,6 @@ exports.bookAppointment = async (appointmentData) => {
   }
 };
 
-// book appointment with out ORM
-exports.bookAppointmentNew = async (user_id, start_time) => {
-  try {
-    // Calculate the end time by adding 30 minutes to the start time
-    var end_time = moment(start_time, "HH:mm:ss")
-      .add(30, "minutes")
-      .format("HH:mm:ss");
-
-    // Check if the requested slot is available
-    var isSlotAvailable = await exports.isSlotAvailable(
-      user_id,
-      start_time,
-      end_time
-    );
-
-    if (isSlotAvailable) {
-      var query = `
-        INSERT INTO public.sarter__fashion_designer_appointment (
-          user_id,
-          customer_id,
-          start_time,
-          end_time,
-          appointment_date, // book date
-          total_fees,
-          transaction_id,
-          status,
-          created_at, // current data
-          updated_at
-        ) VALUES (
-          ${user_id}, // fd id
-          0, // user id for login user
-          '${start_time}',
-          '${end_time}',
-          current_date, -- Assuming you want to use the current date as the appointment date
-          0, 
-          0, 
-          0, 
-          current_timestamp, 
-          current_timestamp  
-        )
-        RETURNING *; 
-      `;
-
-      var result = await db.query(query);
-
-      return result;
-    }
-  } catch (error) {
-    console.error(error);
-    return error;
-  }
-};
 
 // Get availability slots for a fashion designer
 exports.getAvailability = async (user_id) => {
