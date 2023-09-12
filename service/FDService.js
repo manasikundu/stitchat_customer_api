@@ -463,12 +463,13 @@ exports.isSlotAvailable = async (user_id, startTime, endTime) => {
 };
 
 // book appointment 
-exports.slotAvailability = async (user_id, start_time, end_time) => {
+exports.slotAvailability = async (user_id, start_time, end_time, appointment_date) => {
   try {
     var query = `
     SELECT status
       FROM public.sarter__fashion_designer_appointment
       WHERE user_id = ${user_id}
+      AND appointment_date = '${appointment_date}'
       AND start_time <= '${end_time}'
       AND end_time > '${start_time}'
     `;
@@ -490,14 +491,21 @@ exports.bookAppointment = async (appointmentData) => {
     // Check if the requested slot is available
     var isSlotAvailable = await exports.slotAvailability(
       appointmentData.user_id,
+      appointmentData.appointment_date,
       appointmentData.start_time,
       appointmentData.end_time
     );
-    console.log(isSlotAvailable);
 
     if (isSlotAvailable) {
       // Create a new appointment record using Sequelize
       var bookAppointment = await Appointment.create(appointmentData);
+
+      // Generate the appointment_code
+      var appointment_code =
+        "STAFA" + appointmentData.customer_id + appointmentData.user_id + bookAppointment.id;
+
+      // Update the appointment with the appointment_code
+      await bookAppointment.update({ appointment_code });
 
       return bookAppointment;
     }

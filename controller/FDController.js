@@ -1116,6 +1116,24 @@ exports.bookAppointment = async (req, res) => {
       total_fees,
     } = req.body;
 
+    // Validate parameters
+    if (
+      !Number.isInteger(fashion_designer_id) ||
+      !Number.isInteger(user_id) ||
+      !Number.isInteger(address_id) ||
+      !moment(appointment_date, "YYYY-MM-DD", true).isValid() ||
+      !moment(start_time, "HH:mm:ss", true).isValid() ||
+      !moment(end_time, "HH:mm:ss", true).isValid() ||
+      isNaN(parseFloat(total_fees)) || !isFinite(total_fees) || total_fees < 0 ||
+      moment(start_time, "HH:mm:ss").isSameOrAfter(moment(end_time, "HH:mm:ss"))
+    ) {
+      return res.status(400).send({
+        HasError: true,
+        StatusCode: 400,
+        Message: 'Invalid parameters.',
+      });
+    }
+
     // Create the appointmentData object
     var appointmentData = {
       user_id: fashion_designer_id, 
@@ -1123,7 +1141,7 @@ exports.bookAppointment = async (req, res) => {
       appointment_date: moment(appointment_date).format("YYYY-MM-DD"),
       start_time: start_time,
       end_time: end_time, 
-      total_fees: total_fees,
+      total_fees: parseFloat(total_fees),
       transaction_id: 0,
       status: 0,
       address_id: address_id,
@@ -1133,20 +1151,14 @@ exports.bookAppointment = async (req, res) => {
     var isSlotAvailable = await FDService.slotAvailability(
       fashion_designer_id,
       start_time,
-      end_time
+      end_time,
+      appointment_date
     );
 
     if (isSlotAvailable) {
       // Book the appointment
       var appointment = await FDService.bookAppointment(appointmentData);
-
-      // Generate the appointment_code
-      var appointment_code =
-        "STAFA" + user_id + fashion_designer_id + appointment.id;
-
-      // Update the appointment with the appointment_code
-      await appointment.update({ appointment_code });
-      
+  
       return res.status(200).send({
         HasError: false,
         StatusCode: 200,
