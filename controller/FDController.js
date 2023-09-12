@@ -857,6 +857,7 @@ exports.addNewAddress = async (req, res) => {
     var stateResult = await FDService.stateList(state);
     var query = {}
     query.user_id = user_id;
+    console.log(user_id)
     const result = await FDService.getAddressList(query);
     const data = [];
     for (let i in result) {
