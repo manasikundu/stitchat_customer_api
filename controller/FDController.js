@@ -1222,57 +1222,52 @@ exports.bookAppointment = async (req, res) => {
     });
   }
 };
+exports.appointmentList = async (req, res) => {
+  try {
+    const userId = req.query.user_id
 
-// exports.bookAppointment = async (req, res) => {
-//   try {
-//     var { user_id, start_time } = req.body;
+    const result = await FDService.appointmentList(userId)
+    if (result.length !== 0) {
+      return res.status(200).send({
+        HasError: false,
+        message: "Appointment list fetched succesfully.",
+        result: result
+      })
+    } else {
+      return res.status(200).send({
+        HasError: false,
+        message: "No Appointment list found.",
+        result: result
+      })
+    }
 
-//     // Create the appointmentData object
-//     var appointmentData = {
-//       user_id: user_id, // fd id
-//       customer_id: 0, // user id for the logged-in user
-//       start_time: start_time,
-//       end_time: end_time,
-//       appointment_date: moment().format("YYYY-MM-DD"),
-//       total_fees: 0,
-//       transaction_id: 0,
-//       status: 0,
-//     };
+  } catch (error) {
+    console.log(error)
+    return res.status(500).send({
+      HasError: true,
+      Message: 'Something went wrong',
+    });
+  }
+}
 
-//     // Calculate the end time by adding 30 minutes to the start time
-//     var end_time = moment(start_time, "HH:mm:ss")
-//       .add(30, "minutes")
-//       .format("HH:mm:ss");
+exports.deleteAddress = async (req, res) => {
+  try {
+    const user_id = req.query.user_id;
+    const address_id = req.query.address_id;
+    const result = await FDService.deleteAddress(user_id, address_id)
+    return res.status(200).send({
+      HasError: false,
+      message: "Appointment list fetched succesfully.",
+      result: result
+    })
+  } catch (error) {
+    console.log(error)
+    return res.status(500).send({
+      HasError: true,
+      Message: 'Something went wrong',
+    });
+  }
 
-//     // Check if the requested slot is available
-//     var isSlotAvailable = await FDService.slotAvailability(
-//       user_id,
-//       start_time,
-//       end_time
-//     );
+}
 
-//     if (isSlotAvailable) {
-//       // Book the appointment
-//       var appointment = await appointmentService.bookAppointment(appointmentData);
 
-//       return res.status(200).send({
-//         HasError: false,
-//         StatusCode: 200,
-//         Message: 'Thank you for booking the slot.',
-//       });
-//     } else {
-//       // Slot is already booked
-//       return res.status(400).send({
-//         HasError: true,
-//         StatusCode: 400,
-//         Message: 'Slot is already booked. Please select another time slot.',
-//       });
-//     }
-//   } catch (error) {
-//     return res.status(500).send({
-//       HasError: true,
-//       StatusCode: 500,
-//       Message: 'Failed to book appointment',
-//     });
-//   }
-// };

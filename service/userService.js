@@ -183,3 +183,7 @@ exports.boutiqueMap = async (user_id) => {
   return result[0][0]
   
 }
+exports.updateProfile = async (id, data) => {
+  const result = await Users.update(data, { where: { id: id } })
+  return result
+}

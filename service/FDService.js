@@ -671,3 +671,12 @@ exports.getCategoryAndItem = async (categoryType, boutiqueId) => {
     return error;
   }
 };
+exports.appointmentList=async(userId)=>{
+  const result = await Appointment.findAll({ where: {customer_id:userId} })
+  return result
+}
+
+exports.deleteAddress = async (user_id,address_id) => {
+  const result = await UsersAddress.destroy({ where: {[Op.or]: [{ user_id: user_id }, { id: address_id }]} })
+  return result
+}

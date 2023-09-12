@@ -9,7 +9,7 @@ router.get("/apiTrack", Controller.apiTrackList);
 router.post("/login", Controller.logIn);
 router.get("/verifyToken", Controller.verifyToken);
 router.post("/userProfile", Controller.userProfile);
-router.patch("/updateProfile", Controller.updateProfile);
+router.patch("/updateProfile/:id", Controller.updateProfile);
 
 
 

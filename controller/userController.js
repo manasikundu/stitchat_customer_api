@@ -519,6 +519,18 @@ exports.userProfile = async (req, res) => {
 
 exports.updateProfile = async (req, res) => {
   try {
+    const result = await Service.updateProfile(req.params.id, req.body)
+    if (result[0] != 0) {
+      return res.status(200).send({
+        message: "Successfully Updated.",
+        HasError: false
+      })
+    } else {
+      return res.status(500).send({
+        message: "failed to update",
+        HasError: true
+      })
+    }
 
   } catch (error) {
     console.log(error)
