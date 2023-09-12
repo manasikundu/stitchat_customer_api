@@ -818,42 +818,12 @@ exports.addNewAddress = async (req, res) => {
   try {
     var method_name = await Service.getCallingMethodName();
     var apiEndpointInput = JSON.stringify(req.body);
-
     // Track API hit
-    apiTrack = await Service.trackApi(
-      req.query.user_id,
-      method_name,
-      apiEndpointInput,
-      req.query.device_id,
-      req.query.device_info,
-      req.ip
-    );
-
-    // Extract common fields
-    var {
-      first_name,
-      last_name,
-      user_id,
-      street,
-      landmark,
-      state,
-      city,
-      mobile_number,
-      pincode,
-    } = req.body;
-
-    // Check for required fields and validate input
+    apiTrack = await Service.trackApi(req.query.user_id, method_name, apiEndpointInput, req.query.device_id, req.query.device_info, req.ip);
+    var { first_name, last_name, user_id, street, landmark, state, city, mobile_number, pincode, } = req.body;
     if (
       (!req.body.addressId && // For insert
-        (!first_name ||
-          !last_name ||
-          !user_id ||
-          !street ||
-          !landmark ||
-          !state ||
-          !city ||
-          !mobile_number ||
-          !pincode)) ||
+        (!first_name || !last_name || !user_id || !street || !landmark || !state || !city || !mobile_number || !pincode)) ||
       (req.body.addressId && !Number.isInteger(req.body.addressId))
     ) {
       return res.status(400).json({
@@ -862,8 +832,6 @@ exports.addNewAddress = async (req, res) => {
         message: "Invalid parameters.",
       });
     }
-
-    // Validate mobile number
     if (!/^\+?[1-9]\d{9}$/.test(mobile_number.replace(/\D/g, ""))) {
       return res.status(400).json({
         HasError: true,
@@ -871,57 +839,22 @@ exports.addNewAddress = async (req, res) => {
         message: "Invalid phone number. ",
       });
     }
-
-    // Function to format date in AM/PM format
     var formatDate = (dateString) =>
       moment(dateString, "YYYY-MM-DD HH:mm:ss").format("YYYY-MM-DD hh:mm A");
 
-    // Create an address object with the extracted parameters
     var addressData = {
-      first_name,
-      last_name,
-      user_id,
-      street,
-      landmark,
-      state,
-      city,
-      mobile_number,
-      pincode,
-      is_primary: req.body.is_primary || 0,
-      is_verify: req.body.is_verify || 0,
+      first_name, last_name, user_id, street, landmark, state, city, mobile_number, pincode, is_primary: req.body.is_primary || 0, is_verify: req.body.is_verify || 0,
       verify_date: new Date().toISOString().slice(0, 19).replace("T", " "),
       created_at: new Date().toISOString().slice(0, 19).replace("T", " "),
       updated_at: new Date().toISOString().slice(0, 19).replace("T", " "),
     };
 
-    // Remove the milliseconds and timezone offset from created_at and updated_at
     addressData.verify_date = addressData.verify_date.slice(0, -5);
     addressData.created_at = addressData.created_at.slice(0, -5);
     addressData.updated_at = addressData.updated_at.slice(0, -5);
 
-    // Get city name and state name using cityList and stateList functions
     var cityResult = await FDService.cityList(city);
     var stateResult = await FDService.stateList(state);
-
-    var addressArray = {
-      address_id: id,
-      first_name: addressData.first_name,
-      last_name: addressData.last_name,
-      user_id: addressData.user_id,
-      street: addressData.street,
-      landmark: addressData.landmark,
-      state: addressData.state,
-      state_name: stateResult.name,
-      city: addressData.city,
-      city_name: cityResult.name,
-      mobile_number: addressData.mobile_number,
-      pincode: addressData.pincode,
-      is_primary: addressData.is_primary,
-      is_verify: addressData.is_verify,
-      verify_date: formatDate(addressData.verify_date),
-      created_at: formatDate(addressData.created_at),
-      updated_at: formatDate(addressData.updated_at),
-    };
     var query = {}
     query.user_id = user_id;
     const result = await FDService.getAddressList(query);
@@ -945,22 +878,14 @@ exports.addNewAddress = async (req, res) => {
         (formattedAddress.pincode = result[i].pincode),
         (formattedAddress.is_primary = result[i].is_primary),
         (formattedAddress.is_verify = result[i].is_verify),
-        (formattedAddress.selected = result[i].is_primary=1?true:false),
-
+        (formattedAddress.selected = result[i].is_primary == 1 ? true : false),
         data.push(formattedAddress);
     }
     var result1 = {}
     result1.user_id = user_id,
       result1.address = data
     if (req.body.addressId) {
-      // If addressId is provided in the request body, it's an update
-      var updatedAddress = await FDService.addAddress(
-        req.body.addressId,
-        addressData
-      );
-
-
-
+      var updatedAddress = await FDService.addAddress(req.body.addressId,addressData);
       return res.status(200).json({
         result: result1,
         HasError: false,
@@ -970,7 +895,6 @@ exports.addNewAddress = async (req, res) => {
     } else {
       // If addressId is not provided, it's an insert
       var newAddress = await FDService.addAddress(null, addressData);
-
       return res.status(201).json({
         result: result1,
         HasError: false,

@@ -338,7 +338,7 @@ exports.cityList = async (cityId) => {
   return result;
 };
 exports.getAddressList = async (query) => {
-  const result = await UsersAddress.findAll({ where: query });
+  const result = await UsersAddress.findAll({ where: query ,order: [["user_id", "ASC"]]});
   return result;
 };
 
