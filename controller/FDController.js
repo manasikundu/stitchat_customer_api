@@ -945,6 +945,8 @@ exports.addNewAddress = async (req, res) => {
         (formattedAddress.pincode = result[i].pincode),
         (formattedAddress.is_primary = result[i].is_primary),
         (formattedAddress.is_verify = result[i].is_verify),
+        (formattedAddress.selected = result[i].is_primary=1?true:false),
+
         data.push(formattedAddress);
     }
     var result1 = {}
