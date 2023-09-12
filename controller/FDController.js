@@ -310,7 +310,6 @@ exports.FashionDesignerDetails = async (req, res) => {
     var mobile_number = req.body.mobile_number;
 
     var method_name = await Service.getCallingMethodName();
-    console.log(method_name);
     var apiEndpointInput = JSON.stringify(req.body);
 
     // Track API hit
@@ -324,21 +323,19 @@ exports.FashionDesignerDetails = async (req, res) => {
     );
 
     let designerDetails = [];
-
     if (user_id) {
       designerDetails = await FDService.getDesignerDetailsByUserIdAndBoutiqueId(
         user_id
       );
     }
-
     if (designerDetails.length === 0) {
       return res.status(404).send({
         HasError: true,
         StatusCode: 404,
         Message: "Designer not found.",
+
       });
     }
-
     var firstName = designerDetails[0]["first_name"];
     var lastName = designerDetails[0]["last_name"];
     var fullName =
@@ -925,7 +922,31 @@ exports.addNewAddress = async (req, res) => {
       created_at: formatDate(addressData.created_at),
       updated_at: formatDate(addressData.updated_at),
     };
+    var query = {}
+    query.user_id = user_id;
+    const result = await FDService.getAddressList(query);
+    const data = [];
+    for (let i in result) {
+      var state = await FDService.stateList(result[i].state);
+      var cityName = await FDService.cityList(result[i].city);
 
+      var formattedAddress = {};
+      (formattedAddress.id = result[i].id),
+        (formattedAddress.first_name = result[i].first_name),
+        (formattedAddress.last_name = result[i].last_name),
+        (formattedAddress.user_id = result[i].user_id),
+        (formattedAddress.street = result[i].street),
+        (formattedAddress.landmark = result[i].landmark),
+        (formattedAddress.state = result[i].state),
+        (formattedAddress.state_name = state.name),
+        (formattedAddress.city = result[i].city),
+        (formattedAddress.city_name = cityName.name),
+        (formattedAddress.mobile_number = result[i].mobile_number),
+        (formattedAddress.pincode = result[i].pincode),
+        (formattedAddress.is_primary = result[i].is_primary),
+        (formattedAddress.is_verify = result[i].is_verify),
+        data.push(formattedAddress);
+    }
     if (req.body.addressId) {
       // If addressId is provided in the request body, it's an update
       var updatedAddress = await FDService.addAddress(
@@ -933,8 +954,9 @@ exports.addNewAddress = async (req, res) => {
         addressData
       );
 
+
       return res.status(200).json({
-        address: addressArray,
+        address: data,
         HasError: false,
         StatusCode: 200,
         message: "Address updated successfully",
@@ -944,7 +966,7 @@ exports.addNewAddress = async (req, res) => {
       var newAddress = await FDService.addAddress(null, addressData);
 
       return res.status(201).json({
-        address: addressArray,
+        address: data,
         HasError: false,
         StatusCode: 201,
         message: "Address added successfully",
@@ -1145,17 +1167,7 @@ exports.getAddressList = async (req, res) => {
 // book appointment
 exports.bookAppointment = async (req, res) => {
   try {
-    var {
-      fashion_designer_id,
-      user_id,
-      appointment_date,
-      start_time,
-      end_time,
-      address_id,
-      total_fees,
-    } = req.body;
-
-    // Validate parameters
+    var { fashion_designer_id, user_id, appointment_date, start_time, end_time, address_id, total_fees, } = req.body;
     if (
       !Number.isInteger(fashion_designer_id) ||
       !Number.isInteger(user_id) ||
@@ -1174,7 +1186,6 @@ exports.bookAppointment = async (req, res) => {
         Message: "Invalid parameters.",
       });
     }
-
     // Create the appointmentData object
     var appointmentData = {
       user_id: fashion_designer_id,
@@ -1187,29 +1198,17 @@ exports.bookAppointment = async (req, res) => {
       status: 0,
       address_id: address_id,
     };
-
     // Check if the requested slot is available
-    var isSlotAvailable = await FDService.slotAvailability(
-      fashion_designer_id,
-      start_time,
-      end_time,
-      appointment_date
-    );
-
+    var isSlotAvailable = await FDService.slotAvailability(fashion_designer_id, start_time, end_time, appointment_date);
     if (isSlotAvailable) {
-      // Book the appointment
       var appointment = await FDService.bookAppointment(appointmentData);
-
       return res.status(200).send({
         HasError: false,
-        StatusCode: 200,
         Message: "Thank you for booking the slot.",
       });
     } else {
-      // Slot is already booked
-      return res.status(400).send({
+      return res.status(200).send({
         HasError: true,
-        StatusCode: 400,
         Message: "Slot is already booked. Please select another time slot.",
       });
     }
@@ -1217,15 +1216,14 @@ exports.bookAppointment = async (req, res) => {
     console.log(error);
     return res.status(500).send({
       HasError: true,
-      StatusCode: 500,
       Message: "Failed to book appointment",
     });
   }
 };
+
 exports.appointmentList = async (req, res) => {
   try {
     const userId = req.query.user_id
-
     const result = await FDService.appointmentList(userId)
     if (result.length !== 0) {
       return res.status(200).send({
@@ -1240,7 +1238,6 @@ exports.appointmentList = async (req, res) => {
         result: result
       })
     }
-
   } catch (error) {
     console.log(error)
     return res.status(500).send({
@@ -1266,7 +1263,6 @@ exports.deleteAddress = async (req, res) => {
         message: "No address found.Failed to delete.",
       })
     }
-
   } catch (error) {
     console.log(error)
     return res.status(500).send({
@@ -1276,5 +1272,6 @@ exports.deleteAddress = async (req, res) => {
   }
 
 }
+
 
 
