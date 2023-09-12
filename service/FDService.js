@@ -677,6 +677,6 @@ exports.appointmentList=async(userId)=>{
 }
 
 exports.deleteAddress = async (user_id,address_id) => {
-  const result = await UsersAddress.destroy({ where: {[Op.or]: [{ user_id: user_id }, { id: address_id }]} })
+  const result = await UsersAddress.destroy({ where: {[Op.and]: [{ user_id: user_id }, { id: address_id }]} })
   return result
 }

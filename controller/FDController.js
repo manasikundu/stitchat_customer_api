@@ -210,7 +210,7 @@ exports.fashionDesignerList = async (req, res) => {
               day_name:
                 dayValue !== null && dayValue >= 1 && dayValue <= 7
                   ? daysOfWeekConfig.find((config) => config.value === dayValue)
-                      .day
+                    .day
                   : "Unknown Day",
               time: time,
               availability: availabilityText,
@@ -707,10 +707,10 @@ exports.fashionDesignerTimeSlot = async (req, res) => {
       // Initialize timerange object based on availabilityCheck
       var timerange = availabilityCheck
         ? {
-            morning: await generateSlotResponse(morningSlots),
-            afternoon: await generateSlotResponse(afternoonSlots),
-            evening: await generateSlotResponse(eveningSlots),
-          }
+          morning: await generateSlotResponse(morningSlots),
+          afternoon: await generateSlotResponse(afternoonSlots),
+          evening: await generateSlotResponse(eveningSlots),
+        }
         : {};
 
       // Determine if this is the first day with availability
@@ -1255,11 +1255,18 @@ exports.deleteAddress = async (req, res) => {
     const user_id = req.query.user_id;
     const address_id = req.query.address_id;
     const result = await FDService.deleteAddress(user_id, address_id)
-    return res.status(200).send({
-      HasError: false,
-      message: "Appointment list fetched succesfully.",
-      result: result
-    })
+    if (result != 0) {
+      return res.status(200).send({
+        HasError: false,
+        message: "Address deleted succesfully.",
+      })
+    } else {
+      return res.status(200).send({
+        HasError: false,
+        message: "No address found.Failed to delete.",
+      })
+    }
+
   } catch (error) {
     console.log(error)
     return res.status(500).send({
