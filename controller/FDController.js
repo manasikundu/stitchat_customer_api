@@ -954,9 +954,11 @@ exports.addNewAddress = async (req, res) => {
         addressData
       );
 
-
+      var result1 = {}
+      result1.user_id = user_id,
+        result1.address = data
       return res.status(200).json({
-        address: data,
+        result: result1,
         HasError: false,
         StatusCode: 200,
         message: "Address updated successfully",
@@ -966,7 +968,7 @@ exports.addNewAddress = async (req, res) => {
       var newAddress = await FDService.addAddress(null, addressData);
 
       return res.status(201).json({
-        address: data,
+        result: result1,
         HasError: false,
         StatusCode: 201,
         message: "Address added successfully",
