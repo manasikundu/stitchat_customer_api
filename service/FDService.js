@@ -274,7 +274,6 @@ exports.getDesignerDetailsByUserIdAndBoutiqueId = async (user_id) => {
     designerDetails = designerDetails.filter((detail) =>
       [6, 8].includes(detail.user_type_id)
     );
-
     return designerDetails;
   } catch (error) {
     console.error("Error getting designer details:", error);
