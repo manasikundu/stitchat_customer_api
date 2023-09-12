@@ -74,13 +74,15 @@ exports.getBoutiqueInfo = async () => {
 	              i.area,
                 i.city,
                 i.coutry_state,
+                i.location_lat,
+                i.location_lng,
                 i.about_me,
                 i.communication_mode,
                 i.language_speak,
                 i.education,
                 i.experience,
                 i.base_price,
-                i.offer_price
+                i.offer_price 
                 FROM
                 "sarter__users" AS u
                 JOIN  
@@ -341,11 +343,11 @@ exports.getAddressList = async (query) => {
 };
 
 // city list
-exports.getCityList = async (state_id) => {
+exports.getCityList = async (cityId) => {
   try {
     var cities = await City.findAll({
       // attributes: ['id', 'name'],
-      where: { id_state: state_id },
+      where: { id: cityId },
     });
 
     // Map the result to return an array of JSON objects
@@ -552,7 +554,6 @@ exports.categoryService = async (user_id) => {
     ORDER BY parent_csd.id, csd.id;`;
 
     var result = await db.query(query);
-    // console.log("services : ",result[0]);
     return result[0];
   } catch (error) {
     console.log("error : ", error);

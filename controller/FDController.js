@@ -874,9 +874,10 @@ exports.addNewAddress = async (req, res) => {
         message: "Invalid phone number. ",
       });
     }
+
     // Function to format date in AM/PM format
     var formatDate = (dateString) =>
-      moment(dateString).format("YYYY-MM-DD hh:mm A");
+      moment(dateString, "YYYY-MM-DD HH:mm:ss").format("YYYY-MM-DD hh:mm A");
 
     // Create an address object with the extracted parameters
     var addressData = {
@@ -901,6 +902,10 @@ exports.addNewAddress = async (req, res) => {
     addressData.created_at = addressData.created_at.slice(0, -5);
     addressData.updated_at = addressData.updated_at.slice(0, -5);
 
+    // Get city name and state name using cityList and stateList functions
+    var cityResult = await FDService.cityList(city);
+    var stateResult = await FDService.stateList(state);
+
     var addressArray = {
       address_id: id,
       first_name: addressData.first_name,
@@ -909,15 +914,17 @@ exports.addNewAddress = async (req, res) => {
       street: addressData.street,
       landmark: addressData.landmark,
       state: addressData.state,
+      state_name: stateResult.name,
       city: addressData.city,
+      city_name: cityResult.name,
       mobile_number: addressData.mobile_number,
       pincode: addressData.pincode,
       is_primary: addressData.is_primary,
       is_verify: addressData.is_verify,
       verify_date: formatDate(addressData.verify_date),
       created_at: formatDate(addressData.created_at),
-      updated_at: formatDate(addressData.updated_at)
-    }
+      updated_at: formatDate(addressData.updated_at),
+    };
 
     if (req.body.addressId) {
       // If addressId is provided in the request body, it's an update
