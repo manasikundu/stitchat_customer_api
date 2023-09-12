@@ -323,7 +323,6 @@ exports.getWeeklyScheduleByUserId = async (user_id) => {
       },
       raw: true,
     });
-    console.log(weeklySchedule)
 
     return weeklySchedule;
   } catch (error) {

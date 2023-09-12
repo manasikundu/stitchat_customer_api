@@ -102,7 +102,7 @@ exports.insertMobileNumber = async (req, res) => {
         },
         HasError: false,
         StatusCode: 200,
-        Message: "Mobile number already exists. OTP sent successfully.",
+        Message: "OTP sent successfully.",
       });
     } else {
       // Generate OTP for the newly inserted mobile number and send it to the user's device using FCM
@@ -125,7 +125,7 @@ exports.insertMobileNumber = async (req, res) => {
           HasError: false,
           StatusCode: 200,
           Message:
-            "Mobile number inserted successfully! OTP sent successfully.",
+            "OTP sent successfully.",
         });
       } else {
         // If there was an issue sending the OTP, handle it accordingly

@@ -79,12 +79,13 @@ exports.fashionDesignerList = async (req, res) => {
     var filters = {
       name: req.body.name,
       boutique_id: req.body.boutique_id,
+      id: req.body.id,
+      user_id: req.body.user_id
     };
 
     var mobile_number = req.body.mobile_number;
 
     var method_name = await Service.getCallingMethodName();
-    console.log(method_name);
     var apiEndpointInput = JSON.stringify(req.body);
 
     // Track API hit
@@ -98,7 +99,6 @@ exports.fashionDesignerList = async (req, res) => {
     );
 
     var fashionDesigners = await FDService.fashionDesignerList();
-    console.log("fashion designer :", fashionDesigners);
     var boutiqueInfo = await FDService.getBoutiqueInfo();
 
     var searchFilters = {};
@@ -113,6 +113,14 @@ exports.fashionDesignerList = async (req, res) => {
 
     if (filters.boutique_id) {
       searchFilters.boutique_id = filters.boutique_id;
+    }
+
+    if (filters.user_id) {
+      searchFilters.user_id = filters.user_id;
+    }
+
+    if (filters.id) {
+      searchFilters.id = filters.id;
     }
 
     // Create variables for time formatting
@@ -947,6 +955,7 @@ exports.addNewAddress = async (req, res) => {
         (formattedAddress.pincode = result[i].pincode),
         (formattedAddress.is_primary = result[i].is_primary),
         (formattedAddress.is_verify = result[i].is_verify),
+        // (formattedAddress.created_at = formatDate(result[i].created_at)),
         (formattedAddress.selected = result[i].is_primary == 1 ? true : false),
         data.push(formattedAddress);
     }
