@@ -281,6 +281,57 @@ exports.getDesignerDetailsByUserIdAndBoutiqueId = async (user_id) => {
   }
 };
 
+// Service function to get designer details from the "sarter__users" table
+exports.getDesignerDetailsByUserId = async (user_id) => {
+  try {
+    const designerDetails = await Users.findAll({
+      attributes: [
+        "id",
+        "user_type_id",
+        "first_name",
+        "last_name",
+        "reg_on",
+        "role",
+        "profile_photo",
+      ],
+      where: {
+        id: user_id,
+        user_type_id: [6, 8], // Filter by user_type_id 6 or 8
+      },
+      raw: true,
+    });
+
+    return designerDetails;
+  } catch (error) {
+    console.error("Error getting designer details:", error);
+    return error;
+  }
+};
+
+// Service function to get the weekly schedule for a user
+exports.getWeeklyScheduleByUserId = async (user_id) => {
+  try {
+    const weeklySchedule = await FashionDesignerWeeklySchedule.findAll({
+      attributes: [
+        "week_day",
+        "start_time",
+        "end_time",
+        "check_availability",
+      ],
+      where: {
+        user_id,
+      },
+      raw: true,
+    });
+    console.log(weeklySchedule)
+
+    return weeklySchedule;
+  } catch (error) {
+    console.error("Error getting weekly schedule:", error);
+    return error;
+  }
+};
+
 // add and update address
 exports.addAddress = async (address_id, addressData) => {
   try {

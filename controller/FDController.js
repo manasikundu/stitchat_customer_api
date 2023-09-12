@@ -324,7 +324,7 @@ exports.FashionDesignerDetails = async (req, res) => {
 
     // var designerDetails = [];
     // if (user_id) {
-    const designerDetails = await FDService.getDesignerDetailsByUserIdAndBoutiqueId(user_id);
+    const designerDetails = await FDService.getDesignerDetailsByUserId(user_id);
     const btq_id = await db.query(`select * from sarter__boutique_user_map where user_id=${user_id}`)
     const id = btq_id[0][0].boutique_id
     const main = []
@@ -403,15 +403,6 @@ exports.FashionDesignerDetails = async (req, res) => {
 
       });
     }
-
-    var firstName = designerDetails[0]["first_name"];
-    var lastName = designerDetails[0]["last_name"];
-    var fullName =
-      firstName && lastName
-        ? firstName + " " + lastName
-        : firstName || lastName;
-    var weekSchedules = [];
-
     var firstName = designerDetails[0]["first_name"];
     var lastName = designerDetails[0]["last_name"];
     var fullName =
@@ -419,16 +410,16 @@ exports.FashionDesignerDetails = async (req, res) => {
         ? firstName + " " + lastName
         : firstName || lastName;
 
-    var weekSchedules = designerDetails.map((designer) => {
-      var weekDay = designer["weekly_schedule.week_day"];
+    var schedule = await FDService.getWeeklyScheduleByUserId(user_id)
+    var weekSchedules = schedule.map((designer) => {
+      var weekDay = designer.week_day
       var availabilityText =
-        designer["weekly_schedule.check_availability"] === 1 ? true : false;
-      var startTime = designer["weekly_schedule.start_time"];
-      var endTime = designer["weekly_schedule.end_time"];
-      var dayName = daysOfWeekConfig.find(
-        (config) => config.value === weekDay
-      ).day;
-
+        designer.check_availability === 1 ? true : false;
+      var startTime = designer.start_time;
+      var endTime = designer.end_time
+      var dayConfig = daysOfWeekConfig.find((config) => config.value === weekDay);
+      var dayName = dayConfig ? dayConfig.day : '';
+      
       // Define the function to format time
       var formatTime = (time) => moment(time, "HH:mm:ss").format("hh:mm A");
       var resultTime = `${formatTime(startTime)} - ${formatTime(endTime)}`;
