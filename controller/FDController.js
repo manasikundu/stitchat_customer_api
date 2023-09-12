@@ -411,6 +411,7 @@ exports.FashionDesignerDetails = async (req, res) => {
           language_type: "1, 2",
           language_speak: "English, Hindi",
           profile_photo: designerDetails[0].profile_photo,
+          service_category:'',
           week_schedule: weekSchedules,
           dayOfWeek: [formattedDaysOfWeek],
           appointmentTime: [formattedAppointmentConfig],
