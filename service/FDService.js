@@ -165,7 +165,6 @@ exports.getFDDesignerDetails = async (FD_user_id) => {
         "profile_photo",
       ],
       where: {
-        // id: FD_user_id,
         user_type_id: {
           [Op.or]: [6, 8],
         },
@@ -274,11 +273,12 @@ exports.getDesignerDetailsByUserIdAndBoutiqueId = async (user_id) => {
     designerDetails = designerDetails.filter((detail) =>
       [6, 8].includes(detail.user_type_id)
     );
+    console.log(designerDetails)
 
     return designerDetails;
   } catch (error) {
     console.error("Error getting designer details:", error);
-    return null;
+    return error;
   }
 };
 

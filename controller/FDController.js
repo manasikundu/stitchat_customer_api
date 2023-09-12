@@ -336,6 +336,15 @@ exports.FashionDesignerDetails = async (req, res) => {
 
       });
     }
+
+    var firstName = designerDetails[0]["first_name"];
+    var lastName = designerDetails[0]["last_name"];
+    var fullName =
+      firstName && lastName
+        ? firstName + " " + lastName
+        : firstName || lastName;
+    var weekSchedules = [];
+
     var firstName = designerDetails[0]["first_name"];
     var lastName = designerDetails[0]["last_name"];
     var fullName =
