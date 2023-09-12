@@ -273,7 +273,6 @@ exports.getDesignerDetailsByUserIdAndBoutiqueId = async (user_id) => {
     designerDetails = designerDetails.filter((detail) =>
       [6, 8].includes(detail.user_type_id)
     );
-    console.log(designerDetails)
 
     return designerDetails;
   } catch (error) {

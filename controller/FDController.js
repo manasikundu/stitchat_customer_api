@@ -322,12 +322,79 @@ exports.FashionDesignerDetails = async (req, res) => {
       req.ip
     );
 
-    let designerDetails = [];
-    if (user_id) {
-      designerDetails = await FDService.getDesignerDetailsByUserIdAndBoutiqueId(
-        user_id
-      );
+    // var designerDetails = [];
+    // if (user_id) {
+    const designerDetails = await FDService.getDesignerDetailsByUserIdAndBoutiqueId(user_id);
+    const btq_id = await db.query(`select * from sarter__boutique_user_map where user_id=${user_id}`)
+    const id = btq_id[0][0].boutique_id
+    const main = []
+    const result1 = await db.query(`select * from sarter__boutique_service_dic where boutique_id=${id}`)//category Type
+    for (let i in result1[0]) {
+      // console.log(result1[0])
+
+      const mainJson = {}
+      mainJson.categoryType = result1[0][i].category_type
+      const categoryType = result1[0][i].category_type
+      if (categoryType == 1) {
+        mainJson.name = "Men"
+      } else if (categoryType == 2) {
+        mainJson.name = "Women"
+      } else if (categoryType == 3) {
+        mainJson.name = "Kids"
+      } else {
+        mainJson.name = "All"
+      }
+      const result2 = await db.query(`select * from sarter__category_item_dic where id in(select parent_id from sarter__category_item_dic where id=${result1[0][i].service_id})`)
+      var category = []
+      const categoryJson = {}
+      categoryJson.category_id = result2[0][0].id
+      categoryJson.category_name = result2[0][0].name
+      const catagoryImage = await db.query(`SELECT * FROM sarter__category_item_images where category_id in(select parent_id from sarter__category_item_dic where id=${result1[0][i].service_id})`)
+      var category_image = s3.getSignedUrl("getObject", {
+        Bucket: process.env.AWS_BUCKET,
+        Key: `category_item/${catagoryImage[0][0].image}`,
+        Expires: expirationTime,
+      })
+      // categoryJson.category_image = catagoryImage.rows[0].image
+      categoryJson.category_image = category_image
+      const result3 = await db.query(`select * from sarter__category_item_dic where id=${result1[0][i].service_id}`)
+      const item = []
+      const itemJson = {}
+      itemJson.item_id = result3[0][0].id
+      itemJson.item_name = result3[0][0].name
+      const itemImage = await db.query(`select * from sarter__category_item_images where category_id=${result1[0][i].service_id}`)
+      var item_image = s3.getSignedUrl("getObject", {
+        Bucket: process.env.AWS_BUCKET,
+        Key: `category_item/${itemImage[0][0].image}`,
+        Expires: expirationTime,
+      })
+      // itemJson.item_image = itemImage.rows[0].image
+      itemJson.item_image = item_image
+
+      const amount = await db.query(`select * from sarter__item_price_master where boutique_id=${id} and category_item_dic_id=${result1[0][i].service_id}`)
+      itemJson.item_price_id = amount[0][0] ? amount[0][0].id : 0
+      itemJson.min_amount = amount[0][0] ? amount[0][0].min_amount : 0
+      itemJson.max_amount = amount[0][0] ? amount[0][0].max_amount : 0
+      item.push(itemJson)
+      categoryJson.item = item
+      category.push(categoryJson)
+      mainJson.category = category
+      main.push(mainJson)
     }
+    const data = Object.values(main.reduce((acc, { categoryType, name, category }) => {
+      acc[categoryType] = acc[categoryType] || { categoryType, name, category: [] };
+      acc[categoryType].category.push(...category);
+      return acc;
+    }, {}));
+    for (var k in data) {
+      var cat = data[k].category
+      var data1 = Object.values(cat.reduce((acc, { category_id, category_name, category_image, item }) => {
+        acc[category_id] = acc[category_id] || { category_id, category_name, category_image, item: [] };
+        acc[category_id].item.push(...item);
+        return acc;
+      }, {}));
+      data[k].category = data1
+    }    // }
     if (designerDetails.length === 0) {
       return res.status(404).send({
         HasError: true,
@@ -389,7 +456,7 @@ exports.FashionDesignerDetails = async (req, res) => {
       res.setHeader("X-Auth-Token", token);
 
       var boutiqueInfo = await FDService.getBoutiqueInfo();
-      // console.log("boutique info: ", boutiqueInfo)
+
 
       return res.status(200).send({
         result: {
@@ -420,7 +487,7 @@ exports.FashionDesignerDetails = async (req, res) => {
           language_type: "1, 2",
           language_speak: "English, Hindi",
           profile_photo: designerDetails[0].profile_photo,
-          service_category:'',
+          service_category: data,
           week_schedule: weekSchedules,
           dayOfWeek: [formattedDaysOfWeek],
           appointmentTime: [formattedAppointmentConfig],
@@ -896,7 +963,7 @@ exports.addNewAddress = async (req, res) => {
     result1.user_id = user_id,
       result1.address = data
     if (req.body.addressId) {
-      var updatedAddress = await FDService.addAddress(req.body.addressId,addressData);
+      var updatedAddress = await FDService.addAddress(req.body.addressId, addressData);
       return res.status(200).json({
         result: result1,
         HasError: false,
