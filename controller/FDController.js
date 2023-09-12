@@ -947,6 +947,9 @@ exports.addNewAddress = async (req, res) => {
         (formattedAddress.is_verify = result[i].is_verify),
         data.push(formattedAddress);
     }
+    var result1 = {}
+    result1.user_id = user_id,
+      result1.address = data
     if (req.body.addressId) {
       // If addressId is provided in the request body, it's an update
       var updatedAddress = await FDService.addAddress(
@@ -954,9 +957,8 @@ exports.addNewAddress = async (req, res) => {
         addressData
       );
 
-      var result1 = {}
-      result1.user_id = user_id,
-        result1.address = data
+
+
       return res.status(200).json({
         result: result1,
         HasError: false,
