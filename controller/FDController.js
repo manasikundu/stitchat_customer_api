@@ -427,7 +427,7 @@ exports.FashionDesignerDetails = async (req, res) => {
       var endTime = designer.end_time
       var dayConfig = daysOfWeekConfig.find((config) => config.value === weekDay);
       var dayName = dayConfig ? dayConfig.day : '';
-      
+
       // Define the function to format time
       var formatTime = (time) => moment(time, "HH:mm:ss").format("hh:mm A");
       var resultTime = `${formatTime(startTime)} - ${formatTime(endTime)}`;
@@ -933,36 +933,38 @@ exports.addNewAddress = async (req, res) => {
     var stateResult = await FDService.stateList(state);
     var query = {}
     query.user_id = user_id;
-    const result = await FDService.getAddressList(query);
-    const data = [];
-    for (let i in result) {
-      var state = await FDService.stateList(result[i].state);
-      var cityName = await FDService.cityList(result[i].city);
+    console.log(user_id)
 
-      var formattedAddress = {};
-      (formattedAddress.id = result[i].id),
-        (formattedAddress.first_name = result[i].first_name),
-        (formattedAddress.last_name = result[i].last_name),
-        (formattedAddress.user_id = result[i].user_id),
-        (formattedAddress.street = result[i].street),
-        (formattedAddress.landmark = result[i].landmark),
-        (formattedAddress.state = result[i].state),
-        (formattedAddress.state_name = state.name),
-        (formattedAddress.city = result[i].city),
-        (formattedAddress.city_name = cityName.name),
-        (formattedAddress.mobile_number = result[i].mobile_number),
-        (formattedAddress.pincode = result[i].pincode),
-        (formattedAddress.is_primary = result[i].is_primary),
-        (formattedAddress.is_verify = result[i].is_verify),
-        // (formattedAddress.created_at = formatDate(result[i].created_at)),
-        (formattedAddress.selected = result[i].is_primary == 1 ? true : false),
-        data.push(formattedAddress);
-    }
-    var result1 = {}
-    result1.user_id = user_id,
-      result1.address = data
     if (req.body.addressId) {
       var updatedAddress = await FDService.addAddress(req.body.addressId, addressData);
+      const result = await FDService.getAddressList(query);
+      const data = [];
+      for (let i in result) {
+        var state = await FDService.stateList(result[i].state);
+        var cityName = await FDService.cityList(result[i].city);
+
+        var formattedAddress = {};
+        (formattedAddress.id = result[i].id),
+          (formattedAddress.first_name = result[i].first_name),
+          (formattedAddress.last_name = result[i].last_name),
+          (formattedAddress.user_id = result[i].user_id),
+          (formattedAddress.street = result[i].street),
+          (formattedAddress.landmark = result[i].landmark),
+          (formattedAddress.state = result[i].state),
+          (formattedAddress.state_name = state.name),
+          (formattedAddress.city = result[i].city),
+          (formattedAddress.city_name = cityName.name),
+          (formattedAddress.mobile_number = result[i].mobile_number),
+          (formattedAddress.pincode = result[i].pincode),
+          (formattedAddress.is_primary = result[i].is_primary),
+          (formattedAddress.is_verify = result[i].is_verify),
+          // (formattedAddress.created_at = formatDate(result[i].created_at)),
+          (formattedAddress.selected = result[i].is_primary == 1 ? true : false),
+          data.push(formattedAddress);
+      }
+      var result1 = {}
+      result1.user_id = user_id,
+        result1.address = data
       return res.status(200).json({
         result: result1,
         HasError: false,
@@ -972,6 +974,34 @@ exports.addNewAddress = async (req, res) => {
     } else {
       // If addressId is not provided, it's an insert
       var newAddress = await FDService.addAddress(null, addressData);
+      const result = await FDService.getAddressList(query);
+      const data = [];
+      for (let i in result) {
+        var state = await FDService.stateList(result[i].state);
+        var cityName = await FDService.cityList(result[i].city);
+
+        var formattedAddress = {};
+        (formattedAddress.id = result[i].id),
+          (formattedAddress.first_name = result[i].first_name),
+          (formattedAddress.last_name = result[i].last_name),
+          (formattedAddress.user_id = result[i].user_id),
+          (formattedAddress.street = result[i].street),
+          (formattedAddress.landmark = result[i].landmark),
+          (formattedAddress.state = result[i].state),
+          (formattedAddress.state_name = state.name),
+          (formattedAddress.city = result[i].city),
+          (formattedAddress.city_name = cityName.name),
+          (formattedAddress.mobile_number = result[i].mobile_number),
+          (formattedAddress.pincode = result[i].pincode),
+          (formattedAddress.is_primary = result[i].is_primary),
+          (formattedAddress.is_verify = result[i].is_verify),
+          // (formattedAddress.created_at = formatDate(result[i].created_at)),
+          (formattedAddress.selected = result[i].is_primary == 1 ? true : false),
+          data.push(formattedAddress);
+      }
+      var result1 = {}
+      result1.user_id = user_id,
+        result1.address = data
       return res.status(201).json({
         result: result1,
         HasError: false,
