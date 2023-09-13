@@ -3,9 +3,10 @@ const app = express();
 const morgan = require("morgan");
 const cors = require('cors')
 
-let Router = require("./router/userRouter");
-let boutiqueRouter = require("./router/userBoutiqueRouter");
-let designersRouter = require("./router/FDRouter");
+const Router = require("./router/userRouter");
+const boutiqueRouter = require("./router/userBoutiqueRouter");
+const designersRouter = require("./router/FDRouter");
+const orderRouter = require("./router/orderRouter")
 
 const bodyParser = require("body-parser");
 app.use(cors());
@@ -26,6 +27,7 @@ app.use(function (req, res, next) {
 app.use("", Router);
 app.use("", boutiqueRouter);
 app.use("", designersRouter);
+app.use("", orderRouter)
 const port=8000
 app.listen(port,() => {
     console.log(`Server running on port ${port}`);

@@ -1,19 +1,19 @@
-let crypto = require("crypto");
-let FCM = require("fcm-node");
-let Service = require("../service/userService");
-let Boutique = require("../model/userBoutiqueInfoModel");
-let Users = require("../model/userModel");
-let axios = require("axios");
-let NodeGeocoder = require("node-geocoder");
+var crypto = require("crypto");
+var FCM = require("fcm-node");
+var Service = require("../service/userService");
+var Boutique = require("../model/userBoutiqueInfoModel");
+var Users = require("../model/userModel");
+var axios = require("axios");
+var NodeGeocoder = require("node-geocoder");
 var geolib = require("geolib");
-let { Op } = require("sequelize");
-let moment = require("moment");
-let jwt = require("jsonwebtoken");
-let { generateAccessToken, auth } = require("../jwt");
+var { Op } = require("sequelize");
+var moment = require("moment");
+var jwt = require("jsonwebtoken");
+var { generateAccessToken, auth } = require("../jwt");
 
 var OTP_EXPIRY_TIME = 3 * 60 * 1000; // 3 minutes in milliseconds
-let otpCache = {}; // In-memory cache to store OTP and its timestamp
-let otpStats = {}; // In-memory cache to store OTP generation stats
+var otpCache = {}; // In-memory cache to store OTP and its timestamp
+var otpStats = {}; // In-memory cache to store OTP generation stats
 
 
 exports.insertMobileNumber = async (req, res) => {

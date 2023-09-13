@@ -1,19 +1,19 @@
-let db = require("../dbConnection");
-let Designer = require("../model/FDModel");
+var db = require("../dbConnection");
+var Designer = require("../model/FDModel");
 var { Op } = require("sequelize");
-let crypto = require("crypto");
-let Users = require("../model/userModel");
+var crypto = require("crypto");
+var Users = require("../model/userModel");
 var sequelize = require("../dbConnection");
-let DesignerDetails = require("../model/FDModel");
-let FashionDesignerWeeklySchedule = require("../model/weeklySchleduleModel");
-let UsersAddress = require("../model/userAddressModel");
-let Boutique = require("../model/userBoutiqueInfoModel");
-const { query } = require("express");
-let moment = require("moment");
+var DesignerDetails = require("../model/FDModel");
+var FashionDesignerWeeklySchedule = require("../model/weeklySchleduleModel");
+var UsersAddress = require("../model/userAddressModel");
+var Boutique = require("../model/userBoutiqueInfoModel");
+var { query } = require("express");
+var moment = require("moment");
 var State = require("../model/stateModel");
 var City = require("../model/cityModel");
 var Country = require("../model/countryModel");
-const { add } = require("date-fns");
+var { add } = require("date-fns");
 var Appointment = require("../model/appointmentModel");
 
 exports.fashionDesignerList = async () => {
@@ -729,3 +729,4 @@ exports.deleteAddress = async (user_id,address_id) => {
   const result = await UsersAddress.destroy({ where: {[Op.and]: [{ user_id: user_id }, { id: address_id }]} })
   return result
 }
+

@@ -1,5 +1,5 @@
-let Controller = require("../controller/userController");
-let boutiqueController = require("../controller/userBoutiqueController");
+const Controller = require("../controller/userController");
+const boutiqueController = require("../controller/userBoutiqueController");
 const route = require("express-promise-router");
 const router = new route();
 
