@@ -1203,7 +1203,7 @@ exports.bookAppointment = async (req, res) => {
       end_time: end_time,
       total_fees: parseFloat(total_fees),
       transaction_id: 0,
-      status: 0,
+      status: 1,
       address_id: address_id,
     };
     // Check if the requested slot is available

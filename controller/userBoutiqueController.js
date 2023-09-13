@@ -118,7 +118,6 @@ exports.getNearestBoutiqueList = async (req, res) => {
     }
 
     var method_name = await Service.getCallingMethodName();
-    console.log(method_name);
     var apiEndpointInput = JSON.stringify(req.body);
 
     // Track API hit
@@ -133,6 +132,15 @@ exports.getNearestBoutiqueList = async (req, res) => {
 
     // Fetch boutiques based on letter and sortType
     var boutiques = await BoutiqueService.getBoutiques(letter);
+
+    // Check if no boutiques are found
+    if (!boutiques || boutiques.length === 0) {
+      return res.status(200).json({
+        HasError: false,
+        StatusCode: 200,
+        message: "No Data Found",
+      });
+    }
 
     var items = await BoutiqueService.categoryServiceFilter();
 
@@ -317,4 +325,3 @@ exports.getNearestBoutiqueList = async (req, res) => {
     });
   }
 };
-
