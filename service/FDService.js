@@ -392,11 +392,11 @@ exports.getAddressList = async (query) => {
 };
 
 // city list
-exports.getCityList = async (cityId) => {
+exports.getCityList = async (state_id) => {
   try {
     var cities = await City.findAll({
       // attributes: ['id', 'name'],
-      where: { id: cityId },
+      where: { id_state: state_id },
     });
 
     // Map the result to return an array of JSON objects
