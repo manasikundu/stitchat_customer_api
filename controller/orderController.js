@@ -12,20 +12,15 @@ const { generateAccessToken, auth } = require("../jwt");
 // Define the controller function for fetching order details
 exports.orderList = async (req, res) => {
   try {
-    var {
+    var { id, booking_code, boutique_id, customer_id, order_status_id } =
+      req.query;
+
+    var filter = {
       id,
       booking_code,
       boutique_id,
       customer_id,
       order_status_id,
-    } = req.query;
-
-    var filter = {
-        id,
-        booking_code,
-        boutique_id,
-        customer_id,
-        order_status_id,
     };
     var method_name = await Service.getCallingMethodName();
     var apiEndpointInput = JSON.stringify(req.body);
@@ -37,16 +32,18 @@ exports.orderList = async (req, res) => {
       req.query.device_info,
       req.ip
     );
-    var boutiqueOrders = await orderService.boutiqueOrder(filter)
+    var boutiqueOrders = await orderService.boutiqueOrder(filter);
     var orderList = [];
     for (var order of boutiqueOrders) {
-      var boutiqueAddress = await orderService.boutiqueAddress()
-      var orderStatusName = await orderService.orderStatus(order.id)
-      var orderDelivery = await orderService.orderDelivery()
+      var boutiqueAddress = await orderService.boutiqueAddress();
+      var orderStatusName = await orderService.orderStatus(order.id);
+      var orderDelivery = await orderService.orderDelivery();
       var orderStatus = orderStatusName.find(
         (status) => status.id === order.order_status_id
-      )
-      var delivery = orderDelivery.find((delivery_date) => delivery_date.order_id === order.id)
+      );
+      var delivery = orderDelivery.find(
+        (delivery_date) => delivery_date.order_id === order.id
+      );
       var orderListArray = {
         id: order.id,
         booking_code: order.booking_code,
@@ -67,6 +64,10 @@ exports.orderList = async (req, res) => {
       };
       orderList.push(orderListArray);
     }
+    // Generate access token using the provided secretKey
+    var secretKey = "tensorflow";
+    var token = generateAccessToken(mobile_number, secretKey);
+
     if (orderList.length !== 0) {
       return res.status(200).send({
         result: {
@@ -95,4 +96,3 @@ exports.orderList = async (req, res) => {
     });
   }
 };
-
