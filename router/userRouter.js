@@ -10,6 +10,11 @@ router.post("/login", Controller.logIn);
 router.get("/verifyToken", Controller.verifyToken);
 router.post("/userProfile", Controller.userProfile);
 router.patch("/updateProfile/:id", Controller.updateProfile);
+router.get("/aboutUs", Controller.aboutUs);
+router.get("/contactInfo", Controller.contactInfo);
+router.post("/contactUs", Controller.contactUs);
+
+
 
 
 

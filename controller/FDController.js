@@ -1261,17 +1261,46 @@ exports.appointmentList = async (req, res) => {
   try {
     const userId = req.query.user_id
     const result = await FDService.appointmentList(userId)
+    const data = []
     if (result.length !== 0) {
+      for (var i in result) {
+        var dataJson = {}
+        dataJson.id = result[i].id
+        dataJson.user_id = result[i].user_id
+        dataJson.customer_id = result[i].customer_id
+        dataJson.appointment_code = result[i].appointment_code
+        dataJson.start_time = result[i].start_time
+        dataJson.end_time = result[i].end_time
+        dataJson.appointment_date = result[i].appointment_date
+        dataJson.total_fees = result[i].total_fees
+        dataJson.status = result[i].status
+        if (result[i].status == 0) {
+          dataJson.status_name = 'Pending'
+        }
+        if (result[i].status == 1) {
+          dataJson.status_name = 'Approve'
+        }
+        if (result[i].status == 2) {
+          dataJson.status_name = 'Reject/Cancel'
+        }
+        if (result[i].status == 3) {
+          dataJson.status_name = 'completed'
+        }
+        dataJson.transaction_id = result[i].transaction_id
+        dataJson.address_id = result[i].address_id
+        dataJson.appointment_datetime = result[i].appointment_date +" "+ result[i].start_time
+        data.push(dataJson)
+      }
       return res.status(200).send({
         HasError: false,
         message: "Appointment list fetched succesfully.",
-        result: result
+        result: data
       })
     } else {
       return res.status(200).send({
         HasError: false,
         message: "No Appointment list found.",
-        result: result
+        result: data
       })
     }
   } catch (error) {

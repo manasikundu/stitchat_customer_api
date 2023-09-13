@@ -7,6 +7,7 @@ let FCM = require("fcm-node");
 let crypto = require("crypto");
 let ApiTrack = require("../model/apiTrackModel");
 const { Mobile } = require("aws-sdk");
+const contactUs=require('../model/contactUsModel')
 
 exports.generateOTP = () => {
   return crypto.randomInt(100000, 999999).toString();
@@ -185,5 +186,10 @@ exports.boutiqueMap = async (user_id) => {
 }
 exports.updateProfile = async (id, data) => {
   const result = await Users.update(data, { where: { id: id } })
+  return result
+}
+exports.contactUs = async (data) => {
+  
+  const result = await contactUs.create(data)
   return result
 }

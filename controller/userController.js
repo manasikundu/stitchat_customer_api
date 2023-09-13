@@ -1,15 +1,16 @@
-var crypto = require("crypto");
-var FCM = require("fcm-node");
-var Service = require("../service/userService");
-var Boutique = require("../model/userBoutiqueInfoModel");
-var Users = require("../model/userModel");
-var axios = require("axios");
-var NodeGeocoder = require("node-geocoder");
-var geolib = require("geolib");
-var { Op } = require("sequelize");
-var moment = require("moment");
-var jwt = require("jsonwebtoken");
-var { generateAccessToken, auth } = require("../jwt");
+const crypto = require("crypto");
+const FCM = require("fcm-node");
+const Service = require("../service/userService");
+const Boutique = require("../model/userBoutiqueInfoModel");
+const Users = require("../model/userModel");
+const axios = require("axios");
+const NodeGeocoder = require("node-geocoder");
+const geolib = require("geolib");
+const { Op } = require("sequelize");
+const moment = require("moment");
+const jwt = require("jsonwebtoken");
+const { generateAccessToken, auth } = require("../jwt");
+const fs = require('fs')
 
 var OTP_EXPIRY_TIME = 3 * 60 * 1000; // 3 minutes in milliseconds
 var otpCache = {}; // In-memory cache to store OTP and its timestamp
@@ -532,6 +533,48 @@ exports.updateProfile = async (req, res) => {
       })
     }
 
+  } catch (error) {
+    console.log(error)
+    res.status(500).send({ message: "Something went wrong.", HasError: true })
+  }
+}
+
+exports.aboutUs = async (req, res) => {
+  try {
+    const data = fs.readFileSync('aboutUs.txt','utf-8')
+    return res.status(200).send({
+      message: "Successfully Proceed data.",
+      HasError: false,
+      result: data
+    })
+  } catch (error) {
+    console.log(error)
+    res.status(500).send({ message: "Something went wrong.", HasError: true })
+  }
+}
+
+exports.contactInfo = async (req, res) => {
+  try {
+    const data = fs.readFileSync('contactInfo.json','utf-8')
+    return res.status(200).send({
+      message: "Successfully Proceed data.",
+      HasError: false,
+      result: JSON.parse(data)
+    })
+  } catch (error) {
+    console.log(error)
+    res.status(500).send({ message: "Something went wrong.", HasError: true })
+  }
+}
+
+exports.contactUs = async (req, res) => {
+  try {
+    const result=Service.contactUs(req.body)
+    return res.status(200).send({
+      message: "Successfully Proceed data.",
+      HasError: false,
+      result: result
+    })
   } catch (error) {
     console.log(error)
     res.status(500).send({ message: "Something went wrong.", HasError: true })
