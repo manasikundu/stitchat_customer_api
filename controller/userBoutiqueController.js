@@ -139,6 +139,7 @@ exports.getNearestBoutiqueList = async (req, res) => {
         HasError: false,
         StatusCode: 200,
         message: "No Data Found",
+        nearbyBoutiques: [],
       });
     }
 
@@ -308,13 +309,24 @@ exports.getNearestBoutiqueList = async (req, res) => {
       // Set the token in a custom response header
       res.setHeader("X-Auth-Token", token);
 
-      // Send the response
-      return res.status(200).json({
-        HasError: false,
-        StatusCode: 200,
-        ...responseData,
-        category: organizedServices,
-      });
+      // Send the response with different messages based on nearbyBoutiques
+      if (sortedBoutiques.length === 0) {
+        return res.status(200).json({
+          HasError: false,
+          StatusCode: 200,
+          message: "No Data Found",
+          ...responseData,
+          category: organizedServices
+        });
+      } else {
+        return res.status(200).json({
+          HasError: false,
+          StatusCode: 200,
+          message: "Boutique list retrieving successfully",
+           ...responseData, 
+          category: organizedServices,
+        });
+      }
     }
   } catch (error) {
     console.error("Error processing request:", error);
