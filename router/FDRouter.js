@@ -12,6 +12,8 @@ router.get("/addressList", designersController.getAddressList)
 router.delete("/deleteAddress", designersController.deleteAddress)
 router.post("/bookAppointment", designersController.bookAppointment)
 router.get("/appointmentList", designersController.appointmentList)
+router.get("/fashionDesignerAppointmentDetails", designersController.fashionDesignerAppointmentDetails)
+
 
 
 module.exports = router;

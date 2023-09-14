@@ -331,20 +331,15 @@ exports.getWeeklyScheduleByUserId = async (user_id) => {
   }
 };
 
-// add and update address
 exports.addAddress = async (address_id, addressData) => {
   try {
     if (address_id) {
-      // Update an existing address record in the database
-      // var updatedAddress = await UsersAddress.update({ where: { id: address_id }, ...addressData });
       var updatedAddress = await UsersAddress.update(addressData, {
         where: { id: address_id },
       });
       return updatedAddress;
     } else {
-      // Create a new address record in the database
       var newAddress = await UsersAddress.create(addressData);
-      // console.log(newAddress)
       return newAddress;
     }
   } catch (error) {
@@ -398,8 +393,6 @@ exports.getCityList = async (state_id) => {
       // attributes: ['id', 'name'],
       where: { id_state: state_id },
     });
-
-    // Map the result to return an array of JSON objects
     var cityList = cities.map((city) => ({
       id: city.id,
       name: city.name,
@@ -727,4 +720,11 @@ exports.deleteAddress = async (user_id,address_id) => {
   const result = await UsersAddress.destroy({ where: {[Op.and]: [{ user_id: user_id }, { id: address_id }]} })
   return result
 }
-
+exports.appointmentDetails=async(appointmentId)=>{
+  const result = await Appointment.findOne({ where: {id:appointmentId} })
+  return result.toJSON()
+}
+exports.getAddressByUserId=async(user_id)=>{
+  const result = await UsersAddress.findOne({ where: {user_id:user_id} })
+  return result.toJSON()
+}
