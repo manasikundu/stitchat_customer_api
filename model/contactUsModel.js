@@ -27,12 +27,7 @@ const contactUs = sequelize.define("sarter__contactus", {
     add_date: {
         type: DataTypes.DATE,
         allowNull: false
-    },
-    
-    createdAt: false,
-    updatedAt: false,
-    timestamps: false, 
-
+    }
 },)
 contactUs.sync().then(() => {
     console.log("contactUs Model synced");
