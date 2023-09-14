@@ -192,3 +192,7 @@ exports.contactUs = async (data) => {
   const result = await contactUs.create(data,{returning:true})
   return result.toJSON()
 }
+exports.getUserByUserId = async (id) => {
+  const result = await Users.findOne({ where: { id: id } })
+  return result.toJSON()
+}
