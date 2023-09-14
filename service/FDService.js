@@ -551,7 +551,7 @@ exports.bookAppointment = async (appointmentData) => {
       var currentDate = new Date();
       var formattedDate = currentDate.toISOString().slice(0, 19).replace("T", " ");
       appointmentData.created_at = formattedDate;
-      appointmentData.updated_at = formattedDate;
+      // appointmentData.updated_at = formattedDate;
       var bookAppointment = await Appointment.create(appointmentData);
       var appointment_code =
         "STAFA" + appointmentData.customer_id + appointmentData.user_id + bookAppointment.id;
