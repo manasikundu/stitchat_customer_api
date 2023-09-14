@@ -569,7 +569,7 @@ exports.contactInfo = async (req, res) => {
 
 exports.contactUs = async (req, res) => {
   try {
-    const result=Service.contactUs(req.body)
+    const result=await Service.contactUs(req.body)
     return res.status(200).send({
       message: "Successfully Proceed data.",
       HasError: false,

@@ -189,7 +189,6 @@ exports.updateProfile = async (id, data) => {
   return result
 }
 exports.contactUs = async (data) => {
-  
-  const result = await contactUs.create(data)
-  return result
+  const result = await contactUs.create(data,{returning:true})
+  return result.toJSON()
 }

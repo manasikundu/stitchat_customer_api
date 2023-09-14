@@ -64,9 +64,9 @@ exports.orderList = async (req, res) => {
       };
       orderList.push(orderListArray);
     }
-    // Generate access token using the provided secretKey
-    var secretKey = "tensorflow";
-    var token = generateAccessToken(mobile_number, secretKey);
+    // // Generate access token using the provided secretKey
+    // var secretKey = "tensorflow";
+    // var token = generateAccessToken(mobile_number, secretKey);
 
     if (orderList.length !== 0) {
       return res.status(200).send({
