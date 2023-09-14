@@ -548,16 +548,14 @@ exports.bookAppointment = async (appointmentData) => {
     );
 
     if (isSlotAvailable) {
-      // Create a new appointment record using Sequelize
+      var currentDate = new Date();
+      var formattedDate = currentDate.toISOString().slice(0, 19).replace("T", " ");
+      appointmentData.created_at = formattedDate;
+      appointmentData.updated_at = formattedDate;
       var bookAppointment = await Appointment.create(appointmentData);
-
-      // Generate the appointment_code
       var appointment_code =
         "STAFA" + appointmentData.customer_id + appointmentData.user_id + bookAppointment.id;
-
-      // Update the appointment with the appointment_code
       await bookAppointment.update({ appointment_code });
-
       return bookAppointment;
     }
   } catch (error) {
