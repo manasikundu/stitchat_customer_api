@@ -402,7 +402,7 @@ exports.FashionDesignerDetails = async (req, res) => {
         return acc;
       }, {}));
       data[k].category = data1
-    }    // }
+    }   
     if (designerDetails.length === 0) {
       return res.status(404).send({
         HasError: true,
