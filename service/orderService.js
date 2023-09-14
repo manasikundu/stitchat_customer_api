@@ -1,7 +1,7 @@
 var db = require("../dbConnection");
 
 // order list
-exports.boutiqueOrder = async (filter) => {
+exports.boutiqueOrder = async (user_id) => {
   try {
     var query = `SELECT
                         id,
@@ -13,29 +13,7 @@ exports.boutiqueOrder = async (filter) => {
                         total_payable_amount,
                         order_status AS order_status_id
                         FROM
-                        public.sarter__boutique_orders`;
-    var conditions = [];
-    if (filter) {
-      if (filter.id) {
-        conditions.push(`id = ${filter.id}`);
-      }
-      if (filter.boutique_id) {
-        conditions.push(`boutique_id = ${filter.boutique_id}`);
-      }
-      if (filter.booking_code) {
-        conditions.push(`booking_code = '${filter.booking_code}'`);
-      }
-      if (filter.customer_id) {
-        conditions.push(`customer_id = ${filter.customer_id}`);
-      }
-      if (filter.order_status_id) {
-        conditions.push(`order_status = ${filter.order_status_id}`);
-      }
-
-      if (conditions.length > 0) {
-        query += ` WHERE ${conditions.join(" AND ")}`;
-      }
-    }
+                        public.sarter__boutique_orders WHERE customer_id = ${user_id}`;
     var result = await db.query(query);
     return result[0];
   } catch (error) {

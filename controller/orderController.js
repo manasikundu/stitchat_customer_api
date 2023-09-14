@@ -12,16 +12,15 @@ const { generateAccessToken, auth } = require("../jwt");
 // Define the controller function for fetching order details
 exports.orderList = async (req, res) => {
   try {
-    var { id, booking_code, boutique_id, customer_id, order_status_id } =
-      req.query;
+    var user_id = req.query.user_id;
+    if (user_id == undefined && !Number.isInteger(parseInt(user_id))) {
+      return res.status(400).json({
+        HasError: true,
+        StatusCode: 400,
+        message: "Invalid parameter.",
+      });
+    }
 
-    var filter = {
-      id,
-      booking_code,
-      boutique_id,
-      customer_id,
-      order_status_id,
-    };
     var method_name = await Service.getCallingMethodName();
     var apiEndpointInput = JSON.stringify(req.body);
     var apiTrack = await Service.trackApi(
@@ -32,7 +31,7 @@ exports.orderList = async (req, res) => {
       req.query.device_info,
       req.ip
     );
-    var boutiqueOrders = await orderService.boutiqueOrder(filter);
+    var boutiqueOrders = await orderService.boutiqueOrder(user_id);
     var orderList = [];
     for (var order of boutiqueOrders) {
       var boutiqueAddress = await orderService.boutiqueAddress();
