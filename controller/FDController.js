@@ -1346,6 +1346,7 @@ exports.fashionDesignerAppointmentDetails = async (req, res) => {
     const result3 = await Service.getUserByUserId(result1.user_id)
     var stateName = await FDService.stateList(result2.state);
     var cityName = await FDService.cityList(result2.city);
+    var formatTime = (time) => moment(time, "HH:mm:ss").format("hh:mm A");
     const data = {}
     const fashiondesignerappointmentDetails = {}
     fashiondesignerappointmentDetails.id = result1.id ? result1.id : ''
@@ -1365,8 +1366,8 @@ exports.fashionDesignerAppointmentDetails = async (req, res) => {
     fashiondesignerappointmentDetails.fashiondesigner_lastname = result3.last_name ? result3.last_name : ''
     fashiondesignerappointmentDetails.profile_img = result3.profile_photo ? result3.profile_photo : ''
     fashiondesignerappointmentDetails.experience = ''
-    fashiondesignerappointmentDetails.viewstarttime = ''
-    fashiondesignerappointmentDetails.viewendtime = ''
+    fashiondesignerappointmentDetails.viewstarttime = formatTime(result1.start_time)
+    fashiondesignerappointmentDetails.viewendtime = formatTime(result1.end_time)
     const address = {}
     address.id = result2.id ? result2.id : ''
     address.user_id = result2.user_id ? result2.user_id : ''
