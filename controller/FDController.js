@@ -8,6 +8,7 @@ var Service = require("../service/userService");
 var { generateAccessToken, auth } = require("../jwt");
 var s3 = require("../config/s3Config");
 var dotenv = require("dotenv");
+// const { tr } = require("date-fns/esm/locale");
 dotenv.config();
 
 var expirationTime = 600;
@@ -1405,6 +1406,30 @@ exports.fashionDesignerAppointmentDetails = async (req, res) => {
       message: "Appointment details fetched succesfully.",
       result: data
     })
+  } catch (error) {
+    console.log(error)
+    return res.status(500).send({
+      HasError: true,
+      Message: 'Something went wrong',
+    })
+  }
+}
+
+exports.cancelAppointment = async (req, res) => {
+  try {
+    const status=2
+    const result = await FDService.cancelAppointment(req.params.appointment_id,status)
+    if (result != 0) {
+      return res.status(200).send({
+        HasError: false,
+        message: "Appointment cancelled succesfully.",
+      })
+    } else {
+      return res.status(200).send({
+        HasError: false,
+        message: "No appointment found.Failed to cancel.",
+      })
+    }
   } catch (error) {
     console.log(error)
     return res.status(500).send({

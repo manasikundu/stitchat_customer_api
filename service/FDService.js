@@ -331,15 +331,20 @@ exports.getWeeklyScheduleByUserId = async (user_id) => {
   }
 };
 
+// add and update address
 exports.addAddress = async (address_id, addressData) => {
   try {
     if (address_id) {
+      // Update an existing address record in the database
+      // var updatedAddress = await UsersAddress.update({ where: { id: address_id }, ...addressData });
       var updatedAddress = await UsersAddress.update(addressData, {
         where: { id: address_id },
       });
       return updatedAddress;
     } else {
+      // Create a new address record in the database
       var newAddress = await UsersAddress.create(addressData);
+      // console.log(newAddress)
       return newAddress;
     }
   } catch (error) {
@@ -382,7 +387,7 @@ exports.cityList = async (cityId) => {
   return result;
 };
 exports.getAddressList = async (query) => {
-  const result = await UsersAddress.findAll({ where: query ,order: [["id", "desc"]]});
+  const result = await UsersAddress.findAll({ where: query, order: [["id", "desc"]] });
   return result;
 };
 
@@ -393,6 +398,8 @@ exports.getCityList = async (state_id) => {
       // attributes: ['id', 'name'],
       where: { id_state: state_id },
     });
+
+    // Map the result to return an array of JSON objects
     var cityList = cities.map((city) => ({
       id: city.id,
       name: city.name,
@@ -513,7 +520,7 @@ exports.slotAvailability = async (user_id, start_time, end_time, appointment_dat
     } else {
       console.error('Unexpected query result:', result);
     }
-    } catch (error) {
+  } catch (error) {
     return error;
   }
 };
@@ -585,20 +592,135 @@ exports.categoryService = async (user_id) => {
   }
 };
 
-exports.appointmentList=async(userId)=>{
-  const result = await Appointment.findAll({ where: {customer_id:userId} })
+exports.categoryServiceMenWomenKid = async (user_id) => {
+  try {
+    var query = `SELECT DISTINCT ON (parent_csd.id, csd.id)
+    csd.id,
+    bem.user_id,
+    csd.parent_id,
+    bi."categoryType",
+    bsd.boutique_id,
+    bsd.boutique_name,
+    bsd.boutique_code,
+    bsd.service_id,
+    bsd.service_name,
+    csd.name AS child_category_name,
+    csd.type AS child_category_type,
+    parent_csd.name AS parent_category_name,
+    parent_csd.type AS parent_category_type,
+    cat_img.category_id AS cat_category_id,
+    cat_img.image AS category_image,
+    item_img.category_id AS item_category_id,
+    item_img.image AS item_image,
+    COALESCE(ipm_correct.id, ipm.id) AS item_price_id,
+    COALESCE(ipm_correct.min_amount, ipm.min_amount) AS min_amount,
+    COALESCE(ipm_correct.max_amount, ipm.max_amount) AS max_amount
+    FROM
+      public.sarter__boutique_service_dic bsd
+    JOIN
+      public.sarter__category_item_dic csd ON bsd.service_id = csd.id
+    JOIN
+      public.sarter__category_item_dic parent_csd ON csd.parent_id = parent_csd.id
+    JOIN
+      public.sarter__boutique_employee_map bem ON bsd.boutique_id = bem.boutique_id AND bem.role = 4
+    JOIN
+      public.sarter__boutique_basic_info bi ON bsd.boutique_id = bi.id
+    LEFT JOIN
+      public.sarter__category_item_images cat_img ON parent_csd.id = cat_img.category_id AND parent_csd.type = cat_img.category_type
+    LEFT JOIN
+      public.sarter__category_item_images item_img ON csd.id = item_img.category_id AND csd.type = item_img.category_type
+    LEFT JOIN
+      public.sarter__item_price_master ipm ON csd.id = ipm.category_item_dic_id AND csd.type = ipm.category_type
+    LEFT JOIN
+      public.sarter__item_price_master ipm_correct ON csd.id = ipm_correct.category_item_dic_id
+      AND csd.type = ipm_correct.category_type
+      AND ipm_correct.id = 1
+      WHERE user_id = ${user_id}
+    ORDER BY parent_csd.id, csd.id, ipm.min_amount;`;
+
+    result = await db.query(query);
+    console.log("services : ", result[0]);
+    return result[0];
+  } catch (error) {
+    return error;
+  }
+};
+
+// service.js
+
+exports.getCategoryAndItem = async (categoryType, boutiqueId) => {
+  try {
+    const categoryQuery = `
+      SELECT
+        category.id AS category_id,
+        category.name AS category_name,
+        images.image AS category_image
+      FROM
+        sarter__category_item_dic AS category
+      LEFT JOIN
+        sarter__category_item_images AS images
+      ON
+        category.id = images.category_id
+      WHERE
+        category.parent_id = 0
+        AND category.status = 1
+        AND category.type = ${categoryType}
+    `;
+
+    const itemQuery = `
+      SELECT
+        item.id AS item_id,
+        item.name AS item_name,
+        price.id AS item_price_id,
+        price.min_amount,
+        price.max_amount,
+        item_images.image AS item_image
+      FROM
+        sarter__category_item_dic AS item
+      LEFT JOIN
+        item_price_master AS price
+      ON
+        item.id = price.category_item_dic_id
+      LEFT JOIN
+        sarter__category_item_images AS item_images
+      ON
+        item.id = item_images.category_id
+      WHERE
+        item.parent_id = 0
+        AND item.status = 1
+        AND item.type = ${categoryType}
+        AND price.boutique_id = ${boutiqueId}
+        AND price.category_type = ${categoryType}
+    `;
+
+    const categoryResult = await db.query(categoryQuery);
+    const itemResult = await db.query(itemQuery);
+
+    return { categoryResult, itemResult };
+  } catch (error) {
+    console.error("Error in getCategoryAndItemData:", error);
+    return error;
+  }
+};
+exports.appointmentList = async (userId) => {
+  const result = await Appointment.findAll({ where: { customer_id: userId } })
   return result
 }
 
-exports.deleteAddress = async (user_id,address_id) => {
-  const result = await UsersAddress.destroy({ where: {[Op.and]: [{ user_id: user_id }, { id: address_id }]} })
+exports.cancelAppointment = async (appointmentId,status) => {
+  const result = await Appointment.update({status:status},{ where: { id: appointmentId } })
+  return result             
+}
+exports.appointmentDetails = async (appointmentId) => {
+  const result = await Appointment.findOne({ where: { id: appointmentId } })
+  return result.toJSON()
+}
+exports.getAddressByUserId = async (user_id) => {
+  const result = await UsersAddress.findOne({ where: { user_id: user_id } })
+  return result.toJSON()
+}
+
+exports.deleteAddress = async (user_id, address_id) => {
+  const result = await UsersAddress.destroy({ where: { [Op.and]: [{ user_id: user_id }, { id: address_id }] } })
   return result
-}
-exports.appointmentDetails=async(appointmentId)=>{
-  const result = await Appointment.findOne({ where: {id:appointmentId} })
-  return result.toJSON()
-}
-exports.getAddressByUserId=async(user_id)=>{
-  const result = await UsersAddress.findOne({ where: {user_id:user_id} })
-  return result.toJSON()
 }
