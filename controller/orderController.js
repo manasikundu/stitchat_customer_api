@@ -14,6 +14,16 @@ const dotenv = require("dotenv");
 dotenv.config();
 
 var expirationTime = 600;
+var orderStatusConfig = [
+  { id: 1, status: "In Draft" },
+  { id: 2, status: "Waiting for confirmation" },
+  { id: 3, status: "Order accepted by Boutique" },
+  { id: 4, status: "In progress" },
+  { id: 5, status: "Ready for Deliver" },
+  { id: 6, status: "Order Delivered" },
+  { id: 7, status: "Order Closed" },
+  { id: 8, status: "Order Cancelled" }
+];
 
 // Define the controller function for fetching order details
 exports.orderList = async (req, res) => {
@@ -124,6 +134,7 @@ exports.orderDetails = async (req, res) => {
       req.query.device_info,
       req.ip
     );
+    var customerType = await orderService.customerType(order_id);
     var boutiqueOrders = await orderService.boutiqueOrderByOrderId(order_id);
     var orderDetails = {};
     for (var order of boutiqueOrders) {
@@ -133,19 +144,22 @@ exports.orderDetails = async (req, res) => {
       var orderStatus = orderStatusName.find(
         (status) => status.id === order.order_status_id
       );
-      var delivery = orderDelivery.find(
+      var deliveryDate = orderDelivery.find(
         (delivery_date) => delivery_date.order_id === order.id
       );
+      var deliveryTime = orderDelivery.find(
+        (deliver_time) => deliver_time.order_id === order.id
+      );
       orderDetails = {
-        order_id: order.id,
+        id: order.id,
         booking_code: order.booking_code,
         boutique_id: order.boutique_id,
         customer_id: order.customer_id,
-        first_name: order.first_name,
-        last_name: order.last_name,
-        full_name: order.first_name + " " + order.last_name,
-        mobile_number: order.mobile_number,
-        email_id: order.email_id,
+        customer_firstname: order.first_name,
+        customer_lastname: order.last_name,
+        customer_name: order.first_name + " " + order.last_name,
+        customer_mobile_number: order.mobile_number,
+        customer_email_id: order.email_id,
         total_quantity: order.total_quantity,
         subtotal_amount: order.subtotal_amount,
         discount_amount: order.discount_amount,
@@ -154,62 +168,88 @@ exports.orderDetails = async (req, res) => {
         total_payable_amount: order.total_payable_amount,
         reward_point: order.reward_point,
         order_status: order.order_status_id,
+        bill_image: order.bill_image,
         order_status_name: orderStatus.order_status_name,
-        delivery_date: delivery.delivery_date,
-        boutique_name: boutiqueAddress[0].boutique_name,
-        boutique_address: boutiqueAddress[0].address,
-        boutique_country_state: boutiqueAddress[0].coutry_state,
-        boutique_city: boutiqueAddress[0].city,
-        boutique_area: boutiqueAddress[0].area,
-        boutique_landmark: boutiqueAddress[0].landmark,
+        customer_user_type_id: customerType[0].user_type_id,
       };
-    }
-    var measurement = await orderService.getMeasurement(order_id);
-    var meas = [];
-    for (var m of measurement) {
-      var measurementArray = {
-        measurement_id: m.measurement_id,
-        measurement_name: m.name,
-        measurement_value: m.value,
-        measurement_uom: m.uom,
-      };
-      meas.push(measurementArray);
     }
     var items = await orderService.getItemsByOrderId(order_id);
-    var groupedItems = {};
+    var category = await orderService.categoryType(order_id)
+    var itemList = [];
     for (var item of items) {
-      var categoryType = await orderService.getCategoryByItemId(item.id);
+      var categoryType = await orderService.getCategoryByItemId(
+        item.category_item_dic_id
+      );
       if (categoryType.length > 0) {
+        var category_id = categoryType[0].id;
         var category_name = categoryType[0].name;
-        if (!groupedItems[category_name]) {
-          groupedItems[category_name] = {
-            category_id: categoryType[0].id,
-            category_name: category_name,
-            item: [],
-          };
-        }
-        var itemImages = await orderService.getItemImagesByItemId(item.id);
+        var itemImages = await orderService.getItemImagesByItemId(
+          item.category_item_dic_id
+        );
         var item_image = s3.getSignedUrl("getObject", {
           Bucket: process.env.AWS_BUCKET,
           Key: `category_item/${itemImages[0].image}`,
           Expires: expirationTime,
         });
-
-        groupedItems[category_name].item.push({
-          item_id: item.id,
+        var material_image = item.material_image || [];
+        var cat_name      
+        if (category[0].category_type === 1) {
+          cat_id = 1
+          cat_name = "Men"
+        } else if (category[0].category_type === 2) {
+          cat_id = 2
+          cat_name = "Women"
+        } else if (category[0].category_type === 3) {
+          cat_id = 3
+          cat_name = "Kids"
+        } else {
+          cat_id = ''
+          cat_name = 'All'
+        }
+        itemList.push({
+          id: item.id,
           item_name: item.name,
+          category_item_dic_id: item.category_item_dic_id,
+          category_name: category_name,
+          name: cat_name,
+          category_id: category_id,
+          gender: category[0].category_type,
+          quantity: boutiqueOrders[0].total_quantity,
+          unit_price: item.unit_price,
+          delivery_date: deliveryDate.delivery_date,
+          deliver_time: deliveryTime.deliver_time,
+          material_received: item.material_received,
+          status_id: order.order_status_id,
+          status: orderStatus.order_status_name,
+          fabric_type: item.fabric_type,
+          material_image: material_image,
           item_image: item_image,
-          fabric_type: item.fabric_type
         });
       }
     }
-    var categoryTypeArray = Object.values(groupedItems);
+    var measurement = await orderService.getMeasurement(order_id);
+    var meas = [];
+    for (var m of measurement) {
+      var measurementArray = {
+        id: measurement[0].id,
+        item_id: item.id,
+        name: m.name,
+        value: m.value,
+        uom: m.uom,
+        meas_id: m.measurement_id,
+      };
+      meas.push(measurementArray);
+    }
+    var itemArray = itemList.map((item) => ({
+      ...item,
+      measurement_info: meas,
+    })) 
     if (Object.keys(orderDetails).length !== 0) {
       return res.status(200).send({
         result: {
           ...orderDetails,
-          items: categoryTypeArray,
-          measurement: meas,
+          items: itemArray,
+          order_status_info: [orderStatusConfig]
         },
         HasError: false,
         Message: "Order details retrieved successfully.",
@@ -234,5 +274,4 @@ exports.orderDetails = async (req, res) => {
     });
   }
 };
-
 

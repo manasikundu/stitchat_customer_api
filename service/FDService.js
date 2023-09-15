@@ -296,7 +296,7 @@ exports.getDesignerDetailsByUserId = async (user_id) => {
       ],
       where: {
         id: user_id,
-        user_type_id: [6, 8], // Filter by user_type_id 6 or 8
+        user_type_id: [6, 8], 
       },
       raw: true,
     });
@@ -423,7 +423,6 @@ exports.getFashionDesignersByBoutiqueId = async (boutiqueId) => {
         },
       ],
     });
-
     return designers;
   } catch (error) {
     console.error("Error fetching fashion designers:", error);
@@ -434,7 +433,6 @@ exports.getFashionDesignersByBoutiqueId = async (boutiqueId) => {
 // Define the service method
 exports.getWeekScheduleByDesigner = async (designerUserId) => {
   try {
-    // Custom SQL query to fetch week schedule data for the given designer user ID
     var query = `
       SELECT
         user_id,
@@ -443,12 +441,8 @@ exports.getWeekScheduleByDesigner = async (designerUserId) => {
         end_time,
         check_availability
       FROM
-      sarter__fashion_designer_weekly_schedule
-      
-    `;
-
+      sarter__fashion_designer_weekly_schedule`
     var rows = await db.query(query, [designerUserId]);
-
     return rows[0];
   } catch (error) {
     console.error("Error fetching week schedule:", error);
@@ -477,7 +471,6 @@ exports.getDesignersByRole = async () => {
 	    sarter__boutique_basic_info bi ON em.user_id = ws.user_id
       WHERE
       em.role = 4 `;
-
     var result = await db.query(query);
     return result[0];
   } catch (error) {
@@ -494,11 +487,8 @@ exports.isSlotAvailable = async (user_id, startTime, endTime) => {
       FROM public.sarter__fashion_designer_appointment
       WHERE user_id = ${user_id}
       AND start_time <= '${endTime}'
-      AND end_time > '${startTime}'
-    `;
-
+      AND end_time > '${startTime}'`
     var result = await db.query(query);
-
     return result[0];
   } catch (error) {
     console.error(error);
@@ -518,12 +508,10 @@ exports.slotAvailability = async (user_id, start_time, end_time, appointment_dat
       AND end_time > '${start_time}'
     `;
     var result = await db.query(query);
-
     if (result[0]) {
       return result[0].length === 0;
     } else {
       console.error('Unexpected query result:', result);
-      // return false; 
     }
     } catch (error) {
     return error;
@@ -532,19 +520,16 @@ exports.slotAvailability = async (user_id, start_time, end_time, appointment_dat
 
 exports.bookAppointment = async (appointmentData) => {
   try {
-    // Check if the requested slot is available
     var isSlotAvailable = await exports.slotAvailability(
       appointmentData.user_id,
       appointmentData.appointment_date,
       appointmentData.start_time,
       appointmentData.end_time
     );
-
     if (isSlotAvailable) {
       var currentDate = new Date();
       var formattedDate = currentDate.toISOString().slice(0, 19).replace("T", " ");
       appointmentData.created_at = formattedDate;
-      // appointmentData.updated_at = formattedDate;
       var bookAppointment = await Appointment.create(appointmentData);
       var appointment_code =
         "STAFA" + appointmentData.customer_id + appointmentData.user_id + bookAppointment.id;
@@ -568,7 +553,6 @@ exports.getAvailability = async (user_id) => {
     `;
 
     var result = await db.query(query);
-    // console.log("get avalilabliloty : ", result[0]);
     return result[0];
   } catch (error) {
     console.error(error);
@@ -601,116 +585,6 @@ exports.categoryService = async (user_id) => {
   }
 };
 
-exports.categoryServiceMenWomenKid = async (user_id) => {
-  try {
-    var query = `SELECT DISTINCT ON (parent_csd.id, csd.id)
-    csd.id,
-    bem.user_id,
-    csd.parent_id,
-    bi."categoryType",
-    bsd.boutique_id,
-    bsd.boutique_name,
-    bsd.boutique_code,
-    bsd.service_id,
-    bsd.service_name,
-    csd.name AS child_category_name,
-    csd.type AS child_category_type,
-    parent_csd.name AS parent_category_name,
-    parent_csd.type AS parent_category_type,
-    cat_img.category_id AS cat_category_id,
-    cat_img.image AS category_image,
-    item_img.category_id AS item_category_id,
-    item_img.image AS item_image,
-    COALESCE(ipm_correct.id, ipm.id) AS item_price_id,
-    COALESCE(ipm_correct.min_amount, ipm.min_amount) AS min_amount,
-    COALESCE(ipm_correct.max_amount, ipm.max_amount) AS max_amount
-    FROM
-      public.sarter__boutique_service_dic bsd
-    JOIN
-      public.sarter__category_item_dic csd ON bsd.service_id = csd.id
-    JOIN
-      public.sarter__category_item_dic parent_csd ON csd.parent_id = parent_csd.id
-    JOIN
-      public.sarter__boutique_employee_map bem ON bsd.boutique_id = bem.boutique_id AND bem.role = 4
-    JOIN
-      public.sarter__boutique_basic_info bi ON bsd.boutique_id = bi.id
-    LEFT JOIN
-      public.sarter__category_item_images cat_img ON parent_csd.id = cat_img.category_id AND parent_csd.type = cat_img.category_type
-    LEFT JOIN
-      public.sarter__category_item_images item_img ON csd.id = item_img.category_id AND csd.type = item_img.category_type
-    LEFT JOIN
-      public.sarter__item_price_master ipm ON csd.id = ipm.category_item_dic_id AND csd.type = ipm.category_type
-    LEFT JOIN
-      public.sarter__item_price_master ipm_correct ON csd.id = ipm_correct.category_item_dic_id
-      AND csd.type = ipm_correct.category_type
-      AND ipm_correct.id = 1
-      WHERE user_id = ${user_id}
-    ORDER BY parent_csd.id, csd.id, ipm.min_amount;`;
-
-    result = await db.query(query);
-    console.log("services : ", result[0]);
-    return result[0];
-  } catch (error) {
-    return error;
-  }
-};
-
-// service.js
-
-exports.getCategoryAndItem = async (categoryType, boutiqueId) => {
-  try {
-    const categoryQuery = `
-      SELECT
-        category.id AS category_id,
-        category.name AS category_name,
-        images.image AS category_image
-      FROM
-        sarter__category_item_dic AS category
-      LEFT JOIN
-        sarter__category_item_images AS images
-      ON
-        category.id = images.category_id
-      WHERE
-        category.parent_id = 0
-        AND category.status = 1
-        AND category.type = ${categoryType}
-    `;
-
-    const itemQuery = `
-      SELECT
-        item.id AS item_id,
-        item.name AS item_name,
-        price.id AS item_price_id,
-        price.min_amount,
-        price.max_amount,
-        item_images.image AS item_image
-      FROM
-        sarter__category_item_dic AS item
-      LEFT JOIN
-        item_price_master AS price
-      ON
-        item.id = price.category_item_dic_id
-      LEFT JOIN
-        sarter__category_item_images AS item_images
-      ON
-        item.id = item_images.category_id
-      WHERE
-        item.parent_id = 0
-        AND item.status = 1
-        AND item.type = ${categoryType}
-        AND price.boutique_id = ${boutiqueId}
-        AND price.category_type = ${categoryType}
-    `;
-
-    const categoryResult = await db.query(categoryQuery);
-    const itemResult = await db.query(itemQuery);
-
-    return { categoryResult, itemResult };
-  } catch (error) {
-    console.error("Error in getCategoryAndItemData:", error);
-    return error;
-  }
-};
 exports.appointmentList=async(userId)=>{
   const result = await Appointment.findAll({ where: {customer_id:userId} })
   return result

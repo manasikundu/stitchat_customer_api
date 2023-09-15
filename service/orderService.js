@@ -1,4 +1,5 @@
 var db = require("../dbConnection");
+const Users = require("../model/userModel");
 
 // order list
 exports.boutiqueOrder = async (user_id) => {
@@ -61,6 +62,7 @@ exports.orderStatus = async () => {
     WHERE
         id IN (SELECT order_status FROM public.sarter__boutique_orders)`;
     var result = await db.query(query);
+    console.log(result[0])
     return result[0];
   } catch (error) {
     console.log(error);
@@ -72,7 +74,8 @@ exports.orderDelivery = async () => {
   try {
     var query = `SELECT
         order_id,
-        delivery_date
+        delivery_date,
+        deliver_time
     FROM
         public.sarter__boutique_orders_items
 		WHERE 
@@ -102,6 +105,7 @@ exports.boutiqueOrderByOrderId = async (order_id) => {
         tax_applied_amount,
         total_payable_amount,
         order_status AS order_status_id,
+        bill_image,
         first_name,
         last_name,
         mobile_number,
@@ -122,40 +126,36 @@ exports.boutiqueOrderByOrderId = async (order_id) => {
 
 exports.getMeasurement = async (order_id) => {
   try {
-    var query = `SELECT
-	bo.customer_id,
-    boi.category_item_dic_id,
-    boi.item_name,
-    bom.measurement_id,
-    bom.name,
-    bom.value,
-    bom.uom
-FROM
-    public.sarter__boutique_orders_items boi
-JOIN
-    public.sarter__boutique_orders bo
-ON
-    boi.order_id = bo.id
-JOIN
-    public.sarter__boutique_orders_measurement bom
-ON
-    boi.category_item_dic_id = bom.item_id
-WHERE
-    bom.id = ${order_id}`
-    var result = await db.query(query)
-    return result[0]
-
+    var query = `SELECT *
+    FROM
+        public.sarter__boutique_orders bo
+    JOIN
+        public.sarter__boutique_orders_items boi
+    ON
+        bo.id = boi.order_id
+    JOIN
+        public.sarter__boutique_orders_measurement bom
+    ON
+        boi.id = bom.item_id
+    WHERE
+        bo.id = ${order_id}`    
+    var result = await db.query(query);
+    return result[0];
   } catch (error) {
-    console.log(error)
-    return error
+    console.log(error);
+    return error;
   }  
-}
+};
 
 exports.getItemsByOrderId = async (order_id) => {
   try {
     var query = `SELECT
-        item.id,
+        boi.id,
+        boi.category_item_dic_id,
+        boi.unit_price,
+        order_id,
         item.name,
+        material_received,
         material_image,
 		    fabric_type
       FROM
@@ -203,3 +203,25 @@ exports.getItemImagesByItemId = async (item_id) => {
   }
 };
 
+exports.customerType=async(order_id)=>{
+  var query = `SELECT u.user_type_id
+  FROM public.sarter__users u
+  INNER JOIN public.sarter__boutique_orders o ON u.id = o.customer_id
+  WHERE o.id = ${order_id}`
+  var result = await db.query(query)
+  return result[0]
+}
+
+exports.categoryType=async(order_id)=>{
+  var query = `SELECT *
+  FROM
+      public.sarter__boutique_service_dic s
+  JOIN
+      public.sarter__boutique_orders o
+  ON
+      s.boutique_id = o.boutique_id
+  WHERE
+      o.id = ${order_id}`
+  var result = await db.query(query)
+  return result[0]
+}
