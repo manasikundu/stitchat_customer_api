@@ -51,7 +51,7 @@ exports.fashionDesignerList = async () => {
         },
       ],
 
-      raw: true, // Return raw data instead of Sequelize instances
+      raw: true, 
     });
 
     return usersWithDesigners;
@@ -66,9 +66,71 @@ exports.fashionDesignerList = async () => {
   }
 };
 
+exports.getFashionDesigners = async () => {
+  try {
+    var fashionDesigners = await Users.findAll({
+      attributes: [
+        "id",
+        ["id", "user_id"],
+        "prefix",
+        "first_name",
+        "last_name",
+        "reg_on",
+        "user_type_id",
+        "mobile_number",
+        "email_id",
+        "role",
+        "profile_photo",
+      ],
+      where: {
+        user_type_id: {
+          [Op.in]: [6, 8],
+        },
+      },
+      order: [["user_id", "DESC"]],
+      raw: true,
+    });
+
+    return fashionDesigners;
+  } catch (error) {
+    console.error("Error listing Fashion Designers:", error);
+    return {
+      result: [],
+      HasError: true,
+      StatusCode: 500,
+      Message: "An error occurred while listing Fashion Designers.",
+    };
+  }
+};
+
+exports.getFashionDesignerSchedules = async () => {
+  try {
+    var fashionDesignerSchedules = await FashionDesignerWeeklySchedule.findAll({
+      attributes: [
+        "week_day",
+        "start_time",
+        "end_time",
+        "check_availability",
+      ],
+      raw: true,
+    });
+
+    return fashionDesignerSchedules;
+  } catch (error) {
+    console.error("Error listing Fashion Designer Schedules:", error);
+    return {
+      result: [],
+      HasError: true,
+      StatusCode: 500,
+      Message: "An error occurred while listing Fashion Designer Schedules.",
+    };
+  }
+};
+
 exports.getBoutiqueInfo = async () => {
   try {
     var boutiqueInfo = `SELECT
+                i.id,
                 i.boutique_name,
                 i.address,
 	              i.area,
@@ -209,7 +271,7 @@ exports.getDesignerUserDetailsByUserId = async (user_id) => {
       ],
       where: {
         id: user_id,
-        user_type_id: { [Op.in]: [6, 8] }, // Filter by user_type_id 6 or 8
+        user_type_id: { [Op.in]: [6, 8] }, 
       },
       raw: true,
     });
@@ -308,7 +370,7 @@ exports.getDesignerDetailsByUserId = async (user_id) => {
   }
 };
 
-// Service function to get the weekly schedule for a user
+// Service function to get the weekly schedule for a user for fd details
 exports.getWeeklyScheduleByUserId = async (user_id) => {
   try {
     const weeklySchedule = await FashionDesignerWeeklySchedule.findAll({
