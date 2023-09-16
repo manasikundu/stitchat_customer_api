@@ -51,7 +51,7 @@ exports.fashionDesignerList = async () => {
         },
       ],
 
-      raw: true, 
+      raw: true, // Return raw data instead of Sequelize instances
     });
 
     return usersWithDesigners;
@@ -66,71 +66,9 @@ exports.fashionDesignerList = async () => {
   }
 };
 
-exports.getFashionDesigners = async () => {
-  try {
-    var fashionDesigners = await Users.findAll({
-      attributes: [
-        "id",
-        ["id", "user_id"],
-        "prefix",
-        "first_name",
-        "last_name",
-        "reg_on",
-        "user_type_id",
-        "mobile_number",
-        "email_id",
-        "role",
-        "profile_photo",
-      ],
-      where: {
-        user_type_id: {
-          [Op.in]: [6, 8],
-        },
-      },
-      order: [["user_id", "DESC"]],
-      raw: true,
-    });
-
-    return fashionDesigners;
-  } catch (error) {
-    console.error("Error listing Fashion Designers:", error);
-    return {
-      result: [],
-      HasError: true,
-      StatusCode: 500,
-      Message: "An error occurred while listing Fashion Designers.",
-    };
-  }
-};
-
-exports.getFashionDesignerSchedules = async () => {
-  try {
-    var fashionDesignerSchedules = await FashionDesignerWeeklySchedule.findAll({
-      attributes: [
-        "week_day",
-        "start_time",
-        "end_time",
-        "check_availability",
-      ],
-      raw: true,
-    });
-
-    return fashionDesignerSchedules;
-  } catch (error) {
-    console.error("Error listing Fashion Designer Schedules:", error);
-    return {
-      result: [],
-      HasError: true,
-      StatusCode: 500,
-      Message: "An error occurred while listing Fashion Designer Schedules.",
-    };
-  }
-};
-
 exports.getBoutiqueInfo = async () => {
   try {
     var boutiqueInfo = `SELECT
-                i.id,
                 i.boutique_name,
                 i.address,
 	              i.area,
@@ -271,7 +209,7 @@ exports.getDesignerUserDetailsByUserId = async (user_id) => {
       ],
       where: {
         id: user_id,
-        user_type_id: { [Op.in]: [6, 8] }, 
+        user_type_id: { [Op.in]: [6, 8] }, // Filter by user_type_id 6 or 8
       },
       raw: true,
     });
@@ -370,7 +308,7 @@ exports.getDesignerDetailsByUserId = async (user_id) => {
   }
 };
 
-// Service function to get the weekly schedule for a user for fd details
+// Service function to get the weekly schedule for a user
 exports.getWeeklyScheduleByUserId = async (user_id) => {
   try {
     const weeklySchedule = await FashionDesignerWeeklySchedule.findAll({
@@ -654,59 +592,6 @@ exports.categoryService = async (user_id) => {
   }
 };
 
-exports.categoryServiceMenWomenKid = async (user_id) => {
-  try {
-    var query = `SELECT DISTINCT ON (parent_csd.id, csd.id)
-    csd.id,
-    bem.user_id,
-    csd.parent_id,
-    bi."categoryType",
-    bsd.boutique_id,
-    bsd.boutique_name,
-    bsd.boutique_code,
-    bsd.service_id,
-    bsd.service_name,
-    csd.name AS child_category_name,
-    csd.type AS child_category_type,
-    parent_csd.name AS parent_category_name,
-    parent_csd.type AS parent_category_type,
-    cat_img.category_id AS cat_category_id,
-    cat_img.image AS category_image,
-    item_img.category_id AS item_category_id,
-    item_img.image AS item_image,
-    COALESCE(ipm_correct.id, ipm.id) AS item_price_id,
-    COALESCE(ipm_correct.min_amount, ipm.min_amount) AS min_amount,
-    COALESCE(ipm_correct.max_amount, ipm.max_amount) AS max_amount
-    FROM
-      public.sarter__boutique_service_dic bsd
-    JOIN
-      public.sarter__category_item_dic csd ON bsd.service_id = csd.id
-    JOIN
-      public.sarter__category_item_dic parent_csd ON csd.parent_id = parent_csd.id
-    JOIN
-      public.sarter__boutique_employee_map bem ON bsd.boutique_id = bem.boutique_id AND bem.role = 4
-    JOIN
-      public.sarter__boutique_basic_info bi ON bsd.boutique_id = bi.id
-    LEFT JOIN
-      public.sarter__category_item_images cat_img ON parent_csd.id = cat_img.category_id AND parent_csd.type = cat_img.category_type
-    LEFT JOIN
-      public.sarter__category_item_images item_img ON csd.id = item_img.category_id AND csd.type = item_img.category_type
-    LEFT JOIN
-      public.sarter__item_price_master ipm ON csd.id = ipm.category_item_dic_id AND csd.type = ipm.category_type
-    LEFT JOIN
-      public.sarter__item_price_master ipm_correct ON csd.id = ipm_correct.category_item_dic_id
-      AND csd.type = ipm_correct.category_type
-      AND ipm_correct.id = 1
-      WHERE user_id = ${user_id}
-    ORDER BY parent_csd.id, csd.id, ipm.min_amount;`;
-
-    result = await db.query(query);
-    console.log("services : ", result[0]);
-    return result[0];
-  } catch (error) {
-    return error;
-  }
-};
 
 // service.js
 

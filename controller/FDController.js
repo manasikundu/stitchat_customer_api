@@ -81,7 +81,7 @@ exports.fashionDesignerList = async (req, res) => {
       name: req.body.name,
       boutique_id: req.body.boutique_id,
       id: req.body.id,
-      user_id: req.body.user_id,
+      user_id: req.body.user_id
     };
 
     var mobile_number = req.body.mobile_number;
@@ -98,6 +98,10 @@ exports.fashionDesignerList = async (req, res) => {
       req.query.device_info,
       req.ip
     );
+
+    var fashionDesigners = await FDService.fashionDesignerList();
+    var boutiqueInfo = await FDService.getBoutiqueInfo();
+
     var searchFilters = {};
 
     // Filter by name (first_name or last_name)
@@ -120,54 +124,61 @@ exports.fashionDesignerList = async (req, res) => {
       searchFilters.id = filters.id;
     }
 
-    // var fashionDesigners = await FDService.getFashionDesigners();
-    var fashionDesigners = await FDService.fashionDesignerList();
-    var boutiqueInfo = await FDService.getBoutiqueInfo();
-    var schedule = await FDService.getFashionDesignerSchedules();
-
     // Create variables for time formatting
     var formatStartTime = (time) => moment(time, "HH:mm:ss").format("hh:mm A");
     var formatEndTime = (time) => moment(time, "HH:mm:ss").format("hh:mm A");
 
-    var weekDayList = schedule.map((item) => item.week_day);
+    var weekDayList = fashionDesigners.map(
+      (user) => user["weekly_schedule.week_day"]
+    );
+
     // Create a map to group designers by user_id
     var designerMap = new Map();
     fashionDesigners.forEach((user, index) => {
       var userId = user.user_id;
       var dayValue = weekDayList[index];
-
-      // Calculate availabilityText once
-      var availabilityText =
-        user["weekly_schedule.check_availability"] === 1 ? true : false;
-
-      // Define time variable outside the loop
-      var time =
-        formatStartTime(user["weekly_schedule.start_time"]) +
-        " - " +
-        formatEndTime(user["weekly_schedule.end_time"]);
-      var available_time = availabilityText ? time : "";
-
       if (designerMap.has(userId)) {
         if (dayValue !== null && dayValue >= 1 && dayValue <= 7) {
           var dayConfig = daysOfWeekConfig.find(
             (config) => config.value === dayValue
           );
-          var dayName = dayConfig ? dayConfig.day : "";
+          var dayName = dayConfig ? dayConfig.day : "Unknown Day";
+
+          var availabilityText =
+            user["weekly_schedule.check_availability"] === 1 ? true : false;
+          var time =
+            formatStartTime(user["weekly_schedule.start_time"]) +
+            " - " +
+            formatEndTime(user["weekly_schedule.end_time"]);
 
           designerMap.get(userId).week_schedule.push({
             day: dayValue,
             day_name: dayName,
-            time: available_time,
+            time: time,
             availability: availabilityText,
           });
         } else {
+          var availabilityText =
+            user["weekly_schedule.check_availability"] === 1 ? true : false;
+          var time =
+            formatStartTime(user["weekly_schedule.start_time"]) +
+            " - " +
+            formatEndTime(user["weekly_schedule.end_time"]);
+
           designerMap.get(userId).week_schedule.push({
-            day: "",
-            time: available_time,
+            day: "Unknown Day",
+            time: time,
             availability: availabilityText,
           });
         }
       } else {
+        var availabilityText =
+          user["weekly_schedule.check_availability"] === 1 ? true : false;
+        var time =
+          formatStartTime(user["weekly_schedule.start_time"]) +
+          " - " +
+          formatEndTime(user["weekly_schedule.end_time"]);
+
         var full_name = user.prefix + " " + user.first_name;
         if (user.last_name !== null) {
           full_name += " " + user.last_name;
@@ -176,7 +187,7 @@ exports.fashionDesignerList = async (req, res) => {
         designerMap.set(userId, {
           id: user.id,
           user_id: user.user_id,
-          boutique_id: boutiqueInfo.id,
+          boutique_id: user["designers.boutique_id"],
           boutique_name: boutiqueInfo.boutique_name,
           address: boutiqueInfo.address,
           area: boutiqueInfo.area,
@@ -193,7 +204,7 @@ exports.fashionDesignerList = async (req, res) => {
           email: user.email_id,
           role: user.role,
           role_name: user.role === 4 ? "Designer" : user.role,
-          available_time: available_time,
+          available_time: time,
           base_price: 0,
           offer_price: 0,
           experience: 1,
@@ -202,7 +213,18 @@ exports.fashionDesignerList = async (req, res) => {
           language_type: "1, 2",
           language_speak: "English, Hindi",
           profile_photo: user.profile_photo,
-          week_schedule: [],
+          week_schedule: [
+            {
+              day: dayValue,
+              day_name:
+                dayValue !== null && dayValue >= 1 && dayValue <= 7
+                  ? daysOfWeekConfig.find((config) => config.value === dayValue)
+                    .day
+                  : "Unknown Day",
+              time: time,
+              availability: availabilityText,
+            },
+          ],
           dayOfWeek: [formattedDaysOfWeek],
           appointmentTime: [formattedAppointmentConfig],
           communication_modes: [
@@ -226,20 +248,6 @@ exports.fashionDesignerList = async (req, res) => {
             },
           ],
         });
-
-        // Check if availabilityText is true (available) before adding to week_schedule
-        if (availabilityText) {
-          designerMap.get(userId).week_schedule.push({
-            day: dayValue,
-            day_name:
-              dayValue !== null && dayValue >= 1 && dayValue <= 7
-                ? daysOfWeekConfig.find((config) => config.value === dayValue)
-                    .day
-                : "",
-            time: available_time,
-            availability: availabilityText,
-          });
-        }
       }
     });
 
@@ -326,111 +334,82 @@ exports.FashionDesignerDetails = async (req, res) => {
     // var designerDetails = [];
     // if (user_id) {
     const designerDetails = await FDService.getDesignerDetailsByUserId(user_id);
-    const btq_id = await db.query(
-      `select * from sarter__boutique_user_map where user_id=${user_id}`
-    );
-    const id = btq_id[0][0].boutique_id;
-    const main = [];
-    const result1 = await db.query(
-      `select * from sarter__boutique_service_dic where boutique_id=${id}`
-    ); //category Type
+    const btq_id = await db.query(`select * from sarter__boutique_user_map where user_id=${user_id}`)
+    const id = btq_id[0][0].boutique_id
+    const main = []
+    const result1 = await db.query(`select * from sarter__boutique_service_dic where boutique_id=${id}`)//category Type
     for (let i in result1[0]) {
       // console.log(result1[0])
 
-      const mainJson = {};
-      mainJson.categoryType = result1[0][i].category_type;
-      const categoryType = result1[0][i].category_type;
+      const mainJson = {}
+      mainJson.categoryType = result1[0][i].category_type
+      const categoryType = result1[0][i].category_type
       if (categoryType == 1) {
-        mainJson.name = "Men";
+        mainJson.name = "Men"
       } else if (categoryType == 2) {
-        mainJson.name = "Women";
+        mainJson.name = "Women"
       } else if (categoryType == 3) {
-        mainJson.name = "Kids";
+        mainJson.name = "Kids"
       } else {
-        mainJson.name = "All";
+        mainJson.name = "All"
       }
-      const result2 = await db.query(
-        `select * from sarter__category_item_dic where id in(select parent_id from sarter__category_item_dic where id=${result1[0][i].service_id})`
-      );
-      var category = [];
-      const categoryJson = {};
-      categoryJson.category_id = result2[0][0].id;
-      categoryJson.category_name = result2[0][0].name;
-      const catagoryImage = await db.query(
-        `SELECT * FROM sarter__category_item_images where category_id in(select parent_id from sarter__category_item_dic where id=${result1[0][i].service_id})`
-      );
+      const result2 = await db.query(`select * from sarter__category_item_dic where id in(select parent_id from sarter__category_item_dic where id=${result1[0][i].service_id})`)
+      var category = []
+      const categoryJson = {}
+      categoryJson.category_id = result2[0][0].id
+      categoryJson.category_name = result2[0][0].name
+      const catagoryImage = await db.query(`SELECT * FROM sarter__category_item_images where category_id in(select parent_id from sarter__category_item_dic where id=${result1[0][i].service_id})`)
       var category_image = s3.getSignedUrl("getObject", {
         Bucket: process.env.AWS_BUCKET,
         Key: `category_item/${catagoryImage[0][0].image}`,
         Expires: expirationTime,
-      });
+      })
       // categoryJson.category_image = catagoryImage.rows[0].image
-      categoryJson.category_image = category_image;
-      const result3 = await db.query(
-        `select * from sarter__category_item_dic where id=${result1[0][i].service_id}`
-      );
-      const item = [];
-      const itemJson = {};
-      itemJson.item_id = result3[0][0].id;
-      itemJson.item_name = result3[0][0].name;
-      const itemImage = await db.query(
-        `select * from sarter__category_item_images where category_id=${result1[0][i].service_id}`
-      );
+      categoryJson.category_image = category_image
+      const result3 = await db.query(`select * from sarter__category_item_dic where id=${result1[0][i].service_id}`)
+      const item = []
+      const itemJson = {}
+      itemJson.item_id = result3[0][0].id
+      itemJson.item_name = result3[0][0].name
+      const itemImage = await db.query(`select * from sarter__category_item_images where category_id=${result1[0][i].service_id}`)
       var item_image = s3.getSignedUrl("getObject", {
         Bucket: process.env.AWS_BUCKET,
         Key: `category_item/${itemImage[0][0].image}`,
         Expires: expirationTime,
-      });
+      })
       // itemJson.item_image = itemImage.rows[0].image
-      itemJson.item_image = item_image;
+      itemJson.item_image = item_image
 
-      const amount = await db.query(
-        `select * from sarter__item_price_master where boutique_id=${id} and category_item_dic_id=${result1[0][i].service_id}`
-      );
-      itemJson.item_price_id = amount[0][0] ? amount[0][0].id : 0;
-      itemJson.min_amount = amount[0][0] ? amount[0][0].min_amount : 0;
-      itemJson.max_amount = amount[0][0] ? amount[0][0].max_amount : 0;
-      item.push(itemJson);
-      categoryJson.item = item;
-      category.push(categoryJson);
-      mainJson.category = category;
-      main.push(mainJson);
+      const amount = await db.query(`select * from sarter__item_price_master where boutique_id=${id} and category_item_dic_id=${result1[0][i].service_id}`)
+      itemJson.item_price_id = amount[0][0] ? amount[0][0].id : 0
+      itemJson.min_amount = amount[0][0] ? amount[0][0].min_amount : 0
+      itemJson.max_amount = amount[0][0] ? amount[0][0].max_amount : 0
+      item.push(itemJson)
+      categoryJson.item = item
+      category.push(categoryJson)
+      mainJson.category = category
+      main.push(mainJson)
     }
-    const data = Object.values(
-      main.reduce((acc, { categoryType, name, category }) => {
-        acc[categoryType] = acc[categoryType] || {
-          categoryType,
-          name,
-          category: [],
-        };
-        acc[categoryType].category.push(...category);
-        return acc;
-      }, {})
-    );
+    const data = Object.values(main.reduce((acc, { categoryType, name, category }) => {
+      acc[categoryType] = acc[categoryType] || { categoryType, name, category: [] };
+      acc[categoryType].category.push(...category);
+      return acc;
+    }, {}));
     for (var k in data) {
-      var cat = data[k].category;
-      var data1 = Object.values(
-        cat.reduce(
-          (acc, { category_id, category_name, category_image, item }) => {
-            acc[category_id] = acc[category_id] || {
-              category_id,
-              category_name,
-              category_image,
-              item: [],
-            };
-            acc[category_id].item.push(...item);
-            return acc;
-          },
-          {}
-        )
-      );
-      data[k].category = data1;
-    }
+      var cat = data[k].category
+      var data1 = Object.values(cat.reduce((acc, { category_id, category_name, category_image, item }) => {
+        acc[category_id] = acc[category_id] || { category_id, category_name, category_image, item: [] };
+        acc[category_id].item.push(...item);
+        return acc;
+      }, {}));
+      data[k].category = data1
+    }   
     if (designerDetails.length === 0) {
       return res.status(404).send({
         HasError: true,
         StatusCode: 404,
         Message: "Designer not found.",
+
       });
     }
     var firstName = designerDetails[0]["first_name"];
@@ -440,16 +419,15 @@ exports.FashionDesignerDetails = async (req, res) => {
         ? firstName + " " + lastName
         : firstName || lastName;
 
-    var schedule = await FDService.getWeeklyScheduleByUserId(user_id);
+    var schedule = await FDService.getWeeklyScheduleByUserId(user_id)
     var weekSchedules = schedule.map((designer) => {
-      var weekDay = designer.week_day;
-      var availabilityText = designer.check_availability === 1 ? true : false;
+      var weekDay = designer.week_day
+      var availabilityText =
+        designer.check_availability === 1 ? true : false;
       var startTime = designer.start_time;
-      var endTime = designer.end_time;
-      var dayConfig = daysOfWeekConfig.find(
-        (config) => config.value === weekDay
-      );
-      var dayName = dayConfig ? dayConfig.day : "";
+      var endTime = designer.end_time
+      var dayConfig = daysOfWeekConfig.find((config) => config.value === weekDay);
+      var dayName = dayConfig ? dayConfig.day : '';
 
       // Define the function to format time
       var formatTime = (time) => moment(time, "HH:mm:ss").format("hh:mm A");
@@ -479,17 +457,18 @@ exports.FashionDesignerDetails = async (req, res) => {
 
       var boutiqueInfo = await FDService.getBoutiqueInfo();
 
+
       return res.status(200).send({
         result: {
           designer_name: fullName,
           about_me:
             "I am a Fashion designer, fusing elegance and modernity into timeless designs that inspire . ",
           boutique_id: designerDetails[0]["designers.boutique_id"],
-          boutique_name: boutiqueInfo[0].boutique_name,
-          address: boutiqueInfo[0].address,
-          area: boutiqueInfo[0].area,
-          city: boutiqueInfo[0].city,
-          country_state: boutiqueInfo[0].coutry_state,
+          boutique_name: boutiqueInfo.boutique_name,
+          address: boutiqueInfo.address,
+          area: boutiqueInfo.area,
+          city: boutiqueInfo.city,
+          country_state: boutiqueInfo.coutry_state,
           register_date: moment(
             designerDetails[0].reg_on,
             "YYYY-MM-DD hh:mm:ss"
@@ -802,10 +781,10 @@ exports.fashionDesignerTimeSlot = async (req, res) => {
       // Initialize timerange object based on availabilityCheck
       var timerange = availabilityCheck
         ? {
-            morning: await generateSlotResponse(morningSlots),
-            afternoon: await generateSlotResponse(afternoonSlots),
-            evening: await generateSlotResponse(eveningSlots),
-          }
+          morning: await generateSlotResponse(morningSlots),
+          afternoon: await generateSlotResponse(afternoonSlots),
+          evening: await generateSlotResponse(eveningSlots),
+        }
         : {};
 
       // Determine if this is the first day with availability
@@ -917,36 +896,11 @@ exports.addNewAddress = async (req, res) => {
     var method_name = await Service.getCallingMethodName();
     var apiEndpointInput = JSON.stringify(req.body);
     // Track API hit
-    apiTrack = await Service.trackApi(
-      req.query.user_id,
-      method_name,
-      apiEndpointInput,
-      req.query.device_id,
-      req.query.device_info,
-      req.ip
-    );
-    var {
-      first_name,
-      last_name,
-      user_id,
-      street,
-      landmark,
-      state,
-      city,
-      mobile_number,
-      pincode,
-    } = req.body;
+    apiTrack = await Service.trackApi(req.query.user_id, method_name, apiEndpointInput, req.query.device_id, req.query.device_info, req.ip);
+    var { first_name, last_name, user_id, street, landmark, state, city, mobile_number, pincode, } = req.body;
     if (
       (!req.body.addressId && // For insert
-        (!first_name ||
-          !last_name ||
-          !user_id ||
-          !street ||
-          !landmark ||
-          !state ||
-          !city ||
-          !mobile_number ||
-          !pincode)) ||
+        (!first_name || !last_name || !user_id || !street || !landmark || !state || !city || !mobile_number || !pincode)) ||
       (req.body.addressId && !Number.isInteger(req.body.addressId))
     ) {
       return res.status(400).json({
@@ -966,17 +920,7 @@ exports.addNewAddress = async (req, res) => {
       moment(dateString, "YYYY-MM-DD HH:mm:ss").format("YYYY-MM-DD hh:mm A");
 
     var addressData = {
-      first_name,
-      last_name,
-      user_id,
-      street,
-      landmark,
-      state,
-      city,
-      mobile_number,
-      pincode,
-      is_primary: req.body.is_primary || 0,
-      is_verify: req.body.is_verify || 0,
+      first_name, last_name, user_id, street, landmark, state, city, mobile_number, pincode, is_primary: req.body.is_primary || 0, is_verify: req.body.is_verify || 0,
       verify_date: new Date().toISOString().slice(0, 19).replace("T", " "),
       created_at: new Date().toISOString().slice(0, 19).replace("T", " "),
       updated_at: new Date().toISOString().slice(0, 19).replace("T", " "),
@@ -988,14 +932,11 @@ exports.addNewAddress = async (req, res) => {
 
     var cityResult = await FDService.cityList(city);
     var stateResult = await FDService.stateList(state);
-    var query = {};
+    var query = {}
     query.user_id = user_id;
 
     if (req.body.addressId) {
-      var updatedAddress = await FDService.addAddress(
-        req.body.addressId,
-        addressData
-      );
+      var updatedAddress = await FDService.addAddress(req.body.addressId, addressData);
       const result = await FDService.getAddressList(query);
       const data = [];
       for (let i in result) {
@@ -1018,12 +959,12 @@ exports.addNewAddress = async (req, res) => {
           (formattedAddress.is_primary = result[i].is_primary),
           (formattedAddress.is_verify = result[i].is_verify),
           // (formattedAddress.created_at = formatDate(result[i].created_at)),
-          (formattedAddress.selected =
-            result[i].is_primary == 1 ? true : false),
+          (formattedAddress.selected = result[i].is_primary == 1 ? true : false),
           data.push(formattedAddress);
       }
-      var result1 = {};
-      (result1.user_id = user_id), (result1.address = data);
+      var result1 = {}
+      result1.user_id = user_id,
+        result1.address = data
       return res.status(200).json({
         result: result1,
         HasError: false,
@@ -1055,12 +996,12 @@ exports.addNewAddress = async (req, res) => {
           (formattedAddress.is_primary = result[i].is_primary),
           (formattedAddress.is_verify = result[i].is_verify),
           // (formattedAddress.created_at = formatDate(result[i].created_at)),
-          (formattedAddress.selected =
-            result[i].is_primary == 1 ? true : false),
+          (formattedAddress.selected = result[i].is_primary == 1 ? true : false),
           data.push(formattedAddress);
       }
-      var result1 = {};
-      (result1.user_id = user_id), (result1.address = data);
+      var result1 = {}
+      result1.user_id = user_id,
+        result1.address = data
       return res.status(201).json({
         result: result1,
         HasError: false,
@@ -1263,15 +1204,7 @@ exports.getAddressList = async (req, res) => {
 // book appointment
 exports.bookAppointment = async (req, res) => {
   try {
-    var {
-      fashion_designer_id,
-      user_id,
-      appointment_date,
-      start_time,
-      end_time,
-      address_id,
-      total_fees,
-    } = req.body;
+    var { fashion_designer_id, user_id, appointment_date, start_time, end_time, address_id, total_fees, } = req.body;
     if (
       !Number.isInteger(fashion_designer_id) ||
       !Number.isInteger(user_id) ||
@@ -1303,12 +1236,7 @@ exports.bookAppointment = async (req, res) => {
       address_id: address_id,
     };
     // Check if the requested slot is available
-    var isSlotAvailable = await FDService.slotAvailability(
-      fashion_designer_id,
-      start_time,
-      end_time,
-      appointment_date
-    );
+    var isSlotAvailable = await FDService.slotAvailability(fashion_designer_id, start_time, end_time, appointment_date);
     if (isSlotAvailable) {
       var appointment = await FDService.bookAppointment(appointmentData);
       return res.status(200).send({
@@ -1332,214 +1260,181 @@ exports.bookAppointment = async (req, res) => {
 
 exports.appointmentList = async (req, res) => {
   try {
-    const userId = req.query.user_id;
-    const result = await FDService.appointmentList(userId);
-    const data = [];
+    const userId = req.query.user_id
+    const result = await FDService.appointmentList(userId)
+    const data = []
     if (result.length !== 0) {
       for (var i in result) {
-        var dataJson = {};
-        dataJson.id = result[i].id;
-        dataJson.user_id = result[i].user_id;
-        dataJson.customer_id = result[i].customer_id;
-        dataJson.appointment_code = result[i].appointment_code;
-        dataJson.start_time = result[i].start_time;
-        dataJson.end_time = result[i].end_time;
-        dataJson.appointment_date = result[i].appointment_date;
-        dataJson.total_fees = result[i].total_fees;
-        dataJson.status = result[i].status;
+        var dataJson = {}
+        dataJson.id = result[i].id
+        dataJson.user_id = result[i].user_id
+        dataJson.customer_id = result[i].customer_id
+        dataJson.appointment_code = result[i].appointment_code
+        dataJson.start_time = result[i].start_time
+        dataJson.end_time = result[i].end_time
+        dataJson.appointment_date = result[i].appointment_date
+        dataJson.total_fees = result[i].total_fees
+        dataJson.status = result[i].status
         if (result[i].status == 0) {
-          dataJson.status_name = "Pending";
+          dataJson.status_name = 'Pending'
         }
         if (result[i].status == 1) {
-          dataJson.status_name = "Approve";
+          dataJson.status_name = 'Approve'
         }
         if (result[i].status == 2) {
-          dataJson.status_name = "Reject/Cancel";
+          dataJson.status_name = 'Reject/Cancel'
         }
         if (result[i].status == 3) {
-          dataJson.status_name = "completed";
+          dataJson.status_name = 'completed'
         }
-        dataJson.transaction_id = result[i].transaction_id;
-        dataJson.address_id = result[i].address_id;
-        dataJson.appointment_datetime =
-          result[i].appointment_date + " " + result[i].start_time;
-        data.push(dataJson);
+        dataJson.transaction_id = result[i].transaction_id
+        dataJson.address_id = result[i].address_id
+        dataJson.appointment_datetime = result[i].appointment_date + " " + result[i].start_time
+        data.push(dataJson)
       }
       return res.status(200).send({
         HasError: false,
         message: "Appointment list fetched succesfully.",
-        result: data,
-      });
+        result: data
+      })
     } else {
       return res.status(200).send({
         HasError: false,
         message: "No Appointment list found.",
-        result: data,
-      });
+        result: data
+      })
     }
   } catch (error) {
-    console.log(error);
+    console.log(error)
     return res.status(500).send({
       HasError: true,
-      Message: "Something went wrong",
+      Message: 'Something went wrong',
     });
   }
-};
+}
 
 exports.deleteAddress = async (req, res) => {
   try {
     const user_id = req.query.user_id;
     const address_id = req.query.address_id;
-    const result = await FDService.deleteAddress(user_id, address_id);
+    const result = await FDService.deleteAddress(user_id, address_id)
     if (result != 0) {
       return res.status(200).send({
         HasError: false,
         message: "Address deleted succesfully.",
-      });
+      })
     } else {
       return res.status(200).send({
         HasError: false,
         message: "No address found.Failed to delete.",
-      });
+      })
     }
   } catch (error) {
-    console.log(error);
+    console.log(error)
     return res.status(500).send({
       HasError: true,
-      Message: "Something went wrong",
+      Message: 'Something went wrong',
     });
   }
-};
+
+}
 
 exports.fashionDesignerAppointmentDetails = async (req, res) => {
   try {
-    const { user_id, appointment_id } = req.query;
-    const result1 = await FDService.appointmentDetails(appointment_id);
-    const result2 = await FDService.getAddressByUserId(user_id);
-    const result3 = await Service.getUserByUserId(result1.user_id);
+    const { user_id, appointment_id } = req.query
+    const result1 = await FDService.appointmentDetails(appointment_id)
+    const result2 = await FDService.getAddressByUserId(user_id)
+    const result3 = await Service.getUserByUserId(result1.user_id)
     var stateName = await FDService.stateList(result2.state);
     var cityName = await FDService.cityList(result2.city);
     var formatTime = (time) => moment(time, "HH:mm:ss").format("hh:mm A");
-    const data = {};
-    const fashiondesignerappointmentDetails = {};
-    fashiondesignerappointmentDetails.id = result1.id ? result1.id : "";
-    fashiondesignerappointmentDetails.fashion_designer_id = result1.user_id
-      ? result1.user_id
-      : "";
-    fashiondesignerappointmentDetails.customer_id = result1.customer_id
-      ? result1.customer_id
-      : "";
-    fashiondesignerappointmentDetails.appointment_code =
-      result1.appointment_code ? result1.appointment_code : "";
-    fashiondesignerappointmentDetails.start_time = result1.start_time
-      ? result1.start_time
-      : "";
-    fashiondesignerappointmentDetails.end_time = result1.end_time
-      ? result1.end_time
-      : "";
-    fashiondesignerappointmentDetails.appointment_date =
-      result1.appointment_date ? result1.appointment_date : "";
-    fashiondesignerappointmentDetails.total_fees = result1.total_fees
-      ? result1.total_fees
-      : "";
-    fashiondesignerappointmentDetails.transaction_id = result1.transaction_id
-      ? result1.transaction_id
-      : "";
-    fashiondesignerappointmentDetails.status = result1.status
-      ? result1.status
-      : "";
-    fashiondesignerappointmentDetails.add_date = result1.created_at
-      ? result1.created_at
-      : "";
-    fashiondesignerappointmentDetails.update_date = result1.update_at
-      ? result1.update_at
-      : "";
-    fashiondesignerappointmentDetails.address_id = result1.address_id
-      ? result1.address_id
-      : "";
-    fashiondesignerappointmentDetails.fashiondesigner_firstname =
-      result3.first_name ? result3.first_name : "";
-    fashiondesignerappointmentDetails.fashiondesigner_lastname =
-      result3.last_name ? result3.last_name : "";
-    fashiondesignerappointmentDetails.profile_img = result3.profile_photo
-      ? result3.profile_photo
-      : "";
-    fashiondesignerappointmentDetails.experience = "";
-    fashiondesignerappointmentDetails.viewstarttime = formatTime(
-      result1.start_time
-    );
-    fashiondesignerappointmentDetails.viewendtime = formatTime(
-      result1.end_time
-    );
-    const address = {};
-    address.id = result2.id ? result2.id : "";
-    address.user_id = result2.user_id ? result2.user_id : "";
-    address.name = result2.first_name ? result2.first_name : "";
-    address.clname = result2.last_name ? result2.last_name : "";
-    address.street = result2.street ? result2.street : "";
-    address.landmark = result2.landmark ? result2.landmark : "";
-    address.city = result2.city ? result2.city : "";
-    address.state = result2.state ? result2.state : "";
-    address.pincode = result2.pincode ? result2.pincode : "";
-    address.cmobile = result2.mobile_number ? result2.mobile_number : "";
-    address.is_primary = result2.is_primary ? result2.is_primary : "";
-    address.is_verify = result2.is_verify ? result2.is_verify : "";
-    address.verify_date = result2.verify_date ? result2.verify_date : "";
-    address.add_date = result2.created_at ? result2.created_at : "";
-    address.clname = result2.last_name ? result2.last_name : "";
-    address.statename = stateName.name ? stateName.name : "";
-    address.cityname = cityName.name ? cityName.name : "";
-    fashiondesignerappointmentDetails.address = address;
+    const data = {}
+    const fashiondesignerappointmentDetails = {}
+    fashiondesignerappointmentDetails.id = result1.id ? result1.id : ''
+    fashiondesignerappointmentDetails.fashion_designer_id = result1.user_id ? result1.user_id : ''
+    fashiondesignerappointmentDetails.customer_id = result1.customer_id ? result1.customer_id : ''
+    fashiondesignerappointmentDetails.appointment_code = result1.appointment_code ? result1.appointment_code : ''
+    fashiondesignerappointmentDetails.start_time = result1.start_time ? result1.start_time : ''
+    fashiondesignerappointmentDetails.end_time = result1.end_time ? result1.end_time : ''
+    fashiondesignerappointmentDetails.appointment_date = result1.appointment_date ? result1.appointment_date : ''
+    fashiondesignerappointmentDetails.total_fees = result1.total_fees ? result1.total_fees : ''
+    fashiondesignerappointmentDetails.transaction_id = result1.transaction_id ? result1.transaction_id : ''
+    fashiondesignerappointmentDetails.status = result1.status ? result1.status : ''
+    fashiondesignerappointmentDetails.add_date = result1.created_at ? result1.created_at : ''
+    fashiondesignerappointmentDetails.update_date = result1.update_at ? result1.update_at : ''
+    fashiondesignerappointmentDetails.address_id = result1.address_id ? result1.address_id : ''
+    fashiondesignerappointmentDetails.fashiondesigner_firstname = result3.first_name ? result3.first_name : ''
+    fashiondesignerappointmentDetails.fashiondesigner_lastname = result3.last_name ? result3.last_name : ''
+    fashiondesignerappointmentDetails.profile_img = result3.profile_photo ? result3.profile_photo : ''
+    fashiondesignerappointmentDetails.experience = ''
+    fashiondesignerappointmentDetails.viewstarttime = formatTime(result1.start_time)
+    fashiondesignerappointmentDetails.viewendtime = formatTime(result1.end_time)
+    const address = {}
+    address.id = result2.id ? result2.id : ''
+    address.user_id = result2.user_id ? result2.user_id : ''
+    address.name = result2.first_name ? result2.first_name : ''
+    address.clname = result2.last_name ? result2.last_name : ''
+    address.street = result2.street ? result2.street : ''
+    address.landmark = result2.landmark ? result2.landmark : ''
+    address.city = result2.city ? result2.city : ''
+    address.state = result2.state ? result2.state : ''
+    address.pincode = result2.pincode ? result2.pincode : ''
+    address.cmobile = result2.mobile_number ? result2.mobile_number : ''
+    address.is_primary = result2.is_primary ? result2.is_primary : ''
+    address.is_verify = result2.is_verify ? result2.is_verify : ''
+    address.verify_date = result2.verify_date ? result2.verify_date : ''
+    address.add_date = result2.created_at ? result2.created_at : ''
+    address.clname = result2.last_name ? result2.last_name : ''
+    address.statename = stateName.name ? stateName.name : ''
+    address.cityname = cityName.name ? cityName.name : ''
+    fashiondesignerappointmentDetails.address = address
     if (result1.status == 0) {
-      fashiondesignerappointmentDetails.statusmessage = "Pending";
+      fashiondesignerappointmentDetails.statusmessage = 'Pending'
     }
     if (result1.status == 1) {
-      fashiondesignerappointmentDetails.statusmessage = "Approve";
+      fashiondesignerappointmentDetails.statusmessage = 'Approve'
     }
     if (result1.status == 2) {
-      fashiondesignerappointmentDetails.statusmessage = "Reject/Cancel";
+      fashiondesignerappointmentDetails.statusmessage = 'Reject/Cancel'
     }
     if (result1.status == 3) {
-      fashiondesignerappointmentDetails.statusmessage = "completed";
+      fashiondesignerappointmentDetails.statusmessage = 'completed'
     }
-    data.fashiondesignerappointmentDetails = fashiondesignerappointmentDetails;
+    data.fashiondesignerappointmentDetails = fashiondesignerappointmentDetails
     return res.status(200).send({
       HasError: false,
       message: "Appointment details fetched succesfully.",
-      result: data,
-    });
+      result: data
+    })
   } catch (error) {
-    console.log(error);
+    console.log(error)
     return res.status(500).send({
       HasError: true,
-      Message: "Something went wrong",
-    });
+      Message: 'Something went wrong',
+    })
   }
-};
+}
 
 exports.cancelAppointment = async (req, res) => {
   try {
-    const status = 2;
-    const result = await FDService.cancelAppointment(
-      req.params.appointment_id,
-      status
-    );
+    const status=2
+    const result = await FDService.cancelAppointment(req.params.appointment_id,status)
     if (result != 0) {
       return res.status(200).send({
         HasError: false,
         message: "Appointment cancelled succesfully.",
-      });
+      })
     } else {
       return res.status(200).send({
         HasError: false,
         message: "No appointment found.Failed to cancel.",
-      });
+      })
     }
   } catch (error) {
-    console.log(error);
+    console.log(error)
     return res.status(500).send({
       HasError: true,
-      Message: "Something went wrong",
-    });
+      Message: 'Something went wrong',
+    })
   }
-};
+}
