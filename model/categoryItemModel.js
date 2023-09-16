@@ -1,6 +1,6 @@
-var DataTypes = require('sequelize');
-var sequelize = require("../dbConnection")
-var CategoryItemImage = require("../model/categoryItemImageModel")
+const DataTypes = require('sequelize');
+const sequelize = require("../dbConnection")
+const CategoryItemImage = require("../model/categoryItemImageModel")
 
 var CategoryItem = sequelize.define('sarter__category_item_dic', {
     id: {
@@ -21,11 +21,11 @@ var CategoryItem = sequelize.define('sarter__category_item_dic', {
     },
     type: {
         type: DataTypes.SMALLINT,
-        comment: '1-Adult, 2-Kid, 3-All', // Comment from the SQL script
+        comment: '1-Adult, 2-Kid, 3-All', 
     },
 }, {
     tableName: 'sarter__category_item_dic',
-    timestamps: false, // Disable timestamps fields (created_at, updated_at)
+    timestamps: false, 
 });
 
 CategoryItem.belongsTo(CategoryItem, {

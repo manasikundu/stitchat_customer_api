@@ -1,5 +1,5 @@
-var DataTypes = require("sequelize");
-var sequelize = require("../dbConnection");
+const DataTypes = require("sequelize");
+const sequelize = require("../dbConnection");
 
 var Appointment = sequelize.define(
   "sarter__fashion_designer_appointment",

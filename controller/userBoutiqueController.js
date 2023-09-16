@@ -1,19 +1,18 @@
-let NodeGeocoder = require("node-geocoder");
-var geolib = require("geolib");
-let Boutique = require("../model/userBoutiqueInfoModel");
-let FashionDesignerWeeklySchedule = require("../model/weeklySchleduleModel");
-// let FDController = require("../controller/FDController");
-var { Op } = require("sequelize");
-let moment = require("moment");
-let Users = require("../model/userModel");
-let jwt = require("jsonwebtoken");
-let Service = require("../service/userService");
-let FDService = require("../service/FDService");
-let BoutiqueService = require("../service/userBoutiqueService");
-let BoutiqueOrder = require("../model/boutiqueOrderModel");
-let { generateAccessToken, auth } = require("../jwt");
-let s3 = require("../config/s3Config");
-let dotenv = require("dotenv");
+const NodeGeocoder = require("node-geocoder");
+const geolib = require("geolib");
+const Boutique = require("../model/userBoutiqueInfoModel");
+const FashionDesignerWeeklySchedule = require("../model/weeklySchleduleModel");
+const { Op } = require("sequelize");
+const moment = require("moment");
+const Users = require("../model/userModel");
+const jwt = require("jsonwebtoken");
+const Service = require("../service/userService");
+const FDService = require("../service/FDService");
+const BoutiqueService = require("../service/userBoutiqueService");
+const BoutiqueOrder = require("../model/boutiqueOrderModel");
+const { generateAccessToken, auth } = require("../jwt");
+const s3 = require("../config/s3Config");
+const dotenv = require("dotenv");
 dotenv.config();
 
 // Address from lat and long
@@ -29,15 +28,12 @@ exports.getAddress = async (req, res) => {
       return res.status(400).json({
         HasError: true,
         StatusCode: 400,
-        message: "Latitude and Longitude are required.",
+        message: "Invalid parameter.",
       });
     }
-
     var method_name = await Service.getCallingMethodName();
     console.log(method_name);
     var apiEndpointInput = JSON.stringify(req.body);
-
-    // Track API hit
     apiTrack = await Service.trackApi(
       req.query.user_id,
       method_name,
@@ -46,7 +42,6 @@ exports.getAddress = async (req, res) => {
       req.query.device_info,
       req.ip
     );
-
     var response = await geocoder.reverse({ lat: latitude, lon: longitude });
     var address = response[0]?.formattedAddress;
 
@@ -80,10 +75,8 @@ exports.getNearestBoutiqueList = async (req, res) => {
       if (!categoryType) {
         return "Male, Female, Kids";
       }
-
       var labels = [];
       var categoryTypes = categoryType.split(",");
-
       categoryTypes.forEach((type) => {
         if (type === "1") {
           labels.push("Male");
@@ -96,11 +89,9 @@ exports.getNearestBoutiqueList = async (req, res) => {
         } else {
           labels.push("Male, Female, Kids");
         }
-      });
-
+      })
       return labels.join(",");
-    };
-
+    }
     var latitude = req.body.latitude;
     var longitude = req.body.longitude;
     var mobile_number = req.body.mobile_number;
@@ -108,8 +99,7 @@ exports.getNearestBoutiqueList = async (req, res) => {
     var sortType = req.body.sort_type;
     var filter_by_gender = req.body.filter_by_gender;
     var filter_by_item = req.body.filter_by_item;
-    var searchQuery = req.body.searchQuery
-
+    var search = req.body.search
     if (!latitude || !longitude) {
       return res.status(400).json({
         HasError: true,
@@ -117,11 +107,8 @@ exports.getNearestBoutiqueList = async (req, res) => {
         message: "Invalid Credential.",
       });
     }
-
     var method_name = await Service.getCallingMethodName();
     var apiEndpointInput = JSON.stringify(req.body);
-
-    // Track API hit
     apiTrack = await Service.trackApi(
       req.query.user_id,
       method_name,
@@ -130,18 +117,12 @@ exports.getNearestBoutiqueList = async (req, res) => {
       req.query.device_info,
       req.ip
     );
-
-    // Fetch boutiques based on letter and sortType
-    var boutiques = await BoutiqueService.getBoutiques(letter);
-
-    // Check if a search query is provided
-    if (searchQuery) {
-      // Perform search-based filtering
-      var searchResults = await BoutiqueService.searchBoutiques(searchQuery);
-      boutiques = searchResults.length > 0 ? searchResults : boutiques;
+    var boutiques = [];
+    if (letter) {
+      boutiques = await BoutiqueService.getBoutiques(letter);
+    } else {
+      boutiques = await BoutiqueService.searchBoutiques(search);
     }
-
-    // Check if no boutiques are found
     if (!boutiques || boutiques.length === 0) {
       return res.status(200).json({
         HasError: false,
@@ -150,18 +131,13 @@ exports.getNearestBoutiqueList = async (req, res) => {
         nearbyBoutiques: [],
       });
     }
-
     var items = await BoutiqueService.categoryServiceFilter();
-
-    // Create an array to hold sorting and filtering functions
     var sortAndFilterFunctions = [];
-
     if (sortType !== undefined && sortType !== null && sortType !== "") {
       sortAndFilterFunctions.push((boutiques) =>
         BoutiqueService.sortBoutiques(boutiques, sortType)
       );
     }
-
     if (
       filter_by_gender !== undefined &&
       filter_by_gender !== null &&
@@ -171,8 +147,6 @@ exports.getNearestBoutiqueList = async (req, res) => {
         BoutiqueService.filterBoutiqueListByGender(boutiques, filter_by_gender)
       );
     }
-
-    // Handle item filter
     if (
       filter_by_item !== undefined &&
       filter_by_item !== null &&
@@ -184,28 +158,20 @@ exports.getNearestBoutiqueList = async (req, res) => {
         return filteredBoutiquesByItem[0];
       });
     }
-
-    // Apply sorting and filtering functions to the boutiques
     var sortedAndFilteredBoutiques = boutiques;
     for (var func of sortAndFilterFunctions) {
       sortedAndFilteredBoutiques = await func(sortedAndFilteredBoutiques);
     }
-
-    // If no filters or sorting applied, return all boutiques
     if (sortAndFilterFunctions.length === 0) {
       sortedAndFilteredBoutiques = boutiques;
     }
-
     var organizedServices = [];
-
     items.forEach((service) => {
       var existingCategory = organizedServices.find(
         (category) => category.category_name === service.parent_category_name
       );
-
       if (!existingCategory) {
         existingCategory = {
-          // category_id: service.parent_category_id,
           category_name: service.parent_category_name,
           category_image: s3.getSignedUrl("getObject", {
             Bucket: process.env.AWS_BUCKET,
@@ -216,7 +182,6 @@ exports.getNearestBoutiqueList = async (req, res) => {
         };
         organizedServices.push(existingCategory);
       }
-
       existingCategory.item.push({
         item_id: service.item_id,
         item_name: service.item_name,
@@ -228,8 +193,6 @@ exports.getNearestBoutiqueList = async (req, res) => {
         }),
       });
     });
-
-    // Calculate distance for each boutique and add it as a new property
     sortedAndFilteredBoutiques.forEach((boutique) => {
       var boutiqueDistance = geolib.getDistance(
         { latitude, longitude },
@@ -238,49 +201,41 @@ exports.getNearestBoutiqueList = async (req, res) => {
       boutique.distance = boutiqueDistance;
       boutique.distanceInKm = boutiqueDistance / 1000;
     });
-
-    /// Filter nearby boutiques within 500 kilometers
     var boutiquesWithin500km = sortedAndFilteredBoutiques.filter((boutique) => {
       return boutique.distance <= 500000; // 500 kilometers in meters
     });
-
-    // Sort boutiques based on distance
     var sortedBoutiques = boutiquesWithin500km.sort(
       (a, b) => a.distance - b.distance
     );
-
-    // Prepare your response using sortedBoutiques
     var responseData = {};
     var expirationTime = 600;
-
     if (sortedBoutiques.length === 1) {
-      // Only one boutique, so show it directly in "boutiqueInfo"
       responseData = {
-        boutiqueInfo: {
-          id: sortedBoutiques[0].id,
-          boutique_name: sortedBoutiques[0].boutique_name,
-          address: sortedBoutiques[0].address,
-          image: s3.getSignedUrl("getObject", {
-            Bucket: process.env.AWS_BUCKET,
-            Key: `boutique/${sortedBoutiques[0].boutique_logo}`,
-            Expires: expirationTime,
-          }),
-          contact_number: sortedBoutiques[0].contact_number,
-          category: mapCategoryType(sortedBoutiques[0].categoryType),
-          latitude: sortedBoutiques[0].location_lat,
-        },
+        nearbyBoutiques: [
+          {
+            id: sortedBoutiques[0].id,
+            boutique_name: sortedBoutiques[0].boutique_name,
+            address: sortedBoutiques[0].address,
+            image: s3.getSignedUrl("getObject", {
+              Bucket: process.env.AWS_BUCKET,
+              Key: `boutique/${sortedBoutiques[0].boutique_logo}`,
+              Expires: expirationTime,
+            }),
+            contact_number: sortedBoutiques[0].contact_number,
+            category: mapCategoryType(sortedBoutiques[0].categoryType),
+            latitude: sortedBoutiques[0].location_lat,
+            longitude: sortedBoutiques[0].location_lng,
+            distance: `${sortedBoutiques[0].distanceInKm.toFixed(2)}`,
+          },
+        ],
       };
     } else {
-      // Multiple boutiques, so show them in an array
       responseData = {
         nearbyBoutiques: [],
       };
-
-      for (let i = 0; i < sortedBoutiques.length; i++) {
+      for (var i = 0; i < sortedBoutiques.length; i++) {
         var boutique = sortedBoutiques[i];
         var boutiqueLogoUrl = "";
-
-        // Check if boutique_logo exists and is not empty
         if (boutique.boutique_logo) {
           boutiqueLogoUrl = await s3.getSignedUrl("getObject", {
             Bucket: process.env.AWS_BUCKET,
@@ -288,7 +243,6 @@ exports.getNearestBoutiqueList = async (req, res) => {
             Expires: expirationTime,
           });
         }
-
         responseData.nearbyBoutiques.push({
           id: boutique.id,
           boutique_name: boutique.boutique_name,
@@ -302,11 +256,8 @@ exports.getNearestBoutiqueList = async (req, res) => {
         });
       }
     }
-
-    // Generate access token using the provided secretKey
     var secretKey = "tensorflow";
     var token = generateAccessToken(mobile_number, secretKey);
-
     if (!token) {
       return res.status(500).send({
         HasError: true,
@@ -314,10 +265,7 @@ exports.getNearestBoutiqueList = async (req, res) => {
         message: "Failed to generate token",
       });
     } else {
-      // Set the token in a custom response header
       res.setHeader("X-Auth-Token", token);
-
-      // Send the response with different messages based on nearbyBoutiques
       if (sortedBoutiques.length === 0) {
         return res.status(200).json({
           HasError: false,

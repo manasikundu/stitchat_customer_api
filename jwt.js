@@ -1,4 +1,4 @@
-let jwt = require("jsonwebtoken");
+const jwt = require("jsonwebtoken");
 
 var generateAccessToken = (mobile_number, secret_key) => {
     return jwt.sign({ mobile_number: mobile_number }, secret_key, {

@@ -1,4 +1,4 @@
-let boutiqueController = require("../controller/userBoutiqueController");
+const boutiqueController = require("../controller/userBoutiqueController");
 const route = require("express-promise-router");
 const router = new route();
 

@@ -1,4 +1,4 @@
-var db = require("../dbConnection");
+const db = require("../dbConnection");
 const Users = require("../model/userModel");
 
 // order list

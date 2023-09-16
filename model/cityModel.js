@@ -1,6 +1,6 @@
-var DataTypes = require("sequelize");
-var sequelize = require("../dbConnection");
-var UserState = require("../model/stateModel"); // You might need to adjust the path
+const DataTypes = require("sequelize");
+const sequelize = require("../dbConnection");
+const UserState = require("../model/stateModel"); 
 
 var City = sequelize.define(
   "sarter__city",

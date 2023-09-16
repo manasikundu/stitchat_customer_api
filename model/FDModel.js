@@ -1,8 +1,7 @@
-var { DataTypes } = require("sequelize");
-var sequelize = require("../dbConnection");
-var Users = require("../model/userModel");
-let FashionDesignerWeeklySchedule = require("../model/weeklySchleduleModel");
-
+const { DataTypes } = require("sequelize");
+const sequelize = require("../dbConnection");
+const Users = require("../model/userModel");
+const FashionDesignerWeeklySchedule = require("../model/weeklySchleduleModel");
 
 var BoutiqueEmployeeMap = sequelize.define(
   "sarter__boutique_employee_map",

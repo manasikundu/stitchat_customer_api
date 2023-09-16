@@ -1,5 +1,5 @@
-let { DataTypes } = require("sequelize");
-let sequelize = require("../dbConnection");
+const { DataTypes } = require("sequelize");
+const sequelize = require("../dbConnection");
 
 var ApiTrack = sequelize.define(
   "sarter__api_track",

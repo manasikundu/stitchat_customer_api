@@ -1,14 +1,13 @@
-var FDService = require("../service/FDService");
-var Users = require("../model/userModel");
-var Designer = require("../model/FDModel");
-var { Op } = require("sequelize");
-var db = require("../dbConnection");
-var moment = require("moment");
-var Service = require("../service/userService");
-var { generateAccessToken, auth } = require("../jwt");
-var s3 = require("../config/s3Config");
-var dotenv = require("dotenv");
-// const { tr } = require("date-fns/esm/locale");
+const FDService = require("../service/FDService");
+const Users = require("../model/userModel");
+const Designer = require("../model/FDModel");
+const { Op } = require("sequelize");
+const db = require("../dbConnection");
+const moment = require("moment");
+const Service = require("../service/userService");
+const { generateAccessToken, auth } = require("../jwt");
+const s3 = require("../config/s3Config");
+const dotenv = require("dotenv");
 dotenv.config();
 
 var expirationTime = 600;

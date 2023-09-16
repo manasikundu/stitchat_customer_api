@@ -1,8 +1,8 @@
-var DataTypes = require("sequelize");
-var sequelize = require("../dbConnection");
-var Designer = require('../model/FDModel')
-var BoutiqueOrder = require('../model/boutiqueOrderModel')
-var Users = require('../model/userModel')
+const DataTypes = require("sequelize");
+const sequelize = require("../dbConnection");
+const Designer = require('../model/FDModel')
+const BoutiqueOrder = require('../model/boutiqueOrderModel')
+const Users = require('../model/userModel')
 
 var Boutique = sequelize.define(
   "sarter__boutique_basic_info",

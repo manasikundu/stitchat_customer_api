@@ -1,11 +1,10 @@
-let db = require("../dbConnection");
-let bcrypt = require("bcrypt");
-let Users = require("../model/userModel");
-let Boutique = require("../model/userBoutiqueInfoModel");
-var { Op } = require("sequelize");
-let FCM = require("fcm-node");
-let crypto = require("crypto");
-let ApiTrack = require("../model/apiTrackModel");
+const db = require("../dbConnection");
+const bcrypt = require("bcrypt");
+const Users = require("../model/userModel");
+const Boutique = require("../model/userBoutiqueInfoModel");
+const { Op } = require("sequelize");
+const crypto = require("crypto");
+const ApiTrack = require("../model/apiTrackModel");
 const { Mobile } = require("aws-sdk");
 const contactUs=require('../model/contactUsModel')
 

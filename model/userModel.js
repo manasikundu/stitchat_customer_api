@@ -1,8 +1,8 @@
-var  DataTypes = require("sequelize");
-var sequelize = require("../dbConnection");
-var Designer = require("../model/FDModel");
-var FashionDesignerWeeklySchedule = require("../model/weeklySchleduleModel");
-var Boutique = require("./userBoutiqueInfoModel");
+const  DataTypes = require("sequelize");
+const sequelize = require("../dbConnection");
+const Designer = require("../model/FDModel");
+const FashionDesignerWeeklySchedule = require("../model/weeklySchleduleModel");
+const Boutique = require("./userBoutiqueInfoModel");
 
 // Define the model for sarter__users table
 var Users = sequelize.define(

@@ -1,6 +1,6 @@
-var  DataTypes  = require('sequelize');
-var sequelize = require('../dbConnection'); // Update with your Sequelize instance
-var CategoryItem = require('../model/categoryItemModel')
+const  DataTypes  = require('sequelize');
+const sequelize = require('../dbConnection'); 
+const CategoryItem = require('../model/categoryItemModel')
 
 var CategoryItemImage = sequelize.define('sarter__category_item_images', {
     id: {

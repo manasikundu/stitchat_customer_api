@@ -1,20 +1,19 @@
-var db = require("../dbConnection");
-var Designer = require("../model/FDModel");
-var { Op } = require("sequelize");
-var crypto = require("crypto");
-var Users = require("../model/userModel");
-var sequelize = require("../dbConnection");
-var DesignerDetails = require("../model/FDModel");
-var FashionDesignerWeeklySchedule = require("../model/weeklySchleduleModel");
-var UsersAddress = require("../model/userAddressModel");
-var Boutique = require("../model/userBoutiqueInfoModel");
-var { query } = require("express");
-var moment = require("moment");
-var State = require("../model/stateModel");
-var City = require("../model/cityModel");
-var Country = require("../model/countryModel");
-var { add } = require("date-fns");
-var Appointment = require("../model/appointmentModel");
+const db = require("../dbConnection");
+const Designer = require("../model/FDModel");
+const { Op } = require("sequelize");
+const crypto = require("crypto");
+const Users = require("../model/userModel");
+const sequelize = require("../dbConnection");
+const DesignerDetails = require("../model/FDModel");
+const FashionDesignerWeeklySchedule = require("../model/weeklySchleduleModel");
+const UsersAddress = require("../model/userAddressModel");
+const Boutique = require("../model/userBoutiqueInfoModel");
+const { query } = require("express");
+const moment = require("moment");
+const State = require("../model/stateModel");
+const City = require("../model/cityModel");
+const Country = require("../model/countryModel");
+const Appointment = require("../model/appointmentModel");
 
 exports.fashionDesignerList = async () => {
   try {

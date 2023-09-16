@@ -1,8 +1,7 @@
-var { DataTypes } = require("sequelize");
-var sequelize = require("../dbConnection");
-var Users = require("../model/userModel");
-var Designer = require('../model/FDModel')
-
+const { DataTypes } = require("sequelize");
+const sequelize = require("../dbConnection");
+const Users = require("../model/userModel");
+const Designer = require('../model/FDModel')
 
 var FashionDesignerWeeklySchedule = sequelize.define(
   "sarter__fashion_designer_weekly_schedule",

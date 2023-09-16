@@ -1,11 +1,11 @@
-var db = require("../dbConnection");
-var { Op } = require("sequelize");
-var BoutiqueOrder = require("../model/boutiqueOrderModel");
-var Boutique = require("../model/userBoutiqueInfoModel");
-var Users = require("../model/userModel");
-var moment = require("moment");
-var CategoryItem = require("../model/categoryItemModel");
-var CategoryItemImage = require("../model/categoryItemImageModel");
+const db = require("../dbConnection");
+const { Op } = require("sequelize");
+const BoutiqueOrder = require("../model/boutiqueOrderModel");
+const Boutique = require("../model/userBoutiqueInfoModel");
+const Users = require("../model/userModel");
+const moment = require("moment");
+const CategoryItem = require("../model/categoryItemModel");
+const CategoryItemImage = require("../model/categoryItemImageModel");
 
 // find the boutique by letter
 exports.getBoutiques = async (letter) => {
@@ -31,8 +31,6 @@ exports.getBoutiques = async (letter) => {
     return error;
   }
 };
-
-// boutiqueService.js
 
 exports.searchBoutiques = async (searchQuery) => {
   try {

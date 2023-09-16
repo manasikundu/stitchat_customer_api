@@ -1,4 +1,4 @@
-let designersController = require("../controller/FDController");
+const designersController = require("../controller/FDController");
 const route = require("express-promise-router");
 const router = new route();
 
