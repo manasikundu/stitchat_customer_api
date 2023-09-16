@@ -32,6 +32,33 @@ exports.getBoutiques = async (letter) => {
   }
 };
 
+// boutiqueService.js
+
+exports.searchBoutiques = async (searchQuery) => {
+  try {
+    let whereClause = {};
+
+    if (searchQuery) {
+      whereClause = {
+        boutique_name: {
+          [Op.iLike]: `%${searchQuery}%`,
+        },
+      };
+    }
+
+    whereClause.user_type_id = {
+      [Op.ne]: 6,
+    };
+
+    return await Boutique.findAll({
+      where: whereClause,
+    });
+  } catch (error) {
+    return error;
+  }
+};
+
+
 // sort boutique list by popolarity, newest, A-Z, Z-A, Faraway distance
 exports.sortBoutiques = (boutiques, sortType) => {
   if (sortType === "5") {
@@ -99,7 +126,7 @@ exports.filterBoutiqueListByGender = async (boutiques, filter_by_gender) => {
 // Filter boutique by category id and item id for single and multiple item
 exports.filterBoutiquesByItem = async (items) => {
   try {
-    let query;
+    var query;
 
     if (items.includes(',')) {
       // For multiple item query

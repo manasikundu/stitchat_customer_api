@@ -108,6 +108,7 @@ exports.getNearestBoutiqueList = async (req, res) => {
     var sortType = req.body.sort_type;
     var filter_by_gender = req.body.filter_by_gender;
     var filter_by_item = req.body.filter_by_item;
+    var searchQuery = req.body.searchQuery
 
     if (!latitude || !longitude) {
       return res.status(400).json({
@@ -132,6 +133,13 @@ exports.getNearestBoutiqueList = async (req, res) => {
 
     // Fetch boutiques based on letter and sortType
     var boutiques = await BoutiqueService.getBoutiques(letter);
+
+    // Check if a search query is provided
+    if (searchQuery) {
+      // Perform search-based filtering
+      var searchResults = await BoutiqueService.searchBoutiques(searchQuery);
+      boutiques = searchResults.length > 0 ? searchResults : boutiques;
+    }
 
     // Check if no boutiques are found
     if (!boutiques || boutiques.length === 0) {
