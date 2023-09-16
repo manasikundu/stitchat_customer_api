@@ -85,18 +85,18 @@ exports.fashionDesignerList = async (req, res) => {
 
     var mobile_number = req.body.mobile_number;
 
-    // var method_name = await Service.getCallingMethodName();
-    // var apiEndpointInput = JSON.stringify(req.body);
+    var method_name = await Service.getCallingMethodName();
+    var apiEndpointInput = JSON.stringify(req.body);
 
-    // // Track API hit
-    // apiTrack = await Service.trackApi(
-    //   req.query.user_id,
-    //   method_name,
-    //   apiEndpointInput,
-    //   req.query.device_id,
-    //   req.query.device_info,
-    //   req.ip
-    // );
+    // Track API hit
+    apiTrack = await Service.trackApi(
+      req.query.user_id,
+      method_name,
+      apiEndpointInput,
+      req.query.device_id,
+      req.query.device_info,
+      req.ip
+    );
 
     var searchFilters = {};
 
@@ -128,8 +128,6 @@ exports.fashionDesignerList = async (req, res) => {
     var formatStartTime = (time) => moment(time, "HH:mm:ss").format("hh:mm A");
     var formatEndTime = (time) => moment(time, "HH:mm:ss").format("hh:mm A");
 
-    // Initialize an empty array for week_schedule
-
     var designerMap = new Map();
     fashionDesigners.forEach((user) => {
       var userId = user.user_id;
@@ -148,10 +146,9 @@ exports.fashionDesignerList = async (req, res) => {
         );
         var dayName = dayConfig ? dayConfig.day : "";
 
-        // Format time
         var time =
           formatStartTime(start_time) + " - " + formatEndTime(end_time);
-        
+
         return {
           day: dayValue,
           day_name: dayName,
@@ -160,84 +157,117 @@ exports.fashionDesignerList = async (req, res) => {
         };
       });
       
+      var availableTime = "";
+      if (userSchedule.length > 0) {
+        var sortedSchedule = userSchedule.sort(
+          (a, b) => a.week_day - b.week_day
+        );
+        var firstAvailableDay = sortedSchedule.find(
+          (item) => item.check_availability === 1
+        );
+        var lastAvailableDay = [...sortedSchedule]
+          .reverse()
+          .find((item) => item.check_availability === 1);
+        if (firstAvailableDay && lastAvailableDay) {
+          var startTime = moment(
+            firstAvailableDay.start_time,
+            "HH:mm:ss"
+          ).format("hh:mm A");
+          var endTime = moment(lastAvailableDay.end_time, "HH:mm:ss").format(
+            "hh:mm A"
+          );
+          availableTime = `${startTime} - ${endTime}`;
+        }
+      }
       var full_name = user.prefix + " " + user.first_name;
       if (user.last_name !== null) {
         full_name += " " + user.last_name;
       }
-
       var designerBoutiqueInfo = boutiqueInfo.find(
         (boutique) => boutique.id === user.id
       );
-      
-      if (designerBoutiqueInfo) {
-        var 
-        {id,boutique_id,boutique_name,coutry_state,city,area,address,location_lat,location_lng,about_me,
-          communication_mode,language_speak,education,experience,base_price,offer_price,
-        } = designerBoutiqueInfo;
-      
 
-      designerMap.set(userId, {
-        id: user.id,
-        user_id: user.user_id,
-        about_me: "I am a Fashion designer, fusing elegance and modernity into timeless designs that inspire . ",
-        boutique_id: boutique_id,
-        boutique_name: boutique_name,
-        address: address,
-        area: area,
-        city: city,
-        country_state: coutry_state,
-        lattitute: location_lat,
-        longitude: location_lng,
-        prefix: user.prefix,
-        first_name: user.first_name,
-        last_name: user.last_name,
-        full_name: full_name,
-        register_date: moment(user.reg_on, "YYYY-MM-DD hh:mm:ss").format(
-          "DD-MM-YYYY hh:mm A"
-        ),
-        mobile_number: user.mobile_number,
-        email: user.email_id,
-        role: user.role,
-        role_name: user.role === 4 ? "Designer" : user.role,
-        // available_time: week_schedule.some((item) => item.availability)
-        // ? time 
-        // : '',
-        available_time: moment(time, "hh:mm A").format("hh:mm A"),
-        base_price: base_price,
-        offer_price: offer_price,
-        experience: experience,
-        communication_type: "1, 2",
-        communication_name: "Call, Video Call",
-        language_type: "1, 2",
-        language_speak: "English, Hindi",
-        profile_photo: user.profile_photo,
-        week_schedule: week_schedule, 
-        dayOfWeek: [formattedDaysOfWeek],
-        appointmentTime: [formattedAppointmentConfig],
-        communication_modes: [
-          {
-            id: 1,
-            name: "Call",
-          },
-          {
-            id: 2,
-            name: "Video Call",
-          },
-        ],
-        languages: [
-          {
-            id: 1,
-            name: "English",
-          },
-          {
-            id: 2,
-            name: "Hindi",
-          },
-        ],
-      });
+      if (designerBoutiqueInfo) {
+        var {
+          id,
+          boutique_id,
+          boutique_name,
+          coutry_state,
+          city,
+          area,
+          address,
+          location_lat,
+          location_lng,
+          about_me,
+          communication_mode,
+          language_speak,
+          education,
+          experience,
+          base_price,
+          offer_price,
+        } = designerBoutiqueInfo;
+        // console.log(time)
+
+        designerMap.set(userId, {
+          id: user.id,
+          user_id: user.user_id,
+          about_me:
+            "I am a Fashion designer, fusing elegance and modernity into timeless designs that inspire . ",
+          boutique_id: boutique_id,
+          boutique_name: boutique_name,
+          address: address,
+          area: area,
+          city: city,
+          country_state: coutry_state,
+          lattitute: location_lat,
+          longitude: location_lng,
+          prefix: user.prefix,
+          first_name: user.first_name,
+          last_name: user.last_name,
+          full_name: full_name,
+          register_date: moment(user.reg_on, "YYYY-MM-DD hh:mm:ss").format(
+            "DD-MM-YYYY hh:mm A"
+          ),
+          mobile_number: user.mobile_number,
+          email: user.email_id,
+          role: user.role,
+          role_name: user.role === 4 ? "Designer" : user.role,
+          available_time: availableTime,
+          base_price: base_price,
+          offer_price: offer_price,
+          experience: experience,
+          communication_type: "1, 2",
+          communication_name: "Call, Video Call",
+          language_type: "1, 2",
+          language_speak: "English, Hindi",
+          profile_photo: user.profile_photo,
+          week_schedule: week_schedule,
+          dayOfWeek: [formattedDaysOfWeek],
+          appointmentTime: [formattedAppointmentConfig],
+          communication_modes: [
+            {
+              id: 1,
+              name: "Call",
+            },
+            {
+              id: 2,
+              name: "Video Call",
+            },
+          ],
+          languages: [
+            {
+              id: 1,
+              name: "English",
+            },
+            {
+              id: 2,
+              name: "Hindi",
+            },
+          ],
+        });
       }
     });
-  
+
     var limit = req.body.limit ? parseInt(req.body.limit) : null;
     var offset = req.body.offset ? parseInt(req.body.offset) : null;
 
@@ -454,6 +484,28 @@ exports.FashionDesignerDetails = async (req, res) => {
         availability: availabilityText,
       };
     });
+    var availableTime = "";
+      if (schedule.length > 0) {
+        var sortedSchedule = schedule.sort(
+          (a, b) => a.week_day - b.week_day
+        );
+        var firstAvailableDay = sortedSchedule.find(
+          (item) => item.check_availability === 1
+        );
+        var lastAvailableDay = [...sortedSchedule]
+          .reverse()
+          .find((item) => item.check_availability === 1);
+        if (firstAvailableDay && lastAvailableDay) {
+          var startTime = moment(
+            firstAvailableDay.start_time,
+            "HH:mm:ss"
+          ).format("hh:mm A");
+          var endTime = moment(lastAvailableDay.end_time, "HH:mm:ss").format(
+            "hh:mm A"
+          );
+          availableTime = `${startTime} - ${endTime}`;
+        }
+      }
 
     // Generate access token using the provided secretKey
     var secretKey = "tensorflow";
@@ -470,7 +522,7 @@ exports.FashionDesignerDetails = async (req, res) => {
       res.setHeader("X-Auth-Token", token);
 
       var boutiqueInfo = await FDService.getBoutiqueInfo();
-
+      
       return res.status(200).send({
         result: {
           designer_name: fullName,
@@ -491,7 +543,7 @@ exports.FashionDesignerDetails = async (req, res) => {
             designerDetails[0].role === 4
               ? "Designer"
               : designerDetails[0].role,
-          available_time: time,
+          available_time: availableTime,
           base_price: 0,
           offer_price: 0,
           experience: 1,
