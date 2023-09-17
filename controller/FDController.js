@@ -521,19 +521,18 @@ exports.FashionDesignerDetails = async (req, res) => {
       // Set the token in a custom response header
       res.setHeader("X-Auth-Token", token);
 
-      var boutiqueInfo = await FDService.getBoutiqueInfo();
       
       return res.status(200).send({
         result: {
           designer_name: fullName,
           about_me:
             "I am a Fashion designer, fusing elegance and modernity into timeless designs that inspire . ",
-          boutique_id: designerDetails[0]["designers.boutique_id"],
-          boutique_name: boutiqueInfo.boutique_name,
-          address: boutiqueInfo.address,
-          area: boutiqueInfo.area,
-          city: boutiqueInfo.city,
-          country_state: boutiqueInfo.coutry_state,
+          // boutique_id: boutiqueInfo[0].boutique_id,  
+          // boutique_name: boutiqueInfo[0].boutique_name,
+          // address: boutiqueInfo[0].address,
+          // area: boutiqueInfo[0].area,
+          // city: boutiqueInfo[0].city,
+          // country_state: boutiqueInfo[0].coutry_state,
           register_date: moment(
             designerDetails[0].reg_on,
             "YYYY-MM-DD hh:mm:ss"
