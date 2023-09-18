@@ -890,7 +890,6 @@ exports.fashionDesignerTimeSlot = async (req, res) => {
     } else {
       // Set the token in a custom response header
       res.setHeader("X-Auth-Token", token);
-      console.log("boutique : ", boutiqueInfo);
 
       // Construct the response JSON
       var result = {
