@@ -1462,76 +1462,49 @@ exports.fashionDesignerAppointmentDetails = async (req, res) => {
     var stateName = await FDService.stateList(result2.state);
     var cityName = await FDService.cityList(result2.city);
     var formatTime = (time) => moment(time, "HH:mm:ss").format("hh:mm A");
-    const data = {};
-    const fashiondesignerappointmentDetails = {};
-    fashiondesignerappointmentDetails.id = result1.id ? result1.id : "";
-    fashiondesignerappointmentDetails.fashion_designer_id = result1.user_id
-      ? result1.user_id
-      : "";
-    fashiondesignerappointmentDetails.customer_id = result1.customer_id
-      ? result1.customer_id
-      : "";
-    fashiondesignerappointmentDetails.appointment_code =
-      result1.appointment_code ? result1.appointment_code : "";
-    fashiondesignerappointmentDetails.start_time = result1.start_time
-      ? result1.start_time
-      : "";
-    fashiondesignerappointmentDetails.end_time = result1.end_time
-      ? result1.end_time
-      : "";
-    fashiondesignerappointmentDetails.appointment_date =
-      result1.appointment_date ? result1.appointment_date : "";
-    fashiondesignerappointmentDetails.total_fees = result1.total_fees
-      ? result1.total_fees
-      : "";
-    fashiondesignerappointmentDetails.transaction_id = result1.transaction_id
-      ? result1.transaction_id
-      : "";
-    fashiondesignerappointmentDetails.status = result1.status
-      ? result1.status
-      : "";
-    fashiondesignerappointmentDetails.add_date = result1.created_at
-      ? result1.created_at
-      : "";
-    fashiondesignerappointmentDetails.update_date = result1.update_at
-      ? result1.update_at
-      : "";
-    fashiondesignerappointmentDetails.address_id = result1.address_id
-      ? result1.address_id
-      : "";
-    fashiondesignerappointmentDetails.fashiondesigner_firstname =
-      result3.first_name ? result3.first_name : "";
-    fashiondesignerappointmentDetails.fashiondesigner_lastname =
-      result3.last_name ? result3.last_name : "";
-    fashiondesignerappointmentDetails.profile_img = result3.profile_photo
-      ? result3.profile_photo
-      : "";
-    fashiondesignerappointmentDetails.experience = "";
-    fashiondesignerappointmentDetails.viewstarttime = formatTime(
-      result1.start_time
-    );
-    fashiondesignerappointmentDetails.viewendtime = formatTime(
-      result1.end_time
-    );
-    const address = {};
-    address.id = result2.id ? result2.id : "";
-    address.user_id = result2.user_id ? result2.user_id : "";
-    address.name = result2.first_name ? result2.first_name : "";
-    address.clname = result2.last_name ? result2.last_name : "";
-    address.street = result2.street ? result2.street : "";
-    address.landmark = result2.landmark ? result2.landmark : "";
-    address.city = result2.city ? result2.city : "";
-    address.state = result2.state ? result2.state : "";
-    address.pincode = result2.pincode ? result2.pincode : "";
-    address.cmobile = result2.mobile_number ? result2.mobile_number : "";
-    address.is_primary = result2.is_primary ? result2.is_primary : "";
-    address.is_verify = result2.is_verify ? result2.is_verify : "";
-    address.verify_date = result2.verify_date ? result2.verify_date : "";
-    address.add_date = result2.created_at ? result2.created_at : "";
-    address.clname = result2.last_name ? result2.last_name : "";
-    address.statename = stateName.name ? stateName.name : "";
-    address.cityname = cityName.name ? cityName.name : "";
-    fashiondesignerappointmentDetails.address = address;
+    const data = {}
+    const fashiondesignerappointmentDetails = {}
+    fashiondesignerappointmentDetails.id = result1.id ? result1.id : ''
+    fashiondesignerappointmentDetails.fashion_designer_id = result1.user_id ? result1.user_id : ''
+    fashiondesignerappointmentDetails.customer_id = result1.customer_id ? result1.customer_id : ''
+    fashiondesignerappointmentDetails.appointment_code = result1.appointment_code ? result1.appointment_code : ''
+    fashiondesignerappointmentDetails.start_time = result1.start_time ? result1.start_time : ''
+    fashiondesignerappointmentDetails.end_time = result1.end_time ? result1.end_time : ''
+    fashiondesignerappointmentDetails.appointment_date = result1.appointment_date ? result1.appointment_date : ''
+    fashiondesignerappointmentDetails.total_fees = result1.total_fees ? result1.total_fees : ''
+    fashiondesignerappointmentDetails.transaction_id = result1.transaction_id ? result1.transaction_id : ''
+    fashiondesignerappointmentDetails.status = result1.status ? result1.status : ''
+    fashiondesignerappointmentDetails.add_date = result1.created_at ? result1.created_at : ''
+    fashiondesignerappointmentDetails.update_date = result1.update_at ? result1.update_at : ''
+    fashiondesignerappointmentDetails.address_id = result1.address_id ? result1.address_id : ''
+    fashiondesignerappointmentDetails.fashiondesigner_firstname = result3.first_name ? result3.first_name : ''
+    fashiondesignerappointmentDetails.fashiondesigner_lastname = result3.last_name ? result3.last_name : ''
+    fashiondesignerappointmentDetails.profile_img = result3.profile_photo ? result3.profile_photo : ''
+    fashiondesignerappointmentDetails.experience = ''
+    fashiondesignerappointmentDetails.viewstarttime = formatTime(result1.start_time)
+    fashiondesignerappointmentDetails.viewendtime = formatTime(result1.end_time)
+    fashiondesignerappointmentDetails.cancelflag = true
+    fashiondesignerappointmentDetails.reschedule = true
+
+    const address = {}
+    address.id = result2.id ? result2.id : ''
+    address.user_id = result2.user_id ? result2.user_id : ''
+    address.name = result2.first_name ? result2.first_name : ''
+    address.clname = result2.last_name ? result2.last_name : ''
+    address.street = result2.street ? result2.street : ''
+    address.landmark = result2.landmark ? result2.landmark : ''
+    address.city = result2.city ? result2.city : ''
+    address.state = result2.state ? result2.state : ''
+    address.pincode = result2.pincode ? result2.pincode : ''
+    address.cmobile = result2.mobile_number ? result2.mobile_number : ''
+    address.is_primary = result2.is_primary ? result2.is_primary : ''
+    address.is_verify = result2.is_verify ? result2.is_verify : ''
+    address.verify_date = result2.verify_date ? result2.verify_date : ''
+    address.add_date = result2.created_at ? result2.created_at : ''
+    address.clname = result2.last_name ? result2.last_name : ''
+    address.statename = stateName.name ? stateName.name : ''
+    address.cityname = cityName.name ? cityName.name : ''
+    fashiondesignerappointmentDetails.address = address
     if (result1.status == 0) {
       fashiondesignerappointmentDetails.statusmessage = "Pending";
     }

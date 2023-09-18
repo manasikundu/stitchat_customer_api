@@ -2,6 +2,7 @@ const NodeGeocoder = require("node-geocoder");
 const geolib = require("geolib");
 const Boutique = require("../model/userBoutiqueInfoModel");
 const FashionDesignerWeeklySchedule = require("../model/weeklySchleduleModel");
+// let FDController = require("../controller/FDController");
 const { Op } = require("sequelize");
 const moment = require("moment");
 const Users = require("../model/userModel");
@@ -271,7 +272,7 @@ exports.getNearestBoutiqueList = async (req, res) => {
           HasError: false,
           StatusCode: 200,
           message: "Boutique list retrieving successfully",
-           ...responseData, 
+          ...responseData,
           category: organizedServices,
         });
       }
@@ -285,3 +286,16 @@ exports.getNearestBoutiqueList = async (req, res) => {
     });
   }
 };
+
+exports.boutiqueDetails = async (req, res) => {
+  try {
+    // const basicInfo = await BoutiqueService.
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({
+      HasError: true,
+      StatusCode: 500,
+      message: "An error occurred while processing the request.",
+    });
+  }
+}
