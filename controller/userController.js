@@ -474,33 +474,35 @@ exports.verifyToken = (req, res, next) => {
 exports.userProfile = async (req, res) => {
   try {
     const mobile = req.body.mobile_number
+    
     const result1 = await Service.getUserDetails(mobile)
     if (result1) {
+      const customerInfo = {}
+      customerInfo.id = result1.id
+      customerInfo.first_name = result1.first_name ? result1.first_name : ''
+      customerInfo.last_name = result1.last_name ? result1.last_name : ''
+      customerInfo.mobile_number = result1.mobile_number ? result1.mobile_number : ''
+      customerInfo.email_id = result1.email_id ? result1.email_id : ''
+      customerInfo.user_type_id = result1.user_type_id ? result1.user_type_id : ''
+      customerInfo.user_type_name = result1.user_type_name ? result1.user_type_name : ''
+      customerInfo.created_by_user_id = result1.created_by_user_id ? result1.created_by_user_id : ''
+      customerInfo.device_id = result1.device_id ? result1.device_id : ''
+      customerInfo.device_info = result1.device_info ? result1.device_info : ''
+      customerInfo.fcm_token = result1.fcm_token ? result1.fcm_token : ''
+      customerInfo.fire_auth_token = result1.fire_auth_token ? result1.fire_auth_token : ''
+      customerInfo.status_id = result1.status_id ? result1.status_id : ''
+      customerInfo.status_name = result1.status_name ? result1.status_name : ''
+      customerInfo.prefix = result1.prefix ? result1.prefix : ''
+      customerInfo.parent_id = result1.parent_id ? result1.parent_id : ''
+      customerInfo.role = result1.role ? result1.role : ''
+      customerInfo.profile_photo = result1.profile_photo ? result1.profile_photo : ''
+      customerInfo.id_proof = result1.id_proof ? result1.id_proof : ''
+      customerInfo.gift_coin = result1.gift_coin ? result1.gift_coin : ''
+
       const result2 = await Service.boutiqueMap(result1.id)
       if (result2) {
         const result3 = await Boutique.findOne({ where: { id: result2.boutique_id } })
-        const customerInfo = {}
-        customerInfo.id = result1.id
-        customerInfo.first_name = result1.first_name ? result1.first_name : ''
-        customerInfo.last_name = result1.last_name ? result1.last_name : ''
-        customerInfo.mobile_number = result1.mobile_number ? result1.mobile_number : ''
-        customerInfo.email_id = result1.email_id ? result1.email_id : ''
-        customerInfo.user_type_id = result1.user_type_id ? result1.user_type_id : ''
-        customerInfo.user_type_name = result1.user_type_name ? result1.user_type_name : ''
-        customerInfo.created_by_user_id = result1.created_by_user_id ? result1.created_by_user_id : ''
-        customerInfo.device_id = result1.device_id ? result1.device_id : ''
-        customerInfo.device_info = result1.device_info ? result1.device_info : ''
-        customerInfo.fcm_token = result1.fcm_token ? result1.fcm_token : ''
-        customerInfo.fire_auth_token = result1.fire_auth_token ? result1.fire_auth_token : ''
-        customerInfo.status_id = result1.status_id ? result1.status_id : ''
-        customerInfo.status_name = result1.status_name ? result1.status_name : ''
-        customerInfo.prefix = result1.prefix ? result1.prefix : ''
-        customerInfo.parent_id = result1.parent_id ? result1.parent_id : ''
-        customerInfo.role = result1.role ? result1.role : ''
-        customerInfo.profile_photo = result1.profile_photo ? result1.profile_photo : ''
-        customerInfo.id_proof = result1.id_proof ? result1.id_proof : ''
-        customerInfo.gift_coin = result1.gift_coin ? result1.gift_coin : ''
-
+   
         const boutiqueInfo = {}
         boutiqueInfo.id = result3.id
         boutiqueInfo.boutique_name = result3.boutique_name ? result3.boutique_name : ''
@@ -510,7 +512,11 @@ exports.userProfile = async (req, res) => {
         boutiqueInfo.coutry_state = result3.coutry_state ? result3.coutry_state : ''
 
         res.status(200).send({ HasError: false, customerInfo: customerInfo, boutiqueInfo: boutiqueInfo })
+      }else{
+        res.status(200).send({ HasError: false, customerInfo: customerInfo, boutiqueInfo: {} })
       }
+    }else{
+      res.status(200).send({ HasError: false, message:"No data Found." })
     }
   } catch (error) {
     console.log(error)

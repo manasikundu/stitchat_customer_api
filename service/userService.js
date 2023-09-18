@@ -176,7 +176,7 @@ exports.checkMobile = async (
 
 exports.getUserDetails = async (mobile_number) => {
   const result = await Users.findOne({ where: { mobile_number: mobile_number } })
-  return result
+    return result.toJSON()
 }
 exports.boutiqueMap = async (user_id) => {
   const result = await db.query(`select * from sarter__boutique_customer_map where user_id=${user_id}`)
