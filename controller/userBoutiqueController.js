@@ -123,14 +123,6 @@ exports.getNearestBoutiqueList = async (req, res) => {
     } else {
       boutiques = await BoutiqueService.searchBoutiques(search);
     }
-    if (!boutiques || boutiques.length === 0) {
-      return res.status(200).json({
-        HasError: false,
-        StatusCode: 200,
-        message: "No Data Found",
-        nearbyBoutiques: [],
-      });
-    }
     var items = await BoutiqueService.categoryServiceFilter();
     var sortAndFilterFunctions = [];
     if (sortType !== undefined && sortType !== null && sortType !== "") {
@@ -266,12 +258,12 @@ exports.getNearestBoutiqueList = async (req, res) => {
       });
     } else {
       res.setHeader("X-Auth-Token", token);
-      if (sortedBoutiques.length === 0) {
+      if (!boutiques || boutiques.length === 0) {
         return res.status(200).json({
           HasError: false,
           StatusCode: 200,
           message: "No Data Found",
-          ...responseData,
+          nearbyBoutiques: [],
           category: organizedServices
         });
       } else {
