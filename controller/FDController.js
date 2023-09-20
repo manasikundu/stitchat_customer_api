@@ -156,7 +156,7 @@ exports.fashionDesignerList = async (req, res) => {
           availability: availabilityText,
         };
       });
-      
+
       var availableTime = "";
       if (userSchedule.length > 0) {
         var sortedSchedule = userSchedule.sort(
@@ -348,17 +348,11 @@ exports.FashionDesignerDetails = async (req, res) => {
     // var designerDetails = [];
     // if (user_id) {
     const designerDetails = await FDService.getDesignerDetailsByUserId(user_id);
-    const btq_id = await db.query(
-      `select * from sarter__boutique_user_map where user_id=${user_id}`
-    );
+    const btq_id = await db.query(`select * from sarter__boutique_user_map where user_id=${user_id}`);
     const id = btq_id[0][0].boutique_id;
     const main = [];
-    const result1 = await db.query(
-      `select * from sarter__boutique_service_dic where boutique_id=${id}`
-    ); //category Type
+    const result1 = await db.query(`select * from sarter__boutique_service_dic where boutique_id=${id}`); //category Type
     for (let i in result1[0]) {
-      // console.log(result1[0])
-
       const mainJson = {};
       mainJson.categoryType = result1[0][i].category_type;
       const categoryType = result1[0][i].category_type;
@@ -371,44 +365,32 @@ exports.FashionDesignerDetails = async (req, res) => {
       } else {
         mainJson.name = "All";
       }
-      const result2 = await db.query(
-        `select * from sarter__category_item_dic where id in(select parent_id from sarter__category_item_dic where id=${result1[0][i].service_id})`
-      );
+      const result2 = await db.query(`select * from sarter__category_item_dic where id in(select parent_id from sarter__category_item_dic where id=${result1[0][i].service_id})`);
       var category = [];
       const categoryJson = {};
       categoryJson.category_id = result2[0][0].id;
       categoryJson.category_name = result2[0][0].name;
-      const catagoryImage = await db.query(
-        `SELECT * FROM sarter__category_item_images where category_id in(select parent_id from sarter__category_item_dic where id=${result1[0][i].service_id})`
-      );
+      const catagoryImage = await db.query(`SELECT * FROM sarter__category_item_images where category_id in(select parent_id from sarter__category_item_dic where id=${result1[0][i].service_id})`);
       var category_image = s3.getSignedUrl("getObject", {
         Bucket: process.env.AWS_BUCKET,
         Key: `category_item/${catagoryImage[0][0].image}`,
         Expires: expirationTime,
       });
-      // categoryJson.category_image = catagoryImage.rows[0].image
       categoryJson.category_image = category_image;
-      const result3 = await db.query(
-        `select * from sarter__category_item_dic where id=${result1[0][i].service_id}`
-      );
+      const result3 = await db.query(`select * from sarter__category_item_dic where id=${result1[0][i].service_id}`);
       const item = [];
       const itemJson = {};
       itemJson.item_id = result3[0][0].id;
       itemJson.item_name = result3[0][0].name;
-      const itemImage = await db.query(
-        `select * from sarter__category_item_images where category_id=${result1[0][i].service_id}`
-      );
+      const itemImage = await db.query(`select * from sarter__category_item_images where category_id=${result1[0][i].service_id}`);
       var item_image = s3.getSignedUrl("getObject", {
         Bucket: process.env.AWS_BUCKET,
         Key: `category_item/${itemImage[0][0].image}`,
         Expires: expirationTime,
       });
-      // itemJson.item_image = itemImage.rows[0].image
       itemJson.item_image = item_image;
 
-      const amount = await db.query(
-        `select * from sarter__item_price_master where boutique_id=${id} and category_item_dic_id=${result1[0][i].service_id}`
-      );
+      const amount = await db.query(`select * from sarter__item_price_master where boutique_id=${id} and category_item_dic_id=${result1[0][i].service_id}`);
       itemJson.item_price_id = amount[0][0] ? amount[0][0].id : 0;
       itemJson.min_amount = amount[0][0] ? amount[0][0].min_amount : 0;
       itemJson.max_amount = amount[0][0] ? amount[0][0].max_amount : 0;
@@ -418,34 +400,19 @@ exports.FashionDesignerDetails = async (req, res) => {
       mainJson.category = category;
       main.push(mainJson);
     }
-    const data = Object.values(
-      main.reduce((acc, { categoryType, name, category }) => {
-        acc[categoryType] = acc[categoryType] || {
-          categoryType,
-          name,
-          category: [],
-        };
-        acc[categoryType].category.push(...category);
-        return acc;
-      }, {})
+    const data = Object.values(main.reduce((acc, { categoryType, name, category }) => {
+      acc[categoryType] = acc[categoryType] || { categoryType, name, category: [] };
+      acc[categoryType].category.push(...category);
+      return acc;
+    }, {})
     );
     for (var k in data) {
       var cat = data[k].category;
-      var data1 = Object.values(
-        cat.reduce(
-          (acc, { category_id, category_name, category_image, item }) => {
-            acc[category_id] = acc[category_id] || {
-              category_id,
-              category_name,
-              category_image,
-              item: [],
-            };
-            acc[category_id].item.push(...item);
-            return acc;
-          },
-          {}
-        )
-      );
+      var data1 = Object.values(cat.reduce((acc, { category_id, category_name, category_image, item }) => {
+        acc[category_id] = acc[category_id] || { category_id, category_name, category_image, item: [] };
+        acc[category_id].item.push(...item);
+        return acc;
+      },{}));
       data[k].category = data1;
     }
     if (designerDetails.length === 0) {
@@ -485,27 +452,27 @@ exports.FashionDesignerDetails = async (req, res) => {
       };
     });
     var availableTime = "";
-      if (schedule.length > 0) {
-        var sortedSchedule = schedule.sort(
-          (a, b) => a.week_day - b.week_day
+    if (schedule.length > 0) {
+      var sortedSchedule = schedule.sort(
+        (a, b) => a.week_day - b.week_day
+      );
+      var firstAvailableDay = sortedSchedule.find(
+        (item) => item.check_availability === 1
+      );
+      var lastAvailableDay = [...sortedSchedule]
+        .reverse()
+        .find((item) => item.check_availability === 1);
+      if (firstAvailableDay && lastAvailableDay) {
+        var startTime = moment(
+          firstAvailableDay.start_time,
+          "HH:mm:ss"
+        ).format("hh:mm A");
+        var endTime = moment(lastAvailableDay.end_time, "HH:mm:ss").format(
+          "hh:mm A"
         );
-        var firstAvailableDay = sortedSchedule.find(
-          (item) => item.check_availability === 1
-        );
-        var lastAvailableDay = [...sortedSchedule]
-          .reverse()
-          .find((item) => item.check_availability === 1);
-        if (firstAvailableDay && lastAvailableDay) {
-          var startTime = moment(
-            firstAvailableDay.start_time,
-            "HH:mm:ss"
-          ).format("hh:mm A");
-          var endTime = moment(lastAvailableDay.end_time, "HH:mm:ss").format(
-            "hh:mm A"
-          );
-          availableTime = `${startTime} - ${endTime}`;
-        }
+        availableTime = `${startTime} - ${endTime}`;
       }
+    }
 
     // Generate access token using the provided secretKey
     var secretKey = "tensorflow";
@@ -521,7 +488,7 @@ exports.FashionDesignerDetails = async (req, res) => {
       // Set the token in a custom response header
       res.setHeader("X-Auth-Token", token);
 
-      
+
       return res.status(200).send({
         result: {
           designer_name: fullName,
@@ -845,10 +812,10 @@ exports.fashionDesignerTimeSlot = async (req, res) => {
       // Initialize timerange object based on availabilityCheck
       var timerange = availabilityCheck
         ? {
-            morning: await generateSlotResponse(morningSlots),
-            afternoon: await generateSlotResponse(afternoonSlots),
-            evening: await generateSlotResponse(eveningSlots),
-          }
+          morning: await generateSlotResponse(morningSlots),
+          afternoon: await generateSlotResponse(afternoonSlots),
+          evening: await generateSlotResponse(eveningSlots),
+        }
         : {};
 
       // Determine if this is the first day with availability
