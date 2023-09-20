@@ -1,7 +1,7 @@
 const FDService = require("../service/FDService");
 const Users = require("../model/userModel");
 const Designer = require("../model/FDModel");
-const { Op } = require("sequelize");
+const { Op, sequelize } = require("sequelize");
 const db = require("../dbConnection");
 const moment = require("moment");
 const Service = require("../service/userService");
@@ -77,10 +77,6 @@ for (var i = 0; i < languages.length; i++) {
 exports.fashionDesignerList = async (req, res) => {
   try {
     var {name,mobileNumber,location,address,city,area,coutry_state} = req.body
-    console.log("name:", name);
-    console.log("mobileNumber:", mobileNumber);
-    console.log("location:", location);
- 
     var mobile_number = req.body.mobile_number;
     var method_name = await Service.getCallingMethodName()
     var apiEndpointInput = JSON.stringify(req.body)
@@ -92,8 +88,26 @@ exports.fashionDesignerList = async (req, res) => {
       req.query.device_info,
       req.ip
     );
-    var fashionDesigners = await FDService.getFashionDesigners(filters);
-    var boutiqueInfo = await FDService.getBoutiqueInfo();
+    var searchFilters = {};
+    if (name) {
+      searchFilters[Op.or] = [
+        { first_name: { [Op.iLike]: `%${name}%` } },
+        { last_name: { [Op.iLike]: `%${name}%` } },
+      ];
+    }
+    if (mobileNumber) {
+      searchFilters.mobile_number = mobileNumber;
+    } 
+    if (location) {
+      searchFilters[Op.or] = [
+        { address: { [Op.iLike]: `%${address}%` } },
+        { city: { [Op.iLike]: `%${city}%` } },
+        { area: { [Op.iLike]: `%${area}%` } },
+        { country_state: { [Op.iLike]: `%${coutry_state}%` } },
+      ]
+    }
+    var fashionDesigners = await FDService.getFashionDesigners(searchFilters);
+    var boutiqueInfo = await FDService.getBoutiqueInfo(searchFilters);
     var schedule = await FDService.getFashionDesignerSchedules();
     var formatStartTime = (time) => moment(time, "HH:mm:ss").format("hh:mm A");
     var formatEndTime = (time) => moment(time, "HH:mm:ss").format("hh:mm A");
@@ -215,24 +229,24 @@ exports.fashionDesignerList = async (req, res) => {
       }
     });
     
-    var searchFilters = { where: {} };
-    if (name) {
-      searchFilters[Op.or] = [
-        { first_name: { [Op.iLike]: `%${name}%` } },
-        { last_name: { [Op.iLike]: `%${name}%` } },
-      ];
-    }
-    if (mobileNumber) {
-      searchFilters.mobileNumber = mobileNumber;
-    }
-    if (location) {
-      searchFilters[Op.or] = [
-        { address: { [Op.iLike]: `%${address}%` } },
-        { city: { [Op.iLike]: `%${city}%` } },
-        { area: { [Op.iLike]: `%${area}%` } },
-        { country_state: { [Op.iLike]: `%${coutry_state}%` } },
-      ]
-    }
+    // var searchFilters = { where: {} };
+    // if (name) {
+    //   searchFilters[Op.or] = [
+    //     { first_name: { [Op.iLike]: `%${name}%` } },
+    //     { last_name: { [Op.iLike]: `%${name}%` } },
+    //   ];
+    // }
+    // if (mobileNumber) {
+    //   searchFilters.mobileNumber = mobileNumber;
+    // }
+    // if (location) {
+    //   searchFilters[Op.or] = [
+    //     { address: { [Op.iLike]: `%${address}%` } },
+    //     { city: { [Op.iLike]: `%${city}%` } },
+    //     { area: { [Op.iLike]: `%${area}%` } },
+    //     { country_state: { [Op.iLike]: `%${coutry_state}%` } },
+    //   ]
+    // }
     var limit = req.body.limit ? parseInt(req.body.limit) : null;
     var offset = req.body.offset ? parseInt(req.body.offset) : null;
 
