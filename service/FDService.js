@@ -3,7 +3,6 @@ const Designer = require("../model/FDModel");
 const { Op } = require("sequelize");
 const crypto = require("crypto");
 const Users = require("../model/userModel");
-const sequelize = require("../dbConnection");
 const DesignerDetails = require("../model/FDModel");
 const FashionDesignerWeeklySchedule = require("../model/weeklySchleduleModel");
 const UsersAddress = require("../model/userAddressModel");
@@ -65,7 +64,7 @@ exports.fashionDesignerList = async () => {
   }
 };
 
-exports.getFashionDesigners = async () => {
+exports.getFashionDesigners = async (filters) => {
   try {
     const fashionDesigners = await Users.findAll({
       attributes: [
@@ -85,11 +84,11 @@ exports.getFashionDesigners = async () => {
         user_type_id: {
           [Op.in]: [6, 8],
         },
+        ...filters
       },
       order: [["user_id", "DESC"]],
       raw: true,
     });
-
     return fashionDesigners;
   } catch (error) {
     console.error("Error listing Fashion Designers:", error);
@@ -128,7 +127,7 @@ exports.getFashionDesignerSchedules = async () => {
 };
 
 
-exports.getBoutiqueInfo = async () => {
+exports.getBoutiqueInfo = async (filters) => {
   try {
     var boutiqueInfo = `SELECT
                 u.id,

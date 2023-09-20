@@ -76,19 +76,14 @@ for (var i = 0; i < languages.length; i++) {
 // Listing of FD
 exports.fashionDesignerList = async (req, res) => {
   try {
-    var filters = {
-      name: req.body.name,
-      boutique_id: req.body.boutique_id,
-      id: req.body.id,
-      user_id: req.body.user_id,
-    };
-
+    var {name,mobileNumber,location,address,city,area,coutry_state} = req.body
+    console.log("name:", name);
+    console.log("mobileNumber:", mobileNumber);
+    console.log("location:", location);
+ 
     var mobile_number = req.body.mobile_number;
-
-    var method_name = await Service.getCallingMethodName();
-    var apiEndpointInput = JSON.stringify(req.body);
-
-    // Track API hit
+    var method_name = await Service.getCallingMethodName()
+    var apiEndpointInput = JSON.stringify(req.body)
     apiTrack = await Service.trackApi(
       req.query.user_id,
       method_name,
@@ -97,44 +92,16 @@ exports.fashionDesignerList = async (req, res) => {
       req.query.device_info,
       req.ip
     );
-
-    var searchFilters = {};
-
-    // Filter by name (first_name or last_name)
-    if (filters.name) {
-      searchFilters[Op.or] = [
-        { first_name: { [Op.iLike]: `%${filters.name}%` } },
-        { last_name: { [Op.iLike]: `%${filters.name}%` } },
-      ];
-    }
-
-    if (filters.boutique_id) {
-      searchFilters.boutique_id = filters.boutique_id;
-    }
-
-    if (filters.user_id) {
-      searchFilters.user_id = filters.user_id;
-    }
-
-    if (filters.id) {
-      searchFilters.id = filters.id;
-    }
-
-    var fashionDesigners = await FDService.getFashionDesigners();
+    var fashionDesigners = await FDService.getFashionDesigners(filters);
     var boutiqueInfo = await FDService.getBoutiqueInfo();
     var schedule = await FDService.getFashionDesignerSchedules();
-
-    // Create variables for time formatting
     var formatStartTime = (time) => moment(time, "HH:mm:ss").format("hh:mm A");
     var formatEndTime = (time) => moment(time, "HH:mm:ss").format("hh:mm A");
-
     var designerMap = new Map();
     fashionDesigners.forEach((user) => {
       var userId = user.user_id;
       var userSchedule = schedule.filter((item) => item.user_id === userId);
       var week_schedule = [];
-
-      // Extract values from scheduleItem or set default values
       var week_schedule = userSchedule.map((scheduleItem) => {
         var dayValue = scheduleItem.week_day || "";
         var start_time = scheduleItem.start_time || "";
@@ -145,18 +112,15 @@ exports.fashionDesignerList = async (req, res) => {
           (config) => config.value === dayValue
         );
         var dayName = dayConfig ? dayConfig.day : "";
-
         var time =
           formatStartTime(start_time) + " - " + formatEndTime(end_time);
-
         return {
           day: dayValue,
           day_name: dayName,
           time: time,
           availability: availabilityText,
         };
-      });
-      
+      });      
       var availableTime = "";
       if (userSchedule.length > 0) {
         var sortedSchedule = userSchedule.sort(
@@ -186,28 +150,10 @@ exports.fashionDesignerList = async (req, res) => {
       var designerBoutiqueInfo = boutiqueInfo.find(
         (boutique) => boutique.id === user.id
       );
-
       if (designerBoutiqueInfo) {
         var {
-          id,
-          boutique_id,
-          boutique_name,
-          coutry_state,
-          city,
-          area,
-          address,
-          location_lat,
-          location_lng,
-          about_me,
-          communication_mode,
-          language_speak,
-          education,
-          experience,
-          base_price,
-          offer_price,
+          id,boutique_id,boutique_name,coutry_state,city,area,address,location_lat,location_lng,about_me,communication_mode,language_speak,education,experience,base_price,offer_price,
         } = designerBoutiqueInfo;
-        // console.log(time)
-
         designerMap.set(userId, {
           id: user.id,
           user_id: user.user_id,
@@ -267,7 +213,25 @@ exports.fashionDesignerList = async (req, res) => {
         });
       }
     });
-
+    
+    var searchFilters = { where: {} };
+    if (name) {
+      searchFilters[Op.or] = [
+        { first_name: { [Op.iLike]: `%${name}%` } },
+        { last_name: { [Op.iLike]: `%${name}%` } },
+      ];
+    }
+    if (mobileNumber) {
+      searchFilters.mobileNumber = mobileNumber;
+    }
+    if (location) {
+      searchFilters[Op.or] = [
+        { address: { [Op.iLike]: `%${address}%` } },
+        { city: { [Op.iLike]: `%${city}%` } },
+        { area: { [Op.iLike]: `%${area}%` } },
+        { country_state: { [Op.iLike]: `%${coutry_state}%` } },
+      ]
+    }
     var limit = req.body.limit ? parseInt(req.body.limit) : null;
     var offset = req.body.offset ? parseInt(req.body.offset) : null;
 
@@ -278,20 +242,21 @@ exports.fashionDesignerList = async (req, res) => {
       offset: offset,
     };
 
-    if (
-      (filters.name &&
-        (filters.name !== "string" || filters.name.trim() === "")) ||
-      (filters.boutique_id &&
-        (isNaN(filters.boutique_id) ||
-          !Number.isInteger(Number(filters.boutique_id))))
-    ) {
-      return res.status(400).send({
-        result: [],
-        HasError: true,
-        StatusCode: 400,
-        Message: "Invalid parameters.",
-      });
-    }
+
+    // if (
+    //   (filters.name &&
+    //     (filters.name !== "string" || filters.name.trim() === "")) ||
+    //   (filters.boutique_id &&
+    //     (isNaN(filters.boutique_id) ||
+    //       !Number.isInteger(Number(filters.boutique_id))))
+    // ) {
+    //   return res.status(400).send({
+    //     result: [],
+    //     HasError: true,
+    //     StatusCode: 400,
+    //     Message: "Invalid parameters.",
+    //   });
+    // }
 
     // Generate access token using the provided secretKey
     var secretKey = "tensorflow";
@@ -306,7 +271,6 @@ exports.fashionDesignerList = async (req, res) => {
     } else {
       // Set the token in a custom response header
       res.setHeader("X-Auth-Token", token);
-
       return res.status(200).send({
         result: {
           fashionDesignerInfo: Array.from(designerMap.values()),
@@ -318,9 +282,7 @@ exports.fashionDesignerList = async (req, res) => {
     }
   } catch (error) {
     console.error("Error in getFashionDesigners:", error);
-    res
-      .status(500)
-      .send({ error: "An error occurred while fetching fashion designers." });
+    res.status(500).send({ error: "An error occurred while fetching fashion designers." });
   }
 };
 
