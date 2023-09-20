@@ -15,6 +15,9 @@ const { generateAccessToken, auth } = require("../jwt");
 const s3 = require("../config/s3Config");
 const dotenv = require("dotenv");
 dotenv.config();
+const db = require("../dbConnection");
+
+var expirationTime = 600;
 
 // Address from lat and long
 var geocoder = NodeGeocoder({
@@ -289,12 +292,119 @@ exports.getNearestBoutiqueList = async (req, res) => {
 
 exports.boutiqueDetails = async (req, res) => {
   try {
-    // const basicInfo = await BoutiqueService.
+    const result = await BoutiqueService.getBoutiqueById(req.query.id)
+    const finaldata = []
+    const dataJson = {}
+    const basicInfo = {}
+    basicInfo.id = result.id ? result.id : 0
+    basicInfo.boutique_name = result.boutique_name ? result.boutique_name : ''
+    basicInfo.boutique_code = result.boutique_code ? result.boutique_code : ''
+    basicInfo.boutique_logo = result.boutique_logo ? result.boutique_logo : ''
+    basicInfo.boutique_banner = result.boutique_banner ? result.boutique_banner : ''
+    basicInfo.last_update_on = result.last_update_on ? result.last_update_on : ''
+    basicInfo.updateed_by_user_id = result.updateed_by_user_id ? result.updateed_by_user_id : 0
+    basicInfo.contact_number = result.contact_number ? result.contact_number : ''
+    basicInfo.create_on = result.create_on ? result.create_on : ''
+    basicInfo.categoryType = result.categoryType ? result.categoryType : ''
+    basicInfo.user_type_id = result.user_type_id ? result.user_type_id : 0
+    basicInfo.about_me = result.about_me ? result.about_me : ''
+    basicInfo.communication_mode = result.communication_mode ? result.communication_mode : ''
+    basicInfo.language_speak = result.language_speak ? result.language_speak : ''
+    basicInfo.education = result.education ? result.education : ''
+    basicInfo.experience = result.experience ? result.experience : 0
+    basicInfo.base_price = result.base_price ? result.base_price : ''
+    basicInfo.offer_price = result.offer_price ? result.offer_price : ''
+    dataJson.basicInfo = basicInfo
+    const address = {}
+    address.location_lat = result.location_lat ? result.location_lat : ''
+    address.location_lng = result.location_lng ? result.location_lng : ''
+    address.coutry_state = result.coutry_state ? result.coutry_state : ''
+    address.city = result.city ? result.city : ''
+    address.area = result.area ? result.area : ''
+    address.address = result.address ? result.address : ''
+    address.landmark = result.landmark ? result.landmark : ''
+    dataJson.address = address
+
+    // const id = req.query.id;
+    const id=388
+    const main = [];
+    const result1 = await db.query(`select * from sarter__boutique_service_dic where boutique_id=${id}`); //category Type
+    for (let i in result1[0]) {
+      const mainJson = {};
+      mainJson.categoryType = result1[0][i].category_type;
+      const categoryType = result1[0][i].category_type;
+      if (categoryType == 1) {
+        mainJson.name = "Men";
+      } else if (categoryType == 2) {
+        mainJson.name = "Women";
+      } else if (categoryType == 3) {
+        mainJson.name = "Kids";
+      } else {
+        mainJson.name = "All";
+      }
+      const result2 = await db.query(`select * from sarter__category_item_dic where id in(select parent_id from sarter__category_item_dic where id=${result1[0][i].service_id})`);
+      var category = [];
+      const categoryJson = {};
+      categoryJson.category_id = result2[0][0].id;
+      categoryJson.category_name = result2[0][0].name;
+      const catagoryImage = await db.query(`SELECT * FROM sarter__category_item_images where category_id in(select parent_id from sarter__category_item_dic where id=${result1[0][i].service_id})`);
+      console.log(catagoryImage)
+      var category_image = s3.getSignedUrl("getObject", {
+        Bucket: process.env.AWS_BUCKET,
+        Key: `category_item/${catagoryImage[0][0].image}`,
+        Expires: expirationTime,
+      });
+      categoryJson.category_image = category_image;
+      const result3 = await db.query(`select * from sarter__category_item_dic where id=${result1[0][i].service_id}`);
+      const item = [];
+      const itemJson = {};
+      itemJson.item_id = result3[0][0].id;
+      itemJson.item_name = result3[0][0].name;
+      const itemImage = await db.query(`select * from sarter__category_item_images where category_id=${result1[0][i].service_id}`);
+      var item_image = s3.getSignedUrl("getObject", {
+        Bucket: process.env.AWS_BUCKET,
+        Key: `category_item/${itemImage[0][0].image}`,
+        Expires: expirationTime,
+      });
+      itemJson.item_image = item_image;
+      const amount = await db.query(`select * from sarter__item_price_master where boutique_id=${id} and category_item_dic_id=${result1[0][i].service_id}`);
+      itemJson.item_price_id = amount[0][0] ? amount[0][0].id : 0;
+      itemJson.min_amount = amount[0][0] ? amount[0][0].min_amount : 0;
+      itemJson.max_amount = amount[0][0] ? amount[0][0].max_amount : 0;
+      item.push(itemJson);
+      categoryJson.item = item;
+      category.push(categoryJson);
+      mainJson.category = category;
+      main.push(mainJson);
+    }
+    const data = Object.values(main.reduce((acc, { categoryType, name, category }) => {
+      acc[categoryType] = acc[categoryType] || { categoryType, name, category: [] };
+      acc[categoryType].category.push(...category);
+      return acc;
+    }, {})
+    );
+    for (var k in data) {
+      var cat = data[k].category;
+      var data1 = Object.values(cat.reduce((acc, { category_id, category_name, category_image, item }) => {
+        acc[category_id] = acc[category_id] || { category_id, category_name, category_image, item: [] };
+        acc[category_id].item.push(...item);
+        return acc;
+      }, {}));
+      data[k].category = data1;
+    }
+    dataJson.services = data
+
+    finaldata.push(dataJson)
+
+    return res.status(200).json({
+      HasError: true,
+      message: "Boutique Details fetched sucessfully",
+      data: data
+    });
   } catch (error) {
     console.error(error);
     return res.status(500).json({
       HasError: true,
-      StatusCode: 500,
       message: "An error occurred while processing the request.",
     });
   }

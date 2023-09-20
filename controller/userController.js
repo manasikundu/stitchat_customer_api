@@ -474,7 +474,7 @@ exports.verifyToken = (req, res, next) => {
 exports.userProfile = async (req, res) => {
   try {
     const mobile = req.body.mobile_number
-    
+
     const result1 = await Service.getUserDetails(mobile)
     if (result1) {
       const customerInfo = {}
@@ -502,7 +502,7 @@ exports.userProfile = async (req, res) => {
       const result2 = await Service.boutiqueMap(result1.id)
       if (result2) {
         const result3 = await Boutique.findOne({ where: { id: result2.boutique_id } })
-   
+
         const boutiqueInfo = {}
         boutiqueInfo.id = result3.id
         boutiqueInfo.boutique_name = result3.boutique_name ? result3.boutique_name : ''
@@ -512,11 +512,11 @@ exports.userProfile = async (req, res) => {
         boutiqueInfo.coutry_state = result3.coutry_state ? result3.coutry_state : ''
 
         res.status(200).send({ HasError: false, customerInfo: customerInfo, boutiqueInfo: boutiqueInfo })
-      }else{
+      } else {
         res.status(200).send({ HasError: false, customerInfo: customerInfo, boutiqueInfo: {} })
       }
-    }else{
-      res.status(200).send({ HasError: false, message:"No data Found." })
+    } else {
+      res.status(200).send({ HasError: false, message: "No data Found." })
     }
   } catch (error) {
     console.log(error)
@@ -526,7 +526,10 @@ exports.userProfile = async (req, res) => {
 
 exports.updateProfile = async (req, res) => {
   try {
-    const result = await Service.updateProfile(req.params.id, req.body)
+    const id = req.body.id
+    const data = req.body
+    delete data['id'];
+    const result = await Service.updateProfile(id, data)
     if (result[0] != 0) {
       return res.status(200).send({
         message: "Successfully Updated.",
@@ -547,7 +550,7 @@ exports.updateProfile = async (req, res) => {
 
 exports.aboutUs = async (req, res) => {
   try {
-    const data = fs.readFileSync('aboutUs.txt','utf-8')
+    const data = fs.readFileSync('aboutUs.txt', 'utf-8')
     return res.status(200).send({
       message: "Successfully Proceed data.",
       HasError: false,
@@ -561,7 +564,7 @@ exports.aboutUs = async (req, res) => {
 
 exports.contactInfo = async (req, res) => {
   try {
-    const data = fs.readFileSync('contactInfo.json','utf-8')
+    const data = fs.readFileSync('contactInfo.json', 'utf-8')
     return res.status(200).send({
       message: "Successfully Proceed data.",
       HasError: false,
@@ -575,7 +578,7 @@ exports.contactInfo = async (req, res) => {
 
 exports.contactUs = async (req, res) => {
   try {
-    const result=await Service.contactUs(req.body)
+    const result = await Service.contactUs(req.body)
     return res.status(200).send({
       message: "Successfully Proceed data.",
       HasError: false,

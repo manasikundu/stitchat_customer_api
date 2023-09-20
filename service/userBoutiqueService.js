@@ -208,3 +208,7 @@ exports.categoryServiceFilter = async () => {
 };
 
 
+exports.getBoutiqueById=async(id)=>{
+  const result=await Boutique.findOne({where:{id:id}})
+  return result.toJSON()
+}
