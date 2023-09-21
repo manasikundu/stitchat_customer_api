@@ -105,6 +105,7 @@ exports.boutiqueOrderByOrderId = async (order_id) => {
         tax_applied_amount,
         total_payable_amount,
         order_status AS order_status_id,
+        created_at,
         bill_image,
         first_name,
         last_name,

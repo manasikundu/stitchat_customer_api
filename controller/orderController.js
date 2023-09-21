@@ -171,6 +171,7 @@ exports.orderDetails = async (req, res) => {
         bill_image: order.bill_image,
         order_status_name: orderStatus.order_status_name,
         customer_user_type_id: customerType[0].user_type_id,
+        add_date: moment(order.created_at, "YYYY-MM-DD hh:mm:ss").format("YYYY-MM-DD hh:mm A"),
       };
     }
     var items = await orderService.getItemsByOrderId(order_id);
