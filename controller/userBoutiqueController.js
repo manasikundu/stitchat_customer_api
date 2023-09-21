@@ -325,10 +325,10 @@ exports.boutiqueDetails = async (req, res) => {
     address.landmark = result.landmark ? result.landmark : ''
     dataJson.address = address
 
-    // const id = req.query.id;
-    const id=388
+    const id = req.query.id;
     const main = [];
     const result1 = await db.query(`select * from sarter__boutique_service_dic where boutique_id=${id}`); //category Type
+    console.log(result1)
     for (let i in result1[0]) {
       const mainJson = {};
       mainJson.categoryType = result1[0][i].category_type;
@@ -343,12 +343,12 @@ exports.boutiqueDetails = async (req, res) => {
         mainJson.name = "All";
       }
       const result2 = await db.query(`select * from sarter__category_item_dic where id in(select parent_id from sarter__category_item_dic where id=${result1[0][i].service_id})`);
+      console.log(result2)
       var category = [];
       const categoryJson = {};
       categoryJson.category_id = result2[0][0].id;
       categoryJson.category_name = result2[0][0].name;
       const catagoryImage = await db.query(`SELECT * FROM sarter__category_item_images where category_id in(select parent_id from sarter__category_item_dic where id=${result1[0][i].service_id})`);
-      console.log(catagoryImage)
       var category_image = s3.getSignedUrl("getObject", {
         Bucket: process.env.AWS_BUCKET,
         Key: `category_item/${catagoryImage[0][0].image}`,
@@ -392,6 +392,7 @@ exports.boutiqueDetails = async (req, res) => {
       }, {}));
       data[k].category = data1;
     }
+    console.log(data)
     dataJson.services = data
 
     finaldata.push(dataJson)
@@ -399,7 +400,7 @@ exports.boutiqueDetails = async (req, res) => {
     return res.status(200).json({
       HasError: true,
       message: "Boutique Details fetched sucessfully",
-      data: data
+      data: finaldata
     });
   } catch (error) {
     console.error(error);
