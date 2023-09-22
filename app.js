@@ -7,6 +7,7 @@ const Router = require("./router/userRouter");
 const boutiqueRouter = require("./router/userBoutiqueRouter");
 const designersRouter = require("./router/FDRouter");
 const orderRouter = require("./router/orderRouter")
+const ratingRouter = require("./router/ratingRouter")
 
 const bodyParser = require("body-parser");
 app.use(cors());
@@ -28,6 +29,8 @@ app.use("", Router);
 app.use("", boutiqueRouter);
 app.use("", designersRouter);
 app.use("", orderRouter)
+app.use("", ratingRouter)
+
 const port=8000
 app.listen(port,() => {
     console.log(`Server running on port ${port}`);

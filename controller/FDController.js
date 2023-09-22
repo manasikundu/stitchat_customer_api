@@ -524,11 +524,8 @@ exports.fashionDesignerTimeSlot = async (req, res) => {
     var user_id = req.body.fashion_designer_id;
     var customer_id = req.body.user_id;
     var mobile_number = req.body.mobile_number;
-
     var method_name = await Service.getCallingMethodName();
     var apiEndpointInput = JSON.stringify(req.body);
-
-    // Track API hit
     apiTrack = await Service.trackApi(
       req.query.user_id,
       method_name,
@@ -537,24 +534,14 @@ exports.fashionDesignerTimeSlot = async (req, res) => {
       req.query.device_info,
       req.ip
     );
-
-    var designerDetails = [];
-
-    // Check if user_id is not a number or is an empty string
     if (isNaN(user_id) || user_id === "") {
       return res.status(400).send({
         HasError: true,
         StatusCode: 400,
         Message: "Invalid parameter.",
       });
-    }
-
-    if (user_id) {
-      designerDetails = await FDService.getDesignerDetailsByUserIdAndBoutiqueId(
-        user_id
-      );
-    }
-
+    }    
+    designerDetails = await FDService.getDesignerDetailsByUserId(user_id)
     if (designerDetails.length === 0) {
       return res.status(404).send({
         HasError: true,
@@ -562,101 +549,59 @@ exports.fashionDesignerTimeSlot = async (req, res) => {
         Message: "Designer not found.",
       });
     }
-
     var firstName = designerDetails[0]["first_name"];
     var lastName = designerDetails[0]["last_name"];
     var fullName =
       firstName && lastName
         ? firstName + " " + lastName
         : firstName || lastName;
-
-    var weekSchedules = designerDetails.map((designer) => {
-      var weekDay = designer["weekly_schedule.week_day"];
-      var availabilityText =
-        designer["weekly_schedule.check_availability"] === 1 ? true : false;
-      var startTime = designer["weekly_schedule.start_time"];
-      var endTime = designer["weekly_schedule.end_time"];
-      var dayName = daysOfWeekConfig.find(
-        (config) => config.value === weekDay
-      ).day;
-
-      // Define the function to format time
-      var formatTime = (time) => moment(time, "HH:mm:ss").format("hh:mm A");
-      var resultTime = `${formatTime(startTime)} - ${formatTime(endTime)}`;
-
-      return {
-        level: dayName,
-        key: weekDay,
-        availability: availabilityText,
+    var schedule = await FDService.getWeeklyScheduleByUserId(user_id);
+    var weekSchedules = schedule.map((designer) => {
+    var weekDay = designer.week_day;
+    var availabilityText = designer.check_availability === 1 ? true : false;
+    var startTime = designer.start_time;
+    var endTime = designer.end_time;
+    var dayConfig = daysOfWeekConfig.find((config) => config.value === weekDay);
+    var dayName = dayConfig ? dayConfig.day : "";
+    var formatTime = (time) => moment(time, "HH:mm:ss").format("hh:mm A");
+    var resultTime = `${formatTime(startTime)} - ${formatTime(endTime)}`;   
+    return {
+      level: dayName,
+      key: weekDay,
+      availability: availabilityText,
       };
-    });
-
+    });        
     var boutiqueInfo = await FDService.getBoutiqueInfo();
-
-    // Fetch availability slots for the designer
     var availabilitySlots = await FDService.getAvailability(user_id);
-
-    // Create a Set to store processed slots
     var processedSlots = new Set();
-
-    // Initialize the response structure
-    var response = {
-      appointment_slot_time: [],
-    };
-
-    // Define the start and end dates for the range you want to generate responses for
+    var response = {appointment_slot_time: [],};
     var startDate = moment().add(1, "day");
     var endDate = moment().add(7, "days");
-
     availabilitySlots.forEach((slot) => {
-      // Check if the slot has already been processed
       if (!processedSlots.has(slot.id)) {
         processedSlots.add(slot.id);
       }
     });
-
-    // Generate responses for morning, afternoon, and evening slots
     var generateSlotResponse = async (slots) => {
       var responses = [];
       var customer_id;
-
       for (var slot of slots) {
-        var isAvailable = await FDService.isSlotAvailable(
-          user_id,
-          slot.start_time,
-          slot.end_time
-        );
-
+        var isAvailable = await FDService.isSlotAvailable(user_id,slot.start_time,slot.end_time);
         var status, check_availability;
-
         if (isAvailable && isAvailable.status === 1) {
-          // If status is 'approve', set status to 0 and check_availability to false
           status = 0;
           check_availability = false;
         } else {
-          // For other statuses (pending, reject/cancel, completed), set status to 1 and check_availability to true
           status = 1;
           check_availability = true;
         }
-
         var slotStartTime = moment(slot.start_time, "HH:mm:ss");
         var slotEndTime = moment(slot.end_time, "HH:mm:ss");
-
-        var foundConfig = daysOfWeekConfig.find(
-          (config) => config.value === slot.week_day
-        );
-
+        var foundConfig = daysOfWeekConfig.find((config) => config.value === slot.week_day);
         var dayValue = foundConfig?.value || "";
-
-        // Fetch duration from the config
-        var durationConfig = appointmentTimeConfig.find(
-          (config) => config.slot === "duration"
-        );
+        var durationConfig = appointmentTimeConfig.find((config) => config.slot === "duration");
         var duration = parseInt(durationConfig.time);
-
-        // Determine mybook based on user_id and customer_id matching
         var mybook = user_id === customer_id ? 1 : 0;
-
         responses.push({
           status: status,
           mybook: mybook,
@@ -673,41 +618,23 @@ exports.fashionDesignerTimeSlot = async (req, res) => {
           date: moment().add(dayValue, "days").format("YYYY-MM-DD"),
         });
       }
-
       return responses;
     };
-
-    // Define a global variable to track the first day with availability
     var firstAvailabilityFound = false;
-
-    // Function to generate slot response for a specific date
     var generateSlotResponseForDate = async (date) => {
-      // Determine the day of the week (e.g., Monday, Tuesday)
       var dayOfWeek = date.format("dddd");
-
-      // Filter availability slots for the specified day of the week
-      var availabilitySlotsForDay = availabilitySlots.filter(
-        (slot) => daysOfWeekConfig[slot.week_day - 1].day === dayOfWeek
-      );
-
-      // Initialize availabilityCheck as false by default
+      var availabilitySlotsForDay = availabilitySlots.filter((slot) => daysOfWeekConfig[slot.week_day - 1].day === dayOfWeek);
       var availabilityCheck = false;
-
-      // Iterate through the array and find the availability for the given day
       for (var slot of weekSchedules) {
         if (slot.level === date.format("dddd")) {
           availabilityCheck = slot.availability;
           break;
         }
       }
-
-      // Initialize morning, afternoon, and evening slots arrays
       var morningSlots = [];
       var afternoonSlots = [];
       var eveningSlots = [];
-
       if (availabilityCheck) {
-        // Get the fashion designer's start_time and end_time for the day
         var fashionDesignerDay = availabilitySlotsForDay[0]; // Assume the first slot
         var fashionDesignerStartTime = moment(
           fashionDesignerDay.start_time,
@@ -717,16 +644,12 @@ exports.fashionDesignerTimeSlot = async (req, res) => {
           fashionDesignerDay.end_time,
           "HH:mm:ss"
         );
-
-        // Calculate the dynamic startTime and endTime based on the fashion designer's time
         var startTime = fashionDesignerStartTime.clone();
         var endTime = fashionDesignerEndTime.clone();
-
         while (startTime < endTime) {
           var slotEndTime = moment(startTime, "HH:mm:ss")
             .add(30, "minutes")
             .format("HH:mm:ss");
-
           if (
             moment(startTime, "HH:mm:ss").isBetween(
               fashionDesignerStartTime,
@@ -769,8 +692,6 @@ exports.fashionDesignerTimeSlot = async (req, res) => {
           startTime = moment(slotEndTime, "HH:mm:ss");
         }
       }
-
-      // Initialize timerange object based on availabilityCheck
       var timerange = availabilityCheck
         ? {
           morning: await generateSlotResponse(morningSlots),
@@ -778,37 +699,28 @@ exports.fashionDesignerTimeSlot = async (req, res) => {
           evening: await generateSlotResponse(eveningSlots),
         }
         : {};
-
-      // Determine if this is the first day with availability
       var selected = false;
       if (availabilityCheck && !firstAvailabilityFound) {
         selected = true;
         firstAvailabilityFound = true;
       }
-
       var daySlot = {
         weekday: moment(date).isoWeekday(),
         date: date.format("YYYY-MM-DD"),
         dayname: date.format("dddd"),
         availability: availabilityCheck,
-        selected: selected, // Set selected based on firstAvailabilityFound
+        selected: selected, 
         timerange: timerange,
       };
-
       return daySlot;
     };
-
-    // Loop through the date range and generate responses for each date
     while (startDate.isBefore(endDate)) {
       var daySlot = await generateSlotResponseForDate(startDate);
       response.appointment_slot_time.push(daySlot);
       startDate.add(1, "day");
     }
-
-    // Generate access token using the provided secretKey
     var secretKey = "tensorflow";
     var token = generateAccessToken(mobile_number, secretKey);
-
     if (!token) {
       return res.status(500).send({
         HasError: true,
@@ -816,10 +728,7 @@ exports.fashionDesignerTimeSlot = async (req, res) => {
         message: "Failed to generate token",
       });
     } else {
-      // Set the token in a custom response header
       res.setHeader("X-Auth-Token", token);
-
-      // Construct the response JSON
       var result = {
         fashionDesignerdetails: {
           id: user_id,
@@ -865,7 +774,6 @@ exports.fashionDesignerTimeSlot = async (req, res) => {
           ],
         },
       };
-
       return res.status(200).send({
         result,
         HasError: false,
@@ -874,12 +782,10 @@ exports.fashionDesignerTimeSlot = async (req, res) => {
       });
     }
   } catch (error) {
-    console.error("Error in fashionDesignerTimeSlotNew:", error);
-    res
-      .status(500)
-      .send({ error: "An error occurred while fetching designer details." });
+    console.error("Error in fashionDesignerTimeSlot:", error);
+    res.status(500).send({ error: "An error occurred while fetching designer details." });
   }
-};
+}
 
 // add and update address
 exports.addNewAddress = async (req, res) => {
