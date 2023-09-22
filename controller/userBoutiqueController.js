@@ -335,7 +335,6 @@ exports.boutiqueDetails = async (req, res) => {
     const id = req.query.id;
     const main = [];
     const result1 = await db.query(`select * from sarter__boutique_service_dic where boutique_id=${id}`); //category Type
-    console.log(result1)
     for (let i in result1[0]) {
       const mainJson = {};
       mainJson.categoryType = result1[0][i].category_type;
@@ -350,7 +349,7 @@ exports.boutiqueDetails = async (req, res) => {
         mainJson.name = "All";
       }
       const result2 = await db.query(`select * from sarter__category_item_dic where id in(select parent_id from sarter__category_item_dic where id=${result1[0][i].service_id})`);
-      console.log(result2)
+      console.log(result2.rows)
       var category = [];
       const categoryJson = {};
       categoryJson.category_id = result2[0][0].id;
@@ -405,7 +404,7 @@ exports.boutiqueDetails = async (req, res) => {
     finaldata.push(dataJson)
 
     return res.status(200).json({
-      HasError: true,
+      HasError: false,
       message: "Boutique Details fetched sucessfully",
       data: finaldata
     });
