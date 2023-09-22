@@ -205,6 +205,8 @@ exports.getNearestBoutiqueList = async (req, res) => {
     );
     var responseData = {};
     var expirationTime = 600;
+    
+    
     if (sortedBoutiques.length === 1) {
       responseData = {
         nearbyBoutiques: [
@@ -215,6 +217,10 @@ exports.getNearestBoutiqueList = async (req, res) => {
             image: s3.getSignedUrl("getObject", {
               Bucket: process.env.AWS_BUCKET,
               Key: `boutique/${sortedBoutiques[0].boutique_logo}`,
+              Expires: expirationTime,
+            }) || s3.getSignedUrl("getObject", {
+              Bucket: process.env.AWS_BUCKET,
+              Key: `category_item/default-img.jpg`,
               Expires: expirationTime,
             }),
             contact_number: sortedBoutiques[0].contact_number,
@@ -229,6 +235,8 @@ exports.getNearestBoutiqueList = async (req, res) => {
       responseData = {
         nearbyBoutiques: [],
       };
+      var boutiqueLogoUrl = "";
+
       for (var i = 0; i < sortedBoutiques.length; i++) {
         var boutique = sortedBoutiques[i];
         var boutiqueLogoUrl = "";
@@ -237,8 +245,23 @@ exports.getNearestBoutiqueList = async (req, res) => {
             Bucket: process.env.AWS_BUCKET,
             Key: `boutique/${boutique.boutique_logo}`,
             Expires: expirationTime,
+          }) || s3.getSignedUrl("getObject", {
+            Bucket: process.env.AWS_BUCKET,
+            Key: `category_item/default-img.jpg`,
+            Expires: expirationTime,
           });
         }
+        // if (boutique.boutique_logo) {
+        //   boutiqueLogoUrl = await s3.getSignedUrl("getObject", {
+        //     Bucket: process.env.AWS_BUCKET,
+        //     Key: `boutique/${boutique.boutique_logo}`,
+        //     Expires: expirationTime,
+        //   }) || s3.getSignedUrl("getObject", {
+        //     Bucket: process.env.AWS_BUCKET,
+        //     Key: `category_item/default-img.jpg`,
+        //     Expires: expirationTime,
+        //   });
+        // }
         responseData.nearbyBoutiques.push({
           id: boutique.id,
           boutique_name: boutique.boutique_name,

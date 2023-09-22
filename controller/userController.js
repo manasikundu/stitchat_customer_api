@@ -589,3 +589,24 @@ exports.contactUs = async (req, res) => {
     res.status(500).send({ message: "Something went wrong.", HasError: true })
   }
 }
+
+exports.privacyPolicy = async (req, res) => {
+  try {
+    const data = fs.readFileSync('privacyPolicy.txt', 'utf-8')
+    const sections = data.split(/\n(?=\w)/).map(section => section.trim());
+    const policySections = []
+    for (var i = 0; i < sections.length; i += 2) {
+      const heading = sections[i];
+      const text = sections[i + 1] || ''
+      policySections.push({ heading, text });
+    }
+    return res.status(200).send({
+      message: "Successfully Proceed data.",
+      HasError: false,
+      result: policySections
+    })
+  } catch (error) {
+    console.log(error)
+    res.status(500).send({ message: "Something went wrong.", HasError: true })
+  }
+}

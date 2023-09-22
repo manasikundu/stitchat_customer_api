@@ -13,6 +13,7 @@ router.post("/updateProfile", Controller.updateProfile);
 router.get("/aboutUs", Controller.aboutUs);
 router.get("/contactInfo", Controller.contactInfo);
 router.post("/contactUs", Controller.contactUs);
+router.get("/privacyPolicy", Controller.privacyPolicy)
 
 
 

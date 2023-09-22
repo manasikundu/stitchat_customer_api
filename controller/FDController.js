@@ -98,16 +98,16 @@ exports.fashionDesignerList = async (req, res) => {
     if (mobileNumber) {
       searchFilters.mobile_number = mobileNumber;
     } 
+    var boutiqueFilters = ''
     if (location) {
-      searchFilters[Op.or] = [
-        { address: { [Op.iLike]: `%${address}%` } },
-        { city: { [Op.iLike]: `%${city}%` } },
-        { area: { [Op.iLike]: `%${area}%` } },
-        { country_state: { [Op.iLike]: `%${coutry_state}%` } },
-      ]
+      boutiqueFilters = `AND (
+        i.address ILIKE '%${address}%' OR
+        i.city ILIKE '%${city}%' OR
+        i.area ILIKE '%${area}%' OR
+        i.coutry_state ILIKE '%${coutry_state}%')`
     }
     var fashionDesigners = await FDService.getFashionDesigners(searchFilters);
-    var boutiqueInfo = await FDService.getBoutiqueInfo(searchFilters);
+    var boutiqueInfo = await FDService.getBoutiqueInfo(boutiqueFilters);
     var schedule = await FDService.getFashionDesignerSchedules();
     var formatStartTime = (time) => moment(time, "HH:mm:ss").format("hh:mm A");
     var formatEndTime = (time) => moment(time, "HH:mm:ss").format("hh:mm A");
@@ -228,25 +228,6 @@ exports.fashionDesignerList = async (req, res) => {
         });
       }
     });
-    
-    // var searchFilters = { where: {} };
-    // if (name) {
-    //   searchFilters[Op.or] = [
-    //     { first_name: { [Op.iLike]: `%${name}%` } },
-    //     { last_name: { [Op.iLike]: `%${name}%` } },
-    //   ];
-    // }
-    // if (mobileNumber) {
-    //   searchFilters.mobileNumber = mobileNumber;
-    // }
-    // if (location) {
-    //   searchFilters[Op.or] = [
-    //     { address: { [Op.iLike]: `%${address}%` } },
-    //     { city: { [Op.iLike]: `%${city}%` } },
-    //     { area: { [Op.iLike]: `%${area}%` } },
-    //     { country_state: { [Op.iLike]: `%${coutry_state}%` } },
-    //   ]
-    // }
     var limit = req.body.limit ? parseInt(req.body.limit) : null;
     var offset = req.body.offset ? parseInt(req.body.offset) : null;
 
@@ -256,23 +237,6 @@ exports.fashionDesignerList = async (req, res) => {
       limit: limit,
       offset: offset,
     };
-
-
-    // if (
-    //   (filters.name &&
-    //     (filters.name !== "string" || filters.name.trim() === "")) ||
-    //   (filters.boutique_id &&
-    //     (isNaN(filters.boutique_id) ||
-    //       !Number.isInteger(Number(filters.boutique_id))))
-    // ) {
-    //   return res.status(400).send({
-    //     result: [],
-    //     HasError: true,
-    //     StatusCode: 400,
-    //     Message: "Invalid parameters.",
-    //   });
-    // }
-
     // Generate access token using the provided secretKey
     var secretKey = "tensorflow";
     var token = generateAccessToken(mobile_number, secretKey);

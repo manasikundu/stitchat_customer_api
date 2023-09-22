@@ -153,10 +153,10 @@ exports.getBoutiqueInfo = async (filters) => {
                 JOIN 
               "sarter__boutique_basic_info" AS i ON b.boutique_id = i.id
               WHERE
-              u.user_type_id IN (6, 8) 
-               `;
-    //  b.role = 4;
-
+              u.user_type_id IN (6, 8)`
+    if (filters) {
+      boutiqueInfo += filters;
+    }
     var result = await db.query(boutiqueInfo);
 
     return result[0];
