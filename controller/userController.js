@@ -516,7 +516,7 @@ exports.userProfile = async (req, res) => {
         res.status(200).send({ HasError: false, customerInfo: customerInfo, boutiqueInfo: {} })
       }
     } else {
-      res.status(200).send({ HasError: false, message: "No data Found." })
+      res.status(200).send({ HasError: true, message: "Invalid User" })
     }
   } catch (error) {
     console.log(error)

@@ -205,8 +205,8 @@ exports.getNearestBoutiqueList = async (req, res) => {
     );
     var responseData = {};
     var expirationTime = 600;
-    
-    
+
+
     if (sortedBoutiques.length === 1) {
       responseData = {
         nearbyBoutiques: [
@@ -217,7 +217,8 @@ exports.getNearestBoutiqueList = async (req, res) => {
             image: s3.getSignedUrl("getObject", {
               Bucket: process.env.AWS_BUCKET,
               Key: `boutique/${sortedBoutiques[0].boutique_logo}`,
-              Expires: expirationTime}),
+              Expires: expirationTime
+            }),
             contact_number: sortedBoutiques[0].contact_number,
             category: mapCategoryType(sortedBoutiques[0].categoryType),
             latitude: sortedBoutiques[0].location_lat,
@@ -236,16 +237,16 @@ exports.getNearestBoutiqueList = async (req, res) => {
         var boutique = sortedBoutiques[i];
         var boutiqueLogoUrl = "";
         var boutiqueLogoUrl = boutique.boutique_logo
-                              ? await s3.getSignedUrl("getObject", {
-                              Bucket: process.env.AWS_BUCKET,
-                              Key: `boutique/${boutique.boutique_logo}`,
-                              Expires: expirationTime,
-                              })
-                              : s3.getSignedUrl("getObject", {
-                              Bucket: process.env.AWS_BUCKET,
-                              Key: `category_item/default-img.jpg`,
-                              Expires: expirationTime,
-                              })
+          ? await s3.getSignedUrl("getObject", {
+            Bucket: process.env.AWS_BUCKET,
+            Key: `boutique/${boutique.boutique_logo}`,
+            Expires: expirationTime,
+          })
+          : s3.getSignedUrl("getObject", {
+            Bucket: process.env.AWS_BUCKET,
+            Key: `category_item/default-img.jpg`,
+            Expires: expirationTime,
+          })
         responseData.nearbyBoutiques.push({
           id: boutique.id,
           boutique_name: boutique.boutique_name,
@@ -335,7 +336,6 @@ exports.boutiqueDetails = async (req, res) => {
     const id = req.query.id;
     const main = [];
     const result1 = await db.query(`select * from sarter__boutique_service_dic where boutique_id=${id}`); //category Type
-    console.log(result1)
     for (let i in result1[0]) {
       const mainJson = {};
       mainJson.categoryType = result1[0][i].category_type;
@@ -350,30 +350,37 @@ exports.boutiqueDetails = async (req, res) => {
         mainJson.name = "All";
       }
       const result2 = await db.query(`select * from sarter__category_item_dic where id in(select parent_id from sarter__category_item_dic where id=${result1[0][i].service_id})`);
-      console.log(result2)
       var category = [];
-      const categoryJson = {};
+      var categoryJson = {};
       categoryJson.category_id = result2[0][0].id;
       categoryJson.category_name = result2[0][0].name;
       const catagoryImage = await db.query(`SELECT * FROM sarter__category_item_images where category_id in(select parent_id from sarter__category_item_dic where id=${result1[0][i].service_id})`);
-      var category_image = s3.getSignedUrl("getObject", {
-        Bucket: process.env.AWS_BUCKET,
-        Key: `category_item/${catagoryImage[0][0].image}`,
-        Expires: expirationTime,
-      });
-      categoryJson.category_image = category_image;
+      if (catagoryImage[0][0]) {
+        var category_image = s3.getSignedUrl("getObject", {
+          Bucket: process.env.AWS_BUCKET,
+          Key: `category_item/${catagoryImage[0][0].image}`,
+          Expires: expirationTime,
+        });
+        categoryJson.category_image = category_image;
+      } else {
+        categoryJson.category_image = '';
+      }
       const result3 = await db.query(`select * from sarter__category_item_dic where id=${result1[0][i].service_id}`);
       const item = [];
-      const itemJson = {};
+      var itemJson = {};
       itemJson.item_id = result3[0][0].id;
       itemJson.item_name = result3[0][0].name;
       const itemImage = await db.query(`select * from sarter__category_item_images where category_id=${result1[0][i].service_id}`);
-      var item_image = s3.getSignedUrl("getObject", {
-        Bucket: process.env.AWS_BUCKET,
-        Key: `category_item/${itemImage[0][0].image}`,
-        Expires: expirationTime,
-      });
-      itemJson.item_image = item_image;
+      if (itemImage[0][0]) {
+        var item_image = s3.getSignedUrl("getObject", {
+          Bucket: process.env.AWS_BUCKET,
+          Key: `category_item/${itemImage[0][0].image}`,
+          Expires: expirationTime,
+        });
+        itemJson.item_image = item_image;
+      } else {
+        itemJson.item_image = '';
+      }
       const amount = await db.query(`select * from sarter__item_price_master where boutique_id=${id} and category_item_dic_id=${result1[0][i].service_id}`);
       itemJson.item_price_id = amount[0][0] ? amount[0][0].id : 0;
       itemJson.min_amount = amount[0][0] ? amount[0][0].min_amount : 0;
@@ -399,13 +406,11 @@ exports.boutiqueDetails = async (req, res) => {
       }, {}));
       data[k].category = data1;
     }
-    console.log(data)
     dataJson.services = data
-
     finaldata.push(dataJson)
 
     return res.status(200).json({
-      HasError: true,
+      HasError: false,
       message: "Boutique Details fetched sucessfully",
       data: finaldata
     });

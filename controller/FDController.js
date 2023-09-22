@@ -1121,7 +1121,7 @@ exports.getAddressList = async (req, res) => {
         result: data,
       });
     } else {
-      return res.status(500).send({
+      return res.status(200).send({
         HasError: false,
         message: "No address found",
         result: [],
