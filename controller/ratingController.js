@@ -1,11 +1,11 @@
 const { tr } = require('date-fns/locale');
 const ratingservice = require('../service/ratingService')
+const RatingService = require('../services/RatingService');
 
-exports.addRatings = async (req, res) => {
+exports.createAndUpdateRatings = async (req, res) => {
     try {
-        const { rating_id } = req.body; 
-        const ratingData = req.body; 
-
+        const { user_id, rating_id, rating_flag, rate, comment } = req.body;
+        const ratingData = {user_id,rating_id,rating_flag,rate,comment};
         const newRating = await ratingservice.addRatings(rating_id, ratingData);
         return res.status(200).send({
             HasError: false,
@@ -19,4 +19,5 @@ exports.addRatings = async (req, res) => {
             Message: "Failed to add rating.",
           });
     }
-};
+}
+
