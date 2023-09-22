@@ -5,6 +5,7 @@ const { Op, sequelize } = require("sequelize");
 const db = require("../dbConnection");
 const moment = require("moment");
 const Service = require("../service/userService");
+const boutiqueService = require('../service/userBoutiqueService')
 const { generateAccessToken, auth } = require("../jwt");
 const s3 = require("../config/s3Config");
 const dotenv = require("dotenv");
@@ -76,7 +77,7 @@ for (var i = 0; i < languages.length; i++) {
 // Listing of FD
 exports.fashionDesignerList = async (req, res) => {
   try {
-    var {name,mobileNumber,location,address,city,area,coutry_state} = req.body
+    var { name, mobileNumber, location, address, city, area, coutry_state } = req.body
     var mobile_number = req.body.mobile_number;
     var method_name = await Service.getCallingMethodName()
     var apiEndpointInput = JSON.stringify(req.body)
@@ -167,7 +168,7 @@ exports.fashionDesignerList = async (req, res) => {
       );
       if (designerBoutiqueInfo) {
         var {
-          id,boutique_id,boutique_name,coutry_state,city,area,address,location_lat,location_lng,about_me,communication_mode,language_speak,education,experience,base_price,offer_price,
+          id, boutique_id, boutique_name, coutry_state, city, area, address, location_lat, location_lng, about_me, communication_mode, language_speak, education, experience, base_price, offer_price,
         } = designerBoutiqueInfo;
         designerMap.set(userId, {
           id: user.id,
@@ -237,6 +238,23 @@ exports.fashionDesignerList = async (req, res) => {
       limit: limit,
       offset: offset,
     };
+
+
+    // if (
+    //   (filters.name &&
+    //     (filters.name !== "string" || filters.name.trim() === "")) ||
+    //   (filters.boutique_id &&
+    //     (isNaN(filters.boutique_id) ||
+    //       !Number.isInteger(Number(filters.boutique_id))))
+    // ) {
+    //   return res.status(400).send({
+    //     result: [],
+    //     HasError: true,
+    //     StatusCode: 400,
+    //     Message: "Invalid parameters.",
+    //   });
+    // }
+
     // Generate access token using the provided secretKey
     var secretKey = "tensorflow";
     var token = generateAccessToken(mobile_number, secretKey);
@@ -265,12 +283,13 @@ exports.fashionDesignerList = async (req, res) => {
   }
 };
 
+
+
+
 // Details of FD
 exports.FashionDesignerDetails = async (req, res) => {
   try {
-    var designerName = req.body.designer_name;
     var user_id = req.body.user_id;
-    var boutique_id = req.body.boutique_id;
     var mobile_number = req.body.mobile_number;
 
     var method_name = await Service.getCallingMethodName();
@@ -285,7 +304,8 @@ exports.FashionDesignerDetails = async (req, res) => {
       req.query.device_info,
       req.ip
     );
-
+    const boutiqueInfo = await db.query(`select * from sarter__boutique_basic_info where id in(select boutique_id from sarter__boutique_user_map where user_id =${user_id})`)
+    console.log(boutiqueInfo)
     // var designerDetails = [];
     // if (user_id) {
     const designerDetails = await FDService.getDesignerDetailsByUserId(user_id);
@@ -353,7 +373,7 @@ exports.FashionDesignerDetails = async (req, res) => {
         acc[category_id] = acc[category_id] || { category_id, category_name, category_image, item: [] };
         acc[category_id].item.push(...item);
         return acc;
-      },{}));
+      }, {}));
       data[k].category = data1;
     }
     if (designerDetails.length === 0) {
@@ -435,12 +455,12 @@ exports.FashionDesignerDetails = async (req, res) => {
           designer_name: fullName,
           about_me:
             "I am a Fashion designer, fusing elegance and modernity into timeless designs that inspire . ",
-          // boutique_id: boutiqueInfo[0].boutique_id,  
-          // boutique_name: boutiqueInfo[0].boutique_name,
-          // address: boutiqueInfo[0].address,
-          // area: boutiqueInfo[0].area,
-          // city: boutiqueInfo[0].city,
-          // country_state: boutiqueInfo[0].coutry_state,
+          boutique_id: boutiqueInfo[0][0].boutique_id ? boutiqueInfo[0][0].boutique_id : 0,
+          boutique_name: boutiqueInfo[0][0].boutique_name ? boutiqueInfo[0][0].boutique_name : '',
+          address: boutiqueInfo[0][0].address ? boutiqueInfo[0][0].address : '',
+          area: boutiqueInfo[0][0].area ? boutiqueInfo[0][0].area : '',
+          city: boutiqueInfo[0][0].city ? boutiqueInfo[0][0].city : '',
+          country_state: boutiqueInfo[0][0].coutry_state,
           register_date: moment(
             designerDetails[0].reg_on,
             "YYYY-MM-DD hh:mm:ss"
@@ -451,13 +471,13 @@ exports.FashionDesignerDetails = async (req, res) => {
               ? "Designer"
               : designerDetails[0].role,
           available_time: availableTime,
-          base_price: 0,
-          offer_price: 0,
-          experience: 1,
-          communication_type: "1, 2",
+          base_price: boutiqueInfo[0][0].base_price ? boutiqueInfo[0][0].base_price : '',
+          offer_price: boutiqueInfo[0][0].offer_price ? boutiqueInfo[0][0].offer_price : '',
+          experience: boutiqueInfo[0][0].experience ? boutiqueInfo[0][0].experience : 0,
+          communication_type: boutiqueInfo[0][0].communication_mode ? boutiqueInfo[0][0].communication_mode : '',
           communication_name: "Call, Video Call",
           language_type: "1, 2",
-          language_speak: "English, Hindi",
+          language_speak: boutiqueInfo[0][0].language_speak ? boutiqueInfo[0][0].language_speak : '',
           profile_photo: designerDetails[0].profile_photo,
           service_category: data,
           week_schedule: weekSchedules,
