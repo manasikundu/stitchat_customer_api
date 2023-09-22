@@ -217,12 +217,7 @@ exports.getNearestBoutiqueList = async (req, res) => {
             image: s3.getSignedUrl("getObject", {
               Bucket: process.env.AWS_BUCKET,
               Key: `boutique/${sortedBoutiques[0].boutique_logo}`,
-              Expires: expirationTime,
-            }) || s3.getSignedUrl("getObject", {
-              Bucket: process.env.AWS_BUCKET,
-              Key: `category_item/default-img.jpg`,
-              Expires: expirationTime,
-            }),
+              Expires: expirationTime}),
             contact_number: sortedBoutiques[0].contact_number,
             category: mapCategoryType(sortedBoutiques[0].categoryType),
             latitude: sortedBoutiques[0].location_lat,
@@ -240,28 +235,17 @@ exports.getNearestBoutiqueList = async (req, res) => {
       for (var i = 0; i < sortedBoutiques.length; i++) {
         var boutique = sortedBoutiques[i];
         var boutiqueLogoUrl = "";
-        if (boutique.boutique_logo) {
-          boutiqueLogoUrl = await s3.getSignedUrl("getObject", {
-            Bucket: process.env.AWS_BUCKET,
-            Key: `boutique/${boutique.boutique_logo}`,
-            Expires: expirationTime,
-          }) || s3.getSignedUrl("getObject", {
-            Bucket: process.env.AWS_BUCKET,
-            Key: `category_item/default-img.jpg`,
-            Expires: expirationTime,
-          });
-        }
-        // if (boutique.boutique_logo) {
-        //   boutiqueLogoUrl = await s3.getSignedUrl("getObject", {
-        //     Bucket: process.env.AWS_BUCKET,
-        //     Key: `boutique/${boutique.boutique_logo}`,
-        //     Expires: expirationTime,
-        //   }) || s3.getSignedUrl("getObject", {
-        //     Bucket: process.env.AWS_BUCKET,
-        //     Key: `category_item/default-img.jpg`,
-        //     Expires: expirationTime,
-        //   });
-        // }
+        var boutiqueLogoUrl = boutique.boutique_logo
+                              ? await s3.getSignedUrl("getObject", {
+                              Bucket: process.env.AWS_BUCKET,
+                              Key: `boutique/${boutique.boutique_logo}`,
+                              Expires: expirationTime,
+                              })
+                              : s3.getSignedUrl("getObject", {
+                              Bucket: process.env.AWS_BUCKET,
+                              Key: `category_item/default-img.jpg`,
+                              Expires: expirationTime,
+                              })
         responseData.nearbyBoutiques.push({
           id: boutique.id,
           boutique_name: boutique.boutique_name,
