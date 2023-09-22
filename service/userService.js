@@ -6,7 +6,7 @@ const { Op } = require("sequelize");
 const crypto = require("crypto");
 const ApiTrack = require("../model/apiTrackModel");
 const { Mobile } = require("aws-sdk");
-const contactUs=require('../model/contactUsModel')
+const contactUs = require('../model/contactUsModel')
 
 exports.generateOTP = () => {
   return crypto.randomInt(100000, 999999).toString();
@@ -176,19 +176,20 @@ exports.checkMobile = async (
 
 exports.getUserDetails = async (mobile_number) => {
   const result = await Users.findOne({ where: { mobile_number: mobile_number } })
-    return result.toJSON()
+  console.log(result)
+  return result
 }
 exports.boutiqueMap = async (user_id) => {
   const result = await db.query(`select * from sarter__boutique_customer_map where user_id=${user_id}`)
   return result[0][0]
-  
+
 }
 exports.updateProfile = async (id, data) => {
   const result = await Users.update(data, { where: { id: id } })
   return result
 }
 exports.contactUs = async (data) => {
-  const result = await contactUs.create(data,{returning:true})
+  const result = await contactUs.create(data, { returning: true })
   return result.toJSON()
 }
 exports.getUserByUserId = async (id) => {
