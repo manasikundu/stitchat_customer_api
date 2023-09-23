@@ -39,15 +39,3 @@ exports.listRatings = async (ratingFlag) => {
   }
 }
 
-// exports.addRatings = async (rating_id, ratingData) => {
-//     try {
-//         var currentDate = new Date();
-//         var formattedDate = currentDate.toISOString().slice(0, 19).replace("T", " ");
-//         ratingData.created_at = formattedDate;
-//         const newRating = await Rating.create(ratingData);
-//         return newRating;
-//     } catch (error) {
-//         console.error(error);
-//         return error;
-//     }
-// };
