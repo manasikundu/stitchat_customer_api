@@ -592,6 +592,16 @@ exports.contactUs = async (req, res) => {
 
 exports.privacyPolicy = async (req, res) => {
   try {
+    var method_name = await Service.getCallingMethodName();
+    var apiEndpointInput = JSON.stringify(req.body);
+    apiTrack = await Service.trackApi(
+      req.query.user_id,
+      method_name,
+      apiEndpointInput,
+      req.query.device_id,
+      req.query.device_info,
+      req.ip
+    );
     const data = fs.readFileSync('privacyPolicy.txt', 'utf-8')
     const sections = data.split(/\n(?=\w)/).map(section => section.trim());
     const policySections = []

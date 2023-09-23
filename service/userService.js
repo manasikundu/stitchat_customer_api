@@ -82,11 +82,9 @@ exports.getCallingMethodName = async () => {
     throw new Error();
   } catch (e) {
     var stackLines = e.stack.split("\n");
-    // Stack line format is "at functionName (file:line:column)"
     var callerLine = stackLines[2];
     var methodName = callerLine.match(/at (\S+) \(/)[1];
     var parts = methodName.split(".");
-    console.log(parts);
     return parts[parts.length - 1];
   }
 };
