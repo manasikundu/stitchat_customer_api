@@ -301,7 +301,7 @@ exports.getNearestBoutiqueList = async (req, res) => {
 exports.boutiqueDetails = async (req, res) => {
   try {
     const result = await BoutiqueService.getBoutiqueById(req.query.id)
-    const finaldata = []
+    // const finaldata = []
     const dataJson = {}
     const basicInfo = {}
     basicInfo.id = result.id ? result.id : 0
@@ -407,12 +407,12 @@ exports.boutiqueDetails = async (req, res) => {
       data[k].category = data1;
     }
     dataJson.services = data
-    finaldata.push(dataJson)
+    // finaldata.push(dataJson)
 
     return res.status(200).json({
       HasError: false,
       message: "Boutique Details fetched sucessfully",
-      data: finaldata
+      result: dataJson
     });
   } catch (error) {
     console.error(error);
