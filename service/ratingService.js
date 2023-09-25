@@ -29,9 +29,9 @@ exports.updateRatings = async (rate_id, ratingData) => {
   }
 }
 
-exports.listRatings = async (ratingFlag) => {
+exports.listRatings = async (user_id) => {
   try {
-      const ratings = await Rating.findAll({where: { rating_flag: ratingFlag }})
+      const ratings = await Rating.findAll({where: { user_id: user_id }})
       return ratings
   } catch (error) {
       console.error(error);

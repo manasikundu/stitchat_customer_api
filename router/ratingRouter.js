@@ -4,7 +4,7 @@ const router = new route();
 
 router.post("/addRating", ratingController.addRatings)
 router.post("/updateRating", ratingController.updateRatings)
-router.get("/listOfRating", ratingController.listOfRatings)
+router.get("/ratingList", ratingController.ratingList)
 
 
 module.exports = router;
