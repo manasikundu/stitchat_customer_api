@@ -159,6 +159,7 @@ exports.fashionDesignerList = async (req, res) => {
           availableTime = `${startTime} - ${endTime}`;
         }
       }
+
       var full_name = user.prefix + " " + user.first_name;
       if (user.last_name !== null) {
         full_name += " " + user.last_name;
@@ -229,6 +230,12 @@ exports.fashionDesignerList = async (req, res) => {
         });
       }
     });
+    var fashionDesignersList = Array.from(designerMap.values());
+
+    var fashionDesignersWithWeekSchedule = fashionDesignersList.filter((designer) => {
+      return designer.week_schedule && designer.week_schedule.length > 0;
+    })
+    
     var limit = req.body.limit ? parseInt(req.body.limit) : null;
     var offset = req.body.offset ? parseInt(req.body.offset) : null;
 
@@ -238,23 +245,7 @@ exports.fashionDesignerList = async (req, res) => {
       limit: limit,
       offset: offset,
     };
-
-
-    // if (
-    //   (filters.name &&
-    //     (filters.name !== "string" || filters.name.trim() === "")) ||
-    //   (filters.boutique_id &&
-    //     (isNaN(filters.boutique_id) ||
-    //       !Number.isInteger(Number(filters.boutique_id))))
-    // ) {
-    //   return res.status(400).send({
-    //     result: [],
-    //     HasError: true,
-    //     StatusCode: 400,
-    //     Message: "Invalid parameters.",
-    //   });
-    // }
-
+  
     // Generate access token using the provided secretKey
     var secretKey = "tensorflow";
     var token = generateAccessToken(mobile_number, secretKey);
@@ -270,7 +261,7 @@ exports.fashionDesignerList = async (req, res) => {
       res.setHeader("X-Auth-Token", token);
       return res.status(200).send({
         result: {
-          fashionDesignerInfo: Array.from(designerMap.values()),
+          fashionDesignerInfo: fashionDesignersWithWeekSchedule,
         },
         HasError: false,
         StatusCode: 200,
