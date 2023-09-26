@@ -300,8 +300,8 @@ exports.getNearestBoutiqueList = async (req, res) => {
 
 exports.boutiqueDetails = async (req, res) => {
   try {
-    const result = await BoutiqueService.getBoutiqueById(req.query.id)
-    // const finaldata = []
+    const result = await BoutiqueService.getBoutiqueById(req.query.boutique_id)
+    const finaldata = []
     const dataJson = {}
     const basicInfo = {}
     basicInfo.id = result.id ? result.id : 0
@@ -333,7 +333,7 @@ exports.boutiqueDetails = async (req, res) => {
     address.landmark = result.landmark ? result.landmark : ''
     dataJson.address = address
 
-    const id = req.query.id;
+    const id = req.query.boutique_id;
     const main = [];
     const result1 = await db.query(`select * from sarter__boutique_service_dic where boutique_id=${id}`); //category Type
     for (let i in result1[0]) {
@@ -408,15 +408,68 @@ exports.boutiqueDetails = async (req, res) => {
     }
     dataJson.services = data
     // finaldata.push(dataJson)
-
-    return res.status(200).json({
+    const boutiqueList = await BoutiqueService.boutiqueList()
+    const calculateDistance = (currentLocation, boutique) => {
+      if (currentLocation.lat &&currentLocation.lng &&boutique.address &&boutique.address.location_lat &&boutique.address.location_lng) {
+        const currentBoutiqueLocation = {
+          lat: parseFloat(currentLocation.lat),
+          lng: parseFloat(currentLocation.lng),
+        };
+        const boutiqueLocation = {
+          lat: parseFloat(boutique.address.location_lat),
+          lng: parseFloat(boutique.address.location_lng),
+        };
+        return geolib.getDistance(currentBoutiqueLocation, boutiqueLocation);
+      } else {
+        return null;
+      }
+    };
+    const uniqueBoutiques = {};
+    const nearbyBoutiques = [];
+    const currentBoutiqueLocation = {
+      lat: parseFloat(dataJson.address.location_lat),
+      lng: parseFloat(dataJson.address.location_lng),
+    };
+    boutiqueList.forEach((boutique) => {
+      const distance = calculateDistance(currentBoutiqueLocation, {
+        lat: parseFloat(boutique.address.location_lat),
+        lng: parseFloat(boutique.address.location_lng),
+      });
+      if (distance <= 1000 && !uniqueBoutiques[boutique.id]) {
+        const servicesToMatch = dataJson.services.map(category => ({ categoryName: category.name, categoryNames: category.category.map(categoryJson => categoryJson.category_name) }));
+        const boutiqueServices = dataJson.services.find((service) => {
+        return (
+          service.name === servicesToMatch[0] && 
+          service.category.some((category) => servicesToMatch.includes(category.category_name))
+        );
+      });
+      if (boutiqueServices) {
+        uniqueBoutiques[boutique.id] = true;
+        nearbyBoutiques.push({
+          id: boutique.id,
+          boutique_name: boutique.boutique_name,
+          address: boutique.address,
+          image: boutique.boutique_logo,
+          contact_number: boutique.contact_number,
+          latitude: parseFloat(boutique.location_lat),
+          longitude: parseFloat(boutique.location_lng),
+          distance: distance,
+        });
+      }
+    }
+    });
+    nearbyBoutiques.sort((a, b) => a.distance - b.distance)
+    // const nearestBoutiques = nearbyBoutiques.slice(0, 5)
+    console.log("Nearby Boutiques:", nearbyBoutiques)
+    dataJson.similar_boutique = nearbyBoutiques
+    return res.status(200).send({
       HasError: false,
       message: "Boutique Details fetched sucessfully",
       result: dataJson
     });
   } catch (error) {
     console.error(error);
-    return res.status(500).json({
+    return res.status(500).send({
       HasError: true,
       message: "An error occurred while processing the request.",
     });

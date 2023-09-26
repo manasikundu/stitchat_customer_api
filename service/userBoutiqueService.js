@@ -32,6 +32,7 @@ exports.getBoutiques = async (letter) => {
   }
 };
 
+
 exports.searchBoutiques = async (searchQuery) => {
   try {
     let whereClause = {};
@@ -208,7 +209,16 @@ exports.categoryServiceFilter = async () => {
 };
 
 
-exports.getBoutiqueById=async(id)=>{
-  const result=await Boutique.findOne({where:{id:id}})
+exports.getBoutiqueById=async(boutique_id)=>{
+  const result=await Boutique.findOne({where:{id:boutique_id}})
   return result.toJSON()
 }
+
+exports.boutiqueList = async () => {
+  try {
+    result =  await Boutique.findAll({where: {user_type_id: {[Op.ne]: 6}}})
+    return result
+  } catch (error) {
+    return error;
+  }
+};
