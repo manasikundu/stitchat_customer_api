@@ -338,7 +338,7 @@ exports.boutiqueDetails = async (req, res) => {
     dataJson.address = address
 
     const id = req.query.boutique_id;
-    var {latitude,longitude} = req.body
+    // var {latitude,longitude} = req.body
     const main = [];
     const result1 = await db.query(`select * from sarter__boutique_service_dic where boutique_id=${id}`); //category Type
     for (let i in result1[0]) {
@@ -411,7 +411,9 @@ exports.boutiqueDetails = async (req, res) => {
       }, {}));
       data[k].category = data1;
     }
-    dataJson.services = data    
+    dataJson.services = data  
+    var latitude = req.query.latitude || 0; 
+    var longitude = req.query.longitude || 0;  
     var serviceIds = data.map((category) => category.category.map((cat) => cat.item.map((item) => item.item_id))).flat(2).filter((item) => item);
     var serviceIdsString = serviceIds.join(',');
     var similarBoutiqueList = await db.query(`SELECT * FROM sarter__boutique_basic_info AS b WHERE id IN 
