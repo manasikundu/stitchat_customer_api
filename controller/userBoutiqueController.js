@@ -338,6 +338,7 @@ exports.boutiqueDetails = async (req, res) => {
     dataJson.address = address
 
     const id = req.query.boutique_id;
+    var {latitude,longitude} = req.body
     const main = [];
     const result1 = await db.query(`select * from sarter__boutique_service_dic where boutique_id=${id}`); //category Type
     for (let i in result1[0]) {
@@ -417,9 +418,16 @@ exports.boutiqueDetails = async (req, res) => {
     (SELECT boutique_id FROM sarter__boutique_service_dic WHERE category_type in 
       (${data.map((category) => category.categoryType).join(',')}) AND 
       service_id IN (${serviceIdsString})) AND (CAST(b.location_lat AS double precision) = ${result.location_lat} 
-      AND CAST(b.location_lng AS double precision) = ${result.location_lng})`)    
+      AND CAST(b.location_lng AS double precision) = ${result.location_lng})`)  
+      
     var nearbyBoutiques = []
     similarBoutiqueList[0].forEach((boutique) => {
+      var boutiqueDistance = geolib.getDistance(
+        { latitude, longitude },
+        { latitude: boutique.location_lat, longitude: boutique.location_lng }
+      );
+      boutique.distance = boutiqueDistance;
+      boutique.distanceInKm = boutiqueDistance / 1000;
       nearbyBoutiques.push({
         id: boutique.id,
         boutique_name: boutique.boutique_name,
@@ -428,11 +436,10 @@ exports.boutiqueDetails = async (req, res) => {
           Bucket: process.env.AWS_BUCKET,
           Key: `boutique/${boutique.boutique_logo}`,
           Expires: expirationTime}),
-        // image: boutique.boutique_logo,
         contact_number: boutique.contact_number,
         latitude: parseFloat(boutique.location_lat),
         longitude: parseFloat(boutique.location_lng),
-        distance: 0
+        distance: `${boutique.distanceInKm.toFixed(2)}`
       })
     });
     var excludedId = id
