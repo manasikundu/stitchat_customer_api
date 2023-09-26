@@ -304,10 +304,14 @@ exports.boutiqueDetails = async (req, res) => {
     const finaldata = []
     const dataJson = {}
     const basicInfo = {}
+    var boutiqueLogo = s3.getSignedUrl("getObject", {
+      Bucket: process.env.AWS_BUCKET,
+      Key: `boutique/${result.boutique_logo}`,
+      Expires: expirationTime})
     basicInfo.id = result.id ? result.id : 0
     basicInfo.boutique_name = result.boutique_name ? result.boutique_name : ''
     basicInfo.boutique_code = result.boutique_code ? result.boutique_code : ''
-    basicInfo.boutique_logo = result.boutique_logo ? result.boutique_logo : ''
+    basicInfo.boutique_logo = boutiqueLogo ? boutiqueLogo : ''
     basicInfo.boutique_banner = result.boutique_banner ? result.boutique_banner : ''
     basicInfo.last_update_on = result.last_update_on ? result.last_update_on : ''
     basicInfo.updateed_by_user_id = result.updateed_by_user_id ? result.updateed_by_user_id : 0
@@ -420,7 +424,11 @@ exports.boutiqueDetails = async (req, res) => {
         id: boutique.id,
         boutique_name: boutique.boutique_name,
         address: boutique.address,
-        image: boutique.boutique_logo,
+        image: s3.getSignedUrl("getObject", {
+          Bucket: process.env.AWS_BUCKET,
+          Key: `boutique/${boutique.boutique_logo}`,
+          Expires: expirationTime}),
+        // image: boutique.boutique_logo,
         contact_number: boutique.contact_number,
         latitude: parseFloat(boutique.location_lat),
         longitude: parseFloat(boutique.location_lng),
