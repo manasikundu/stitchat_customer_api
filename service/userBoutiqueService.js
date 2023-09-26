@@ -214,11 +214,3 @@ exports.getBoutiqueById=async(boutique_id)=>{
   return result.toJSON()
 }
 
-exports.boutiqueList = async () => {
-  try {
-    result =  await Boutique.findAll({where: {user_type_id: {[Op.ne]: 6}}})
-    return result
-  } catch (error) {
-    return error;
-  }
-};

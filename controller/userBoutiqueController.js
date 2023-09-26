@@ -334,6 +334,7 @@ exports.boutiqueDetails = async (req, res) => {
     dataJson.address = address
 
     const id = req.query.boutique_id;
+    console.log("id : ", id)
     const main = [];
     const result1 = await db.query(`select * from sarter__boutique_service_dic where boutique_id=${id}`); //category Type
     for (let i in result1[0]) {
@@ -406,62 +407,30 @@ exports.boutiqueDetails = async (req, res) => {
       }, {}));
       data[k].category = data1;
     }
-    dataJson.services = data
-    // finaldata.push(dataJson)
-    const boutiqueList = await BoutiqueService.boutiqueList()
-    const calculateDistance = (currentLocation, boutique) => {
-      if (currentLocation.lat &&currentLocation.lng &&boutique.address &&boutique.address.location_lat &&boutique.address.location_lng) {
-        const currentBoutiqueLocation = {
-          lat: parseFloat(currentLocation.lat),
-          lng: parseFloat(currentLocation.lng),
-        };
-        const boutiqueLocation = {
-          lat: parseFloat(boutique.address.location_lat),
-          lng: parseFloat(boutique.address.location_lng),
-        };
-        return geolib.getDistance(currentBoutiqueLocation, boutiqueLocation);
-      } else {
-        return null;
-      }
-    };
-    const uniqueBoutiques = {};
-    const nearbyBoutiques = [];
-    const currentBoutiqueLocation = {
-      lat: parseFloat(dataJson.address.location_lat),
-      lng: parseFloat(dataJson.address.location_lng),
-    };
-    boutiqueList.forEach((boutique) => {
-      const distance = calculateDistance(currentBoutiqueLocation, {
-        lat: parseFloat(boutique.address.location_lat),
-        lng: parseFloat(boutique.address.location_lng),
-      });
-      if (distance <= 1000 && !uniqueBoutiques[boutique.id]) {
-        const servicesToMatch = dataJson.services.map(category => ({ categoryName: category.name, categoryNames: category.category.map(categoryJson => categoryJson.category_name) }));
-        const boutiqueServices = dataJson.services.find((service) => {
-        return (
-          service.name === servicesToMatch[0] && 
-          service.category.some((category) => servicesToMatch.includes(category.category_name))
-        );
-      });
-      if (boutiqueServices) {
-        uniqueBoutiques[boutique.id] = true;
-        nearbyBoutiques.push({
-          id: boutique.id,
-          boutique_name: boutique.boutique_name,
-          address: boutique.address,
-          image: boutique.boutique_logo,
-          contact_number: boutique.contact_number,
-          latitude: parseFloat(boutique.location_lat),
-          longitude: parseFloat(boutique.location_lng),
-          distance: distance,
-        });
-      }
-    }
+    dataJson.services = data    
+    var serviceIds = data.map((category) => category.category.map((cat) => cat.item.map((item) => item.item_id))).flat(2).filter((item) => item);
+    var serviceIdsString = serviceIds.join(',');
+    var boutiqueList = await db.query(`SELECT * FROM sarter__boutique_basic_info AS b WHERE id IN 
+    (SELECT boutique_id FROM sarter__boutique_service_dic WHERE category_type in 
+      (${data.map((category) => category.categoryType).join(',')}) AND 
+      service_id IN (${serviceIdsString})) AND (CAST(b.location_lat AS double precision) = ${result.location_lat} 
+      AND CAST(b.location_lng AS double precision) = ${result.location_lng})`)    
+    var nearbyBoutiques = []
+    boutiqueList[0].forEach((boutique) => {
+      nearbyBoutiques.push({
+        id: boutique.id,
+        boutique_name: boutique.boutique_name,
+        address: boutique.address,
+        image: boutique.boutique_logo,
+        contact_number: boutique.contact_number,
+        latitude: parseFloat(boutique.location_lat),
+        longitude: parseFloat(boutique.location_lng),
+        distance: 0
+      })
     });
-    nearbyBoutiques.sort((a, b) => a.distance - b.distance)
-    // const nearestBoutiques = nearbyBoutiques.slice(0, 5)
-    console.log("Nearby Boutiques:", nearbyBoutiques)
-    dataJson.similar_boutique = nearbyBoutiques
+    var excludedId = id
+    const filteredSimilarBoutiques = nearbyBoutiques.filter(boutique => boutique.id != excludedId);
+    dataJson.similar_boutique = filteredSimilarBoutiques
     return res.status(200).send({
       HasError: false,
       message: "Boutique Details fetched sucessfully",
@@ -475,3 +444,4 @@ exports.boutiqueDetails = async (req, res) => {
     });
   }
 }
+
