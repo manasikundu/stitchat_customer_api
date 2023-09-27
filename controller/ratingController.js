@@ -38,11 +38,11 @@ exports.addAndUpdateRating = async (req, res) => {
                 device_id: newRating.device_id,
                 device_info: newRating.device_info,
             };
-            return res.status(200).json({ HasError: false, Message: "Rating added successfully.", result: result });
+            return res.status(200).send({ HasError: false, Message: "Rating added successfully.", result: result });
         }
     } catch (error) {
         console.error(error);
-        return res.status(500).json({ HasError: true, Message: "Failed to add/update rating." });
+        return res.status(500).send({ HasError: true, Message: "Failed to add/update rating." });
     }
 }
 
