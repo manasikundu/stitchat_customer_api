@@ -674,24 +674,13 @@ exports.fashionDesignerTimeSlot = async (req, res) => {
           startTime = moment(slotEndTime, "HH:mm:ss");
         }
       }
-      var morningResponse = await generateSlotResponse(morningSlots);
-  var afternoonResponse = await generateSlotResponse(afternoonSlots);
-  var eveningResponse = await generateSlotResponse(eveningSlots);
-
-  var timerange = availabilityCheck
-    ? {
-        morning: morningResponse,
-        afternoon: afternoonResponse,
-        evening: eveningResponse,
-      }
-    : {};
-      // var timerange = availabilityCheck
-      //   ? {
-      //     morning: await generateSlotResponse(morningSlots),
-      //     afternoon: await generateSlotResponse(afternoonSlots),
-      //     evening: await generateSlotResponse(eveningSlots),
-      //   }
-      //   : {};
+      var timerange = availabilityCheck
+        ? {
+          morning: await generateSlotResponse(morningSlots),
+          afternoon: await generateSlotResponse(afternoonSlots),
+          evening: await generateSlotResponse(eveningSlots),
+        }
+        : {};
       var selected = false;
       if (availabilityCheck && !firstAvailabilityFound) {
         selected = true;
