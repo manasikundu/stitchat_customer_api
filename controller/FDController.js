@@ -406,23 +406,12 @@ exports.FashionDesignerDetails = async (req, res) => {
     });
     var availableTime = "";
     if (schedule.length > 0) {
-      var sortedSchedule = schedule.sort(
-        (a, b) => a.week_day - b.week_day
-      );
-      var firstAvailableDay = sortedSchedule.find(
-        (item) => item.check_availability === 1
-      );
-      var lastAvailableDay = [...sortedSchedule]
-        .reverse()
-        .find((item) => item.check_availability === 1);
+      var sortedSchedule = schedule.sort((a, b) => a.week_day - b.week_day);
+      var firstAvailableDay = sortedSchedule.find((item) => item.check_availability === 1);
+      var lastAvailableDay = [...sortedSchedule].reverse().find((item) => item.check_availability === 1);
       if (firstAvailableDay && lastAvailableDay) {
-        var startTime = moment(
-          firstAvailableDay.start_time,
-          "HH:mm:ss"
-        ).format("hh:mm A");
-        var endTime = moment(lastAvailableDay.end_time, "HH:mm:ss").format(
-          "hh:mm A"
-        );
+        var startTime = moment(firstAvailableDay.start_time,"HH:mm:ss").format("hh:mm A");
+        var endTime = moment(lastAvailableDay.end_time, "HH:mm:ss").format("hh:mm A");
         availableTime = `${startTime} - ${endTime}`;
       }
     }
@@ -440,7 +429,6 @@ exports.FashionDesignerDetails = async (req, res) => {
     } else {
       // Set the token in a custom response header
       res.setHeader("X-Auth-Token", token);
-
 
       return res.status(200).send({
         result: {
@@ -548,6 +536,7 @@ exports.fashionDesignerTimeSlot = async (req, res) => {
         ? firstName + " " + lastName
         : firstName || lastName;
     var schedule = await FDService.getWeeklyScheduleByUserId(user_id);
+    // console.log(schedule)
     var weekSchedules = schedule.map((designer) => {
     var weekDay = designer.week_day;
     var availabilityText = designer.check_availability === 1 ? true : false;
@@ -562,7 +551,7 @@ exports.fashionDesignerTimeSlot = async (req, res) => {
       key: weekDay,
       availability: availabilityText,
       };
-    });        
+    }); 
     var boutiqueInfo = await FDService.getBoutiqueInfo();
     var availabilitySlots = await FDService.getAvailability(user_id);
     var processedSlots = new Set();
@@ -613,6 +602,7 @@ exports.fashionDesignerTimeSlot = async (req, res) => {
       return responses;
     };
     var firstAvailabilityFound = false;
+   
     var generateSlotResponseForDate = async (date) => {
       var dayOfWeek = date.format("dddd");
       var availabilitySlotsForDay = availabilitySlots.filter((slot) => daysOfWeekConfig[slot.week_day - 1].day === dayOfWeek);
@@ -684,13 +674,24 @@ exports.fashionDesignerTimeSlot = async (req, res) => {
           startTime = moment(slotEndTime, "HH:mm:ss");
         }
       }
-      var timerange = availabilityCheck
-        ? {
-          morning: await generateSlotResponse(morningSlots),
-          afternoon: await generateSlotResponse(afternoonSlots),
-          evening: await generateSlotResponse(eveningSlots),
-        }
-        : {};
+      var morningResponse = await generateSlotResponse(morningSlots);
+  var afternoonResponse = await generateSlotResponse(afternoonSlots);
+  var eveningResponse = await generateSlotResponse(eveningSlots);
+
+  var timerange = availabilityCheck
+    ? {
+        morning: morningResponse,
+        afternoon: afternoonResponse,
+        evening: eveningResponse,
+      }
+    : {};
+      // var timerange = availabilityCheck
+      //   ? {
+      //     morning: await generateSlotResponse(morningSlots),
+      //     afternoon: await generateSlotResponse(afternoonSlots),
+      //     evening: await generateSlotResponse(eveningSlots),
+      //   }
+      //   : {};
       var selected = false;
       if (availabilityCheck && !firstAvailabilityFound) {
         selected = true;
