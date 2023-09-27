@@ -226,3 +226,27 @@ exports.categoryType=async(order_id)=>{
   var result = await db.query(query)
   return result[0]
 }
+
+// cancel order
+exports.orderCancel = async (order_id) => {
+  try {
+    var query = `UPDATE public.sarter__boutique_orders SET status = 8 WHERE id = ${order_id}`;
+    var result = await db.query(query); 
+    console.log(result[0])
+    return result[0];
+  } catch (error) {
+    console.log(error);
+    return error;
+  }
+}  
+
+exports.itemCancel = async (order_id) => {
+  try {
+    var query = `UPDATE public.sarter__boutique_orders_items SET status = 8 WHERE order_id = ${order_id}`;
+    var result = await db.query(query); 
+    return result[0];
+  } catch (error) {
+    console.log(error);
+    return error;
+  }
+}

@@ -286,6 +286,11 @@ exports.cancelOrder = async (req, res) => {
         message: "Invalid parameter.",
       });
     }
+    // var orderCancel = await orderService.orderCancel(order_id);
+    var itemCancel = await orderService.getItemsByOrderId(order_id);
+    for (var i of itemCancel) {
+      var cancelItem = await orderService.itemCancel(i.id);
+    }
     var method_name = await Service.getCallingMethodName();
     var apiEndpointInput = JSON.stringify(req.body);
     var apiTrack = await Service.trackApi(
@@ -423,7 +428,7 @@ exports.cancelOrder = async (req, res) => {
           orderDetails,
         },
         HasError: false,
-        Message: "No data found.",
+        Message: "Order cancellation issue.",
       });
     }
   } catch (error) {
@@ -434,6 +439,33 @@ exports.cancelOrder = async (req, res) => {
       },
       HasError: true,
       Message: "Some error occurred.",
+    });
+  }
+};
+
+exports.cancelOrderN = async (req, res) => {
+  try {
+    const order_id = req.query.order_id;
+    if (order_id == undefined || !Number.isInteger(parseInt(order_id))) {
+      return res.status(400).send({
+        HasError: true,
+        StatusCode: 400,
+        message: "Invalid parameter.",
+      });
+    }
+    const orderCancellationResult = await orderService.orderCancel(order_id);
+    console.log(orderCancellationResult)
+
+    if (!orderCancellationResult.HasError) {
+      return res.status(200).send(orderCancellationResult);
+    } else {
+      return res.status(500).send(orderCancellationResult);
+    }
+  } catch (error) {
+    console.error(error);
+    return res.status(500).send({
+      HasError: true,
+      Message: "Some error occurred during order cancellation.",
     });
   }
 };

@@ -1,6 +1,7 @@
 const FDService = require("../service/FDService");
 const Users = require("../model/userModel");
 const Designer = require("../model/FDModel");
+const ratingService = require("../service/ratingService")
 const { Op, sequelize } = require("sequelize");
 const db = require("../dbConnection");
 const moment = require("moment");
@@ -1199,7 +1200,6 @@ exports.appointmentList = async (req, res) => {
         dataJson.id = result[i].id;
         dataJson.user_id = result[i].user_id;
         const result1 = await Service.getUserByUserId(result[i].user_id)
-
         dataJson.customer_id = result[i].customer_id;
         dataJson.appointment_code = result[i].appointment_code;
         dataJson.start_time = result[i].start_time;

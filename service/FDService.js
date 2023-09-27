@@ -723,7 +723,8 @@ exports.appointmentDetails = async (appointmentId) => {
 }
 exports.getAddressByUserId = async (user_id) => {
   const result = await UsersAddress.findOne({ where: { user_id: user_id } })
-  return result.toJSON()
+  return result
+  // return result.toJSON()
 }
 
 exports.deleteAddress = async (user_id, address_id) => {
