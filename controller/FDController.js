@@ -1192,6 +1192,7 @@ exports.appointmentList = async (req, res) => {
   try {
     const userId = req.query.user_id;
     const result = await FDService.appointmentList(userId);
+    const result1 = await Service.getUserByUserId(userId)
     const data = [];
     if (result.length !== 0) {
       for (var i in result) {
@@ -1221,6 +1222,9 @@ exports.appointmentList = async (req, res) => {
         dataJson.address_id = result[i].address_id;
         dataJson.appointment_datetime =
           result[i].appointment_date + " " + result[i].start_time;
+        dataJson.first_name = result1.first_name;
+        dataJson.last_name = result1.last_name; 
+        dataJson.full_name = (result1.first_name ? result1.first_name : "") + (result1.last_name ? " " + result1.last_name : "") 
         data.push(dataJson);
       }
       return res.status(200).send({

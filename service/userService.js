@@ -180,7 +180,6 @@ exports.getUserDetails = async (mobile_number) => {
 exports.boutiqueMap = async (user_id) => {
   const result = await db.query(`select * from sarter__boutique_customer_map where user_id=${user_id}`)
   return result[0][0]
-
 }
 exports.updateProfile = async (id, data) => {
   const result = await Users.update(data, { where: { id: id } })
