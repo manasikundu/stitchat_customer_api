@@ -5,6 +5,9 @@ const Appointment = require('../model/appointmentModel')
 
 exports.addAndUpdateRating = async (rate_id, ratingData) => {
   try {
+    var currentDate = new Date();
+    var formattedDate = currentDate.toISOString().slice(0, 19).replace("T", " ");
+    ratingData.created_at = formattedDate
     if (rate_id) {
       var editRating = await Rating.update(ratingData, { where: { id: rate_id } });
       return editRating

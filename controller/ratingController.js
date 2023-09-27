@@ -1,6 +1,8 @@
 const ratingService = require('../service/ratingService')
 const Service = require('../service/userService')
 const moment = require('moment')
+const Rating = require('../model/ratingModel')
+
 
 exports.addAndUpdateRating = async (req, res) => {
     try {
@@ -14,7 +16,7 @@ exports.addAndUpdateRating = async (req, res) => {
             return res.status(400).send({ HasError: true, Message: "Invalid flag value." });
         }
         if (rate_id) {
-            const updatedRating = await ratingService.updateRatings(rate_id, ratingData)
+            const updatedRating = await ratingService.addAndUpdateRating(rate_id, ratingData)
             if (updatedRating[0] === 1) {
                 return res.status(200).send({ HasError: false, Message: "Rating updated successfully." });
             } else if (Object.keys(ratingData).length === 0) {
@@ -23,7 +25,7 @@ exports.addAndUpdateRating = async (req, res) => {
                 return res.status(500).send({ HasError: true, Message: "Invalid rating info." });
             }
         } else {
-            const newRating = await ratingService.createRatings(ratingData)
+            const newRating = await ratingService.addAndUpdateRating(null, ratingData)
             const result = {
                 id: newRating.id,
                 user_id: newRating.user_id,
