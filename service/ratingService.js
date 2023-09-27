@@ -20,6 +20,21 @@ exports.addAndUpdateRating = async (rate_id, ratingData) => {
   }
 }
 
+exports.getRatingForAppointment = async (appointmentId) => {
+  try {
+    const ratings = await Rating.findOne({
+      where: {
+        rating_id: appointmentId,
+        rating_flag: 1, 
+      },
+    });
+
+    return ratings;
+  } catch (error) {
+    throw error;
+  }
+};
+
 exports.listRatings = async (user_id) => {
   try {
       const ratings = await Rating.findAll({where: { user_id: user_id }})

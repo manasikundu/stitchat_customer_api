@@ -230,9 +230,11 @@ exports.categoryType=async(order_id)=>{
 // cancel order
 exports.orderCancel = async (order_id) => {
   try {
-    var query = `UPDATE public.sarter__boutique_orders SET status = 8 WHERE id = ${order_id}`;
+    var query = `UPDATE public.sarter__boutique_orders AS o
+    SET "order_status" = s.id
+    FROM public.sarter__order_status_dic AS s
+    WHERE o.id = ${order_id} AND s.status = 'Order Cancelled'`
     var result = await db.query(query); 
-    console.log(result[0])
     return result[0];
   } catch (error) {
     console.log(error);
@@ -242,7 +244,10 @@ exports.orderCancel = async (order_id) => {
 
 exports.itemCancel = async (order_id) => {
   try {
-    var query = `UPDATE public.sarter__boutique_orders_items SET status = 8 WHERE order_id = ${order_id}`;
+    var query = `UPDATE public.sarter__boutique_orders_items AS i
+    SET status = s.status, status_id = 8
+    FROM public.sarter__order_status_dic AS s
+    WHERE i.order_id = ${order_id} AND s.status = 'Order Cancelled'`
     var result = await db.query(query); 
     return result[0];
   } catch (error) {

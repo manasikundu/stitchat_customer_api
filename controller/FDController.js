@@ -1354,7 +1354,15 @@ exports.fashionDesignerAppointmentDetails = async (req, res) => {
         }
       }
       fashiondesignerappointmentDetails.address = address
-
+      var appointmentRatings = await ratingService.getRatingForAppointment(appointment_id);
+      var rating = {}
+      if (appointmentRatings) {
+        appointmentRatings = appointmentRatings.toJSON()
+        rating.rate_id = appointmentRatings.id ? appointmentRatings.id : ''
+        rating.rate = appointmentRatings.rate ? appointmentRatings.rate : ''
+        rating.comment = appointmentRatings.comment ? appointmentRatings.comment : ''
+      }
+      data.fashiondesignerappointmentDetails.appointmentRatings = rating;
     } else {
       return res.status(200).send({
         HasError: false,
