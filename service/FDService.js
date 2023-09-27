@@ -398,16 +398,12 @@ exports.getWeeklyScheduleByUserId = async (user_id) => {
 exports.addAddress = async (address_id, addressData) => {
   try {
     if (address_id) {
-      // Update an existing address record in the database
-      // var updatedAddress = await UsersAddress.update({ where: { id: address_id }, ...addressData });
       var updatedAddress = await UsersAddress.update(addressData, {
         where: { id: address_id },
       });
       return updatedAddress;
     } else {
-      // Create a new address record in the database
       var newAddress = await UsersAddress.create(addressData);
-      // console.log(newAddress)
       return newAddress;
     }
   } catch (error) {

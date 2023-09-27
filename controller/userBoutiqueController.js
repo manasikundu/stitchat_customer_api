@@ -301,6 +301,9 @@ exports.getNearestBoutiqueList = async (req, res) => {
 exports.boutiqueDetails = async (req, res) => {
   try {
     const result = await BoutiqueService.getBoutiqueById(req.query.boutique_id)
+    var method_name = await Service.getCallingMethodName();
+    var apiEndpointInput = JSON.stringify(req.body);
+    apiTrack = await Service.trackApi(req.query.user_id, method_name, apiEndpointInput, req.query.device_id, req.query.device_info, req.ip);
     const finaldata = []
     const dataJson = {}
     const basicInfo = {}
