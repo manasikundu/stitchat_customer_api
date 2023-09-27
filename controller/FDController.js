@@ -1192,13 +1192,14 @@ exports.appointmentList = async (req, res) => {
   try {
     const userId = req.query.user_id;
     const result = await FDService.appointmentList(userId);
-    const result1 = await Service.getUserByUserId(userId)
     const data = [];
     if (result.length !== 0) {
       for (var i in result) {
         var dataJson = {};
         dataJson.id = result[i].id;
         dataJson.user_id = result[i].user_id;
+        const result1 = await Service.getUserByUserId(result[i].user_id)
+
         dataJson.customer_id = result[i].customer_id;
         dataJson.appointment_code = result[i].appointment_code;
         dataJson.start_time = result[i].start_time;

@@ -310,7 +310,8 @@ exports.boutiqueDetails = async (req, res) => {
     var boutiqueLogo = s3.getSignedUrl("getObject", {
       Bucket: process.env.AWS_BUCKET,
       Key: `boutique/${result.boutique_logo}`,
-      Expires: expirationTime})
+      Expires: expirationTime
+    })
     basicInfo.id = result.id ? result.id : 0
     basicInfo.boutique_name = result.boutique_name ? result.boutique_name : ''
     basicInfo.boutique_code = result.boutique_code ? result.boutique_code : ''
@@ -414,17 +415,17 @@ exports.boutiqueDetails = async (req, res) => {
       }, {}));
       data[k].category = data1;
     }
-    dataJson.services = data  
-    var latitude = req.query.latitude || 0; 
-    var longitude = req.query.longitude || 0;  
+    dataJson.services = data
+    var latitude = req.query.latitude || 0;
+    var longitude = req.query.longitude || 0;
     var serviceIds = data.map((category) => category.category.map((cat) => cat.item.map((item) => item.item_id))).flat(2).filter((item) => item);
     var serviceIdsString = serviceIds.join(',');
     var similarBoutiqueList = await db.query(`SELECT * FROM sarter__boutique_basic_info AS b WHERE id IN 
     (SELECT boutique_id FROM sarter__boutique_service_dic WHERE category_type in 
       (${data.map((category) => category.categoryType).join(',')}) AND 
       service_id IN (${serviceIdsString})) AND (CAST(b.location_lat AS double precision) = ${result.location_lat} 
-      AND CAST(b.location_lng AS double precision) = ${result.location_lng})`)  
-      
+      AND CAST(b.location_lng AS double precision) = ${result.location_lng})`)
+
     var nearbyBoutiques = []
     similarBoutiqueList[0].forEach((boutique) => {
       var boutiqueDistance = geolib.getDistance(
@@ -440,7 +441,8 @@ exports.boutiqueDetails = async (req, res) => {
         image: s3.getSignedUrl("getObject", {
           Bucket: process.env.AWS_BUCKET,
           Key: `boutique/${boutique.boutique_logo}`,
-          Expires: expirationTime}),
+          Expires: expirationTime
+        }),
         contact_number: boutique.contact_number,
         latitude: parseFloat(boutique.location_lat),
         longitude: parseFloat(boutique.location_lng),
