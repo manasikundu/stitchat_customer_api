@@ -719,11 +719,11 @@ exports.cancelAppointment = async (appointmentId,status) => {
 }
 exports.appointmentDetails = async (appointmentId) => {
   const result = await Appointment.findOne({ where: { id: appointmentId } })
-  return result.toJSON()
+  return result
 }
 exports.getAddressByUserId = async (user_id) => {
   const result = await UsersAddress.findOne({ where: { user_id: user_id } })
-  return result.toJSON()
+  return result
 }
 
 exports.deleteAddress = async (user_id, address_id) => {

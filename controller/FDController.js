@@ -98,7 +98,7 @@ exports.fashionDesignerList = async (req, res) => {
     }
     if (mobileNumber) {
       searchFilters.mobile_number = mobileNumber;
-    } 
+    }
     var boutiqueFilters = ''
     if (location) {
       boutiqueFilters = `AND (
@@ -117,7 +117,7 @@ exports.fashionDesignerList = async (req, res) => {
       var userId = user.user_id;
       var userSchedule = schedule.filter((item) => item.user_id === userId);
       var week_schedule = [];
-     
+
       var week_schedule = userSchedule.map((scheduleItem) => {
         var dayValue = scheduleItem.week_day || "";
         var start_time = scheduleItem.start_time || "";
@@ -236,7 +236,7 @@ exports.fashionDesignerList = async (req, res) => {
     var fashionDesignersWithWeekSchedule = fashionDesignersList.filter((designer) => {
       return designer.week_schedule && designer.week_schedule.length > 0;
     })
-    
+
     var limit = req.body.limit ? parseInt(req.body.limit) : null;
     var offset = req.body.offset ? parseInt(req.body.offset) : null;
 
@@ -246,7 +246,7 @@ exports.fashionDesignerList = async (req, res) => {
       limit: limit,
       offset: offset,
     };
-  
+
     // Generate access token using the provided secretKey
     var secretKey = "tensorflow";
     var token = generateAccessToken(mobile_number, secretKey);
@@ -410,7 +410,7 @@ exports.FashionDesignerDetails = async (req, res) => {
       var firstAvailableDay = sortedSchedule.find((item) => item.check_availability === 1);
       var lastAvailableDay = [...sortedSchedule].reverse().find((item) => item.check_availability === 1);
       if (firstAvailableDay && lastAvailableDay) {
-        var startTime = moment(firstAvailableDay.start_time,"HH:mm:ss").format("hh:mm A");
+        var startTime = moment(firstAvailableDay.start_time, "HH:mm:ss").format("hh:mm A");
         var endTime = moment(lastAvailableDay.end_time, "HH:mm:ss").format("hh:mm A");
         availableTime = `${startTime} - ${endTime}`;
       }
@@ -520,7 +520,7 @@ exports.fashionDesignerTimeSlot = async (req, res) => {
         StatusCode: 400,
         Message: "Invalid parameter.",
       });
-    }    
+    }
     designerDetails = await FDService.getDesignerDetailsByUserId(user_id)
     if (designerDetails.length === 0) {
       return res.status(404).send({
@@ -538,24 +538,24 @@ exports.fashionDesignerTimeSlot = async (req, res) => {
     var schedule = await FDService.getWeeklyScheduleByUserId(user_id);
     // console.log(schedule)
     var weekSchedules = schedule.map((designer) => {
-    var weekDay = designer.week_day;
-    var availabilityText = designer.check_availability === 1 ? true : false;
-    var startTime = designer.start_time;
-    var endTime = designer.end_time;
-    var dayConfig = daysOfWeekConfig.find((config) => config.value === weekDay);
-    var dayName = dayConfig ? dayConfig.day : "";
-    var formatTime = (time) => moment(time, "HH:mm:ss").format("hh:mm A");
-    var resultTime = `${formatTime(startTime)} - ${formatTime(endTime)}`;   
-    return {
-      level: dayName,
-      key: weekDay,
-      availability: availabilityText,
+      var weekDay = designer.week_day;
+      var availabilityText = designer.check_availability === 1 ? true : false;
+      var startTime = designer.start_time;
+      var endTime = designer.end_time;
+      var dayConfig = daysOfWeekConfig.find((config) => config.value === weekDay);
+      var dayName = dayConfig ? dayConfig.day : "";
+      var formatTime = (time) => moment(time, "HH:mm:ss").format("hh:mm A");
+      var resultTime = `${formatTime(startTime)} - ${formatTime(endTime)}`;
+      return {
+        level: dayName,
+        key: weekDay,
+        availability: availabilityText,
       };
-    }); 
+    });
     var boutiqueInfo = await FDService.getBoutiqueInfo();
     var availabilitySlots = await FDService.getAvailability(user_id);
     var processedSlots = new Set();
-    var response = {appointment_slot_time: [],};
+    var response = { appointment_slot_time: [], };
     var startDate = moment().add(1, "day");
     var endDate = moment().add(8, "days");
     availabilitySlots.forEach((slot) => {
@@ -567,7 +567,7 @@ exports.fashionDesignerTimeSlot = async (req, res) => {
       var responses = [];
       var customer_id;
       for (var slot of slots) {
-        var isAvailable = await FDService.isSlotAvailable(user_id,slot.start_time,slot.end_time);
+        var isAvailable = await FDService.isSlotAvailable(user_id, slot.start_time, slot.end_time);
         var status, check_availability;
         if (isAvailable && isAvailable.status === 1) {
           status = 0;
@@ -602,7 +602,7 @@ exports.fashionDesignerTimeSlot = async (req, res) => {
       return responses;
     };
     var firstAvailabilityFound = false;
-   
+
     var generateSlotResponseForDate = async (date) => {
       var dayOfWeek = date.format("dddd");
       var availabilitySlotsForDay = availabilitySlots.filter((slot) => daysOfWeekConfig[slot.week_day - 1].day === dayOfWeek);
@@ -691,7 +691,7 @@ exports.fashionDesignerTimeSlot = async (req, res) => {
         date: date.format("YYYY-MM-DD"),
         dayname: date.format("dddd"),
         availability: availabilityCheck,
-        selected: selected, 
+        selected: selected,
         timerange: timerange,
       };
       return daySlot;
@@ -1224,8 +1224,8 @@ exports.appointmentList = async (req, res) => {
         dataJson.appointment_datetime =
           result[i].appointment_date + " " + result[i].start_time;
         dataJson.first_name = result1.first_name;
-        dataJson.last_name = result1.last_name; 
-        dataJson.full_name = (result1.first_name ? result1.first_name : "") + (result1.last_name ? " " + result1.last_name : "") 
+        dataJson.last_name = result1.last_name;
+        dataJson.full_name = (result1.first_name ? result1.first_name : "") + (result1.last_name ? " " + result1.last_name : "")
         data.push(dataJson);
       }
       return res.status(200).send({
@@ -1277,8 +1277,26 @@ exports.deleteAddress = async (req, res) => {
 exports.fashionDesignerAppointmentDetails = async (req, res) => {
   try {
     const { user_id, appointment_id } = req.query;
-    const result1 = await FDService.appointmentDetails(appointment_id);
-    const result2 = await FDService.getAddressByUserId(user_id);
+    var result1 = await FDService.appointmentDetails(appointment_id);
+    if (result1) {
+      result1 = result1.toJSON()
+    } else {
+      return res.status(200).send({
+        HasError: false,
+        message: "No data found",
+        result: {},
+      });
+    }
+    var result2 = await FDService.getAddressByUserId(user_id);
+    if (result2) {
+      result2 = result2.toJSON()
+    } else {
+      return res.status(200).send({
+        HasError: false,
+        message: "No data found",
+        result: {},
+      });
+    }
     const result3 = await Service.getUserByUserId(result1.user_id);
     var stateName = await FDService.stateList(result2.state);
     var cityName = await FDService.cityList(result2.city);
