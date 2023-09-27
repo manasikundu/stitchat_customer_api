@@ -117,6 +117,7 @@ exports.fashionDesignerList = async (req, res) => {
       var userId = user.user_id;
       var userSchedule = schedule.filter((item) => item.user_id === userId);
       var week_schedule = [];
+     
       var week_schedule = userSchedule.map((scheduleItem) => {
         var dayValue = scheduleItem.week_day || "";
         var start_time = scheduleItem.start_time || "";
@@ -567,7 +568,7 @@ exports.fashionDesignerTimeSlot = async (req, res) => {
     var processedSlots = new Set();
     var response = {appointment_slot_time: [],};
     var startDate = moment().add(1, "day");
-    var endDate = moment().add(7, "days");
+    var endDate = moment().add(8, "days");
     availabilitySlots.forEach((slot) => {
       if (!processedSlots.has(slot.id)) {
         processedSlots.add(slot.id);
