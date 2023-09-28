@@ -537,7 +537,6 @@ exports.fashionDesignerTimeSlot = async (req, res) => {
         ? firstName + " " + lastName
         : firstName || lastName;
     var schedule = await FDService.getWeeklyScheduleByUserId(user_id);
-// console.log(schedule)
     var weekSchedules = schedule.map((designer) => {
       var weekDay = designer.week_day;
       var availabilityText = designer.check_availability === 1 ? true : false;
@@ -603,20 +602,7 @@ exports.fashionDesignerTimeSlot = async (req, res) => {
       return responses;
     };
     var firstAvailabilityFound = false;
-    var bookedSlots = await FDService.bookedSlots(user_id);
-
     var generateSlotResponseForDate = async (date) => {
-      function checkIfTimeRangeIsBooked(timeRange) {
-        // Filter the booked slots for the given date and time range
-        const dateStr = date.format("YYYY-MM-DD");
-        const startTime = timeRange[0].start_time;
-        const endTime = timeRange[timeRange.length - 1].end_time;
-        const bookedForTimeRange = bookedSlots.filter((slot) => {
-          return slot.date === dateStr && slot.slot_start_time === startTime && slot.slot_end_time === endTime;
-        });
-        
-        return bookedForTimeRange.length > 0;
-      }
       var dayOfWeek = date.format("dddd");
       var availabilitySlotsForDay = availabilitySlots.filter((slot) => daysOfWeekConfig[slot.week_day - 1].day === dayOfWeek);
       var availabilityCheck = false;
@@ -687,28 +673,26 @@ exports.fashionDesignerTimeSlot = async (req, res) => {
           startTime = moment(slotEndTime, "HH:mm:ss");
         }
       }
-      // // Check if any slots are booked for the current date and time range (morning, afternoon, evening)
-      // var morningBooked = checkIfTimeRangeIsBooked(morningSlots);
-      // var afternoonBooked = checkIfTimeRangeIsBooked(afternoonSlots);
-      // var eveningBooked = checkIfTimeRangeIsBooked(eveningSlots);
-
-      // Check if any slots are booked for the current date and time range (morning, afternoon, evening)
-  var morningBooked = checkIfTimeRangeIsBooked(morningSlots);
-  var afternoonBooked = checkIfTimeRangeIsBooked(afternoonSlots);
-  var eveningBooked = checkIfTimeRangeIsBooked(eveningSlots);
-
-  // Set availability based on booking status directly
-  morningSlots[0].availability = !morningBooked;
-  afternoonSlots[0].availability = !afternoonBooked;
-  eveningSlots[0].availability = !eveningBooked;
       var timerange = availabilityCheck
         ? {
-          morning: await generateSlotResponse(morningSlots, bookedSlots),
-          afternoon: await generateSlotResponse(afternoonSlots, bookedSlots),
-          evening: await generateSlotResponse(eveningSlots, bookedSlots),
+          morning: await generateSlotResponse(morningSlots),
+          afternoon: await generateSlotResponse(afternoonSlots),
+          evening: await generateSlotResponse(eveningSlots),
         }
         : {};
       var selected = false;
+      // console.log(user_id)
+      // var userId = 1378
+      // var fd_start_time = '11:00:00'
+      // var fd_end_time = '11:30:00'
+      // var appointment_date = '2023-09-12'
+      // var bookedSlots = await FDService.slotAvailability(userId, fd_start_time, fd_end_time, appointment_date)
+      // console.log(bookedSlots)
+      // if (bookedSlots.user_id && bookedSlots.start_time && bookedSlots.end_time && bookedSlots.appointment_date) {
+      //   check_availability = true
+      // } else {
+      //   check_availability = false
+      // }
       if (availabilityCheck && !firstAvailabilityFound) {
         selected = true;
         firstAvailabilityFound = true;
