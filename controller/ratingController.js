@@ -11,7 +11,7 @@ exports.addAndUpdateRating = async (req, res) => {
         var method_name = await Service.getCallingMethodName();
         var apiEndpointInput = JSON.stringify(req.body);
         apiTrack = await Service.trackApi(req.query.user_id, method_name, apiEndpointInput, req.query.device_id, req.query.device_info, req.ip);
-        const ratingData = { user_id, rating_id, rating_flag, rate, comment };
+        const ratingData = { user_id, rating_id, rating_flag, rate: parseFloat(rate), comment };
         if (rating_flag !== 1 && rating_flag !== 2) {
             return res.status(400).send({ HasError: true, Message: "Invalid flag value." });
         }
@@ -31,7 +31,7 @@ exports.addAndUpdateRating = async (req, res) => {
                 user_id: newRating.user_id,
                 rating_id: newRating.rating_id,
                 rating_flag: newRating.rating_flag,
-                rate: newRating.rate,
+                rate: parseFloat(newRating.rate),
                 comment: newRating.comment,
                 created_at: moment(newRating.created_at).format('YYYY-MM-DD HH:mm:ss'),
                 ip: req.ip,
