@@ -1278,8 +1278,6 @@ exports.fashionDesignerAppointmentDetails = async (req, res) => {
   try {
     const { user_id, appointment_id } = req.query;
     var result1 = await FDService.appointmentDetails(appointment_id);
-    var appointmentRatings = await ratingService.getRatingForAppointment(appointment_id);
-
     const data = {}
     var formatTime = (time) => moment(time, "HH:mm:ss").format("hh:mm A");
 
@@ -1357,7 +1355,7 @@ exports.fashionDesignerAppointmentDetails = async (req, res) => {
         }
       }
       fashiondesignerappointmentDetails.address = address
-      // var appointmentRatings = await ratingService.getRatingForAppointment(appointment_id);
+      var appointmentRatings = await ratingService.getRatingForAppointment(appointment_id);
       var rating = {}
       if (appointmentRatings) {
         appointmentRatings = appointmentRatings.toJSON()
