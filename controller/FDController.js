@@ -1278,6 +1278,8 @@ exports.fashionDesignerAppointmentDetails = async (req, res) => {
   try {
     const { user_id, appointment_id } = req.query;
     var result1 = await FDService.appointmentDetails(appointment_id);
+    var appointmentRatings = await ratingService.getRatingForAppointment(appointment_id);
+
     const data = {}
     var formatTime = (time) => moment(time, "HH:mm:ss").format("hh:mm A");
 
@@ -1306,6 +1308,7 @@ exports.fashionDesignerAppointmentDetails = async (req, res) => {
       fashiondesignerappointmentDetails.viewendtime = formatTime(result1.end_time)
       fashiondesignerappointmentDetails.cancelflag = true
       fashiondesignerappointmentDetails.reschedule = true
+      fashiondesignerappointmentDetails.rating_flag = false
       if (result1.status == 0) {
         fashiondesignerappointmentDetails.statusmessage = "Pending";
       }
@@ -1354,7 +1357,7 @@ exports.fashionDesignerAppointmentDetails = async (req, res) => {
         }
       }
       fashiondesignerappointmentDetails.address = address
-      var appointmentRatings = await ratingService.getRatingForAppointment(appointment_id);
+      // var appointmentRatings = await ratingService.getRatingForAppointment(appointment_id);
       var rating = {}
       if (appointmentRatings) {
         appointmentRatings = appointmentRatings.toJSON()
@@ -1362,14 +1365,17 @@ exports.fashionDesignerAppointmentDetails = async (req, res) => {
         rating.rate = appointmentRatings.rate ? appointmentRatings.rate : ''
         rating.comment = appointmentRatings.comment ? appointmentRatings.comment : ''
       }
-      data.fashiondesignerappointmentDetails.appointmentRatings = rating;
-      if (Object.keys(rating).length === 0) {
-        data.fashiondesignerappointmentDetails.appointmentRatings = {
-          "rate_id": '',
-          "rate": '',
-          "comment": ''
-        };
+      else {
+        rating.rate_id = '';
+        rating.rate = '';
+        rating.comment = '';
       }
+      if (appointmentRatings) {
+        fashiondesignerappointmentDetails.rating_flag = true
+      } else {
+        fashiondesignerappointmentDetails.rating_flag = false
+      }
+      data.appointmentRatings = rating;
     } else {
       return res.status(200).send({
         HasError: false,
