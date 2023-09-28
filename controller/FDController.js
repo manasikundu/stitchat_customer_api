@@ -537,7 +537,6 @@ exports.fashionDesignerTimeSlot = async (req, res) => {
         ? firstName + " " + lastName
         : firstName || lastName;
     var schedule = await FDService.getWeeklyScheduleByUserId(user_id);
-    // console.log(schedule)
     var weekSchedules = schedule.map((designer) => {
       var weekDay = designer.week_day;
       var availabilityText = designer.check_availability === 1 ? true : false;
@@ -603,8 +602,20 @@ exports.fashionDesignerTimeSlot = async (req, res) => {
       return responses;
     };
     var firstAvailabilityFound = false;
+    var bookedSlots = await FDService.bookedSlots(user_id);
 
     var generateSlotResponseForDate = async (date) => {
+      function checkIfTimeRangeIsBooked(timeRange) {
+        // Filter the booked slots for the given date and time range
+        const dateStr = date.format("YYYY-MM-DD");
+        const startTime = timeRange[0].start_time;
+        const endTime = timeRange[timeRange.length - 1].end_time;
+        const bookedForTimeRange = bookedSlots.filter((slot) => {
+          return slot.date === dateStr && slot.slot_start_time === startTime && slot.slot_end_time === endTime;
+        });
+        
+        return bookedForTimeRange.length > 0;
+      }
       var dayOfWeek = date.format("dddd");
       var availabilitySlotsForDay = availabilitySlots.filter((slot) => daysOfWeekConfig[slot.week_day - 1].day === dayOfWeek);
       var availabilityCheck = false;
@@ -675,11 +686,25 @@ exports.fashionDesignerTimeSlot = async (req, res) => {
           startTime = moment(slotEndTime, "HH:mm:ss");
         }
       }
+      // // Check if any slots are booked for the current date and time range (morning, afternoon, evening)
+      // var morningBooked = checkIfTimeRangeIsBooked(morningSlots);
+      // var afternoonBooked = checkIfTimeRangeIsBooked(afternoonSlots);
+      // var eveningBooked = checkIfTimeRangeIsBooked(eveningSlots);
+
+      // Check if any slots are booked for the current date and time range (morning, afternoon, evening)
+  var morningBooked = checkIfTimeRangeIsBooked(morningSlots);
+  var afternoonBooked = checkIfTimeRangeIsBooked(afternoonSlots);
+  var eveningBooked = checkIfTimeRangeIsBooked(eveningSlots);
+
+  // Set availability based on booking status directly
+  morningSlots[0].availability = !morningBooked;
+  afternoonSlots[0].availability = !afternoonBooked;
+  eveningSlots[0].availability = !eveningBooked;
       var timerange = availabilityCheck
         ? {
-          morning: await generateSlotResponse(morningSlots),
-          afternoon: await generateSlotResponse(afternoonSlots),
-          evening: await generateSlotResponse(eveningSlots),
+          morning: await generateSlotResponse(morningSlots, bookedSlots),
+          afternoon: await generateSlotResponse(afternoonSlots, bookedSlots),
+          evening: await generateSlotResponse(eveningSlots, bookedSlots),
         }
         : {};
       var selected = false;
@@ -1283,7 +1308,7 @@ exports.fashionDesignerAppointmentDetails = async (req, res) => {
 
     if (result1) {
       result1 = result1.toJSON()
-      const result3 = await Service.getUserByUserId(result1.user_id);
+      const result3 = await Service.getUserByUserId(result1.user_id)      
       const fashiondesignerappointmentDetails = {}
       fashiondesignerappointmentDetails.id = result1.id ? result1.id : ''
       fashiondesignerappointmentDetails.fashion_designer_id = result1.user_id ? result1.user_id : ''
@@ -1301,7 +1326,7 @@ exports.fashionDesignerAppointmentDetails = async (req, res) => {
       fashiondesignerappointmentDetails.fashiondesigner_firstname = result3.first_name ? result3.first_name : ''
       fashiondesignerappointmentDetails.fashiondesigner_lastname = result3.last_name ? result3.last_name : ''
       fashiondesignerappointmentDetails.profile_img = result3.profile_photo ? result3.profile_photo : ''
-      fashiondesignerappointmentDetails.experience = ''
+      fashiondesignerappointmentDetails.experience = 0
       fashiondesignerappointmentDetails.viewstarttime = formatTime(result1.start_time)
       fashiondesignerappointmentDetails.viewendtime = formatTime(result1.end_time)
       fashiondesignerappointmentDetails.cancelflag = true
@@ -1365,8 +1390,8 @@ exports.fashionDesignerAppointmentDetails = async (req, res) => {
         rating.comment = appointmentRatings.comment ? appointmentRatings.comment : ''
       }
       else {
-        rating.rate_id = '';
-        rating.rate = '';
+        rating.rate_id = 0;
+        rating.rate = 0;
         rating.comment = '';
       }
       if (appointmentRatings) {
