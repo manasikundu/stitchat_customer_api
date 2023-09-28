@@ -1299,9 +1299,9 @@ exports.fashionDesignerAppointmentDetails = async (req, res) => {
       result1 = result1.toJSON()
       const result3 = await Service.getUserByUserId(result1.user_id)      
       const fashiondesignerappointmentDetails = {}
-      fashiondesignerappointmentDetails.id = result1.id ? result1.id : ''
-      fashiondesignerappointmentDetails.fashion_designer_id = result1.user_id ? result1.user_id : ''
-      fashiondesignerappointmentDetails.customer_id = result1.customer_id ? result1.customer_id : ''
+      fashiondesignerappointmentDetails.id = result1.id ? result1.id : 0
+      fashiondesignerappointmentDetails.fashion_designer_id = result1.user_id ? result1.user_id : 0
+      fashiondesignerappointmentDetails.customer_id = result1.customer_id ? result1.customer_id : 0
       fashiondesignerappointmentDetails.appointment_code = result1.appointment_code ? result1.appointment_code : ''
       fashiondesignerappointmentDetails.start_time = result1.start_time ? result1.start_time : ''
       fashiondesignerappointmentDetails.end_time = result1.end_time ? result1.end_time : ''
@@ -1311,7 +1311,7 @@ exports.fashionDesignerAppointmentDetails = async (req, res) => {
       fashiondesignerappointmentDetails.status = result1.status ? result1.status : ''
       fashiondesignerappointmentDetails.add_date = result1.created_at ? result1.created_at : ''
       fashiondesignerappointmentDetails.update_date = result1.update_at ? result1.update_at : ''
-      fashiondesignerappointmentDetails.address_id = result1.address_id ? result1.address_id : ''
+      fashiondesignerappointmentDetails.address_id = result1.address_id ? result1.address_id : 0
       fashiondesignerappointmentDetails.fashiondesigner_firstname = result3.first_name ? result3.first_name : ''
       fashiondesignerappointmentDetails.fashiondesigner_lastname = result3.last_name ? result3.last_name : ''
       fashiondesignerappointmentDetails.profile_img = result3.profile_photo ? result3.profile_photo : ''
@@ -1340,8 +1340,8 @@ exports.fashionDesignerAppointmentDetails = async (req, res) => {
 
       if (result2) {
         result2 = result2.toJSON()
-        address.id = result2.id ? result2.id : ''
-        address.user_id = result2.user_id ? result2.user_id : ''
+        address.id = result2.id ? result2.id : 0
+        address.user_id = result2.user_id ? result2.user_id : 0
         address.name = result2.first_name ? result2.first_name : ''
         address.clname = result2.last_name ? result2.last_name : ''
         address.street = result2.street ? result2.street : ''
