@@ -507,14 +507,7 @@ exports.fashionDesignerTimeSlot = async (req, res) => {
     var mobile_number = req.body.mobile_number;
     var method_name = await Service.getCallingMethodName();
     var apiEndpointInput = JSON.stringify(req.body);
-    apiTrack = await Service.trackApi(
-      req.query.user_id,
-      method_name,
-      apiEndpointInput,
-      req.query.device_id,
-      req.query.device_info,
-      req.ip
-    );
+    var apiTrack = await Service.trackApi(req.query.user_id,method_name,apiEndpointInput,req.query.device_id,req.query.device_info,req.ip);
     if (isNaN(user_id) || user_id === "") {
       return res.status(400).send({
         HasError: true,
@@ -532,10 +525,7 @@ exports.fashionDesignerTimeSlot = async (req, res) => {
     }
     var firstName = designerDetails[0]["first_name"];
     var lastName = designerDetails[0]["last_name"];
-    var fullName =
-      firstName && lastName
-        ? firstName + " " + lastName
-        : firstName || lastName;
+    var fullName =firstName && lastName? firstName + " " + lastName: firstName || lastName;
     var schedule = await FDService.getWeeklyScheduleByUserId(user_id);
     var weekSchedules = schedule.map((designer) => {
       var weekDay = designer.week_day;
@@ -557,7 +547,7 @@ exports.fashionDesignerTimeSlot = async (req, res) => {
     var processedSlots = new Set();
     var response = { appointment_slot_time: [], };
     var startDate = moment().add(1, "day");
-    var endDate = moment().add(8, "days");
+    var endDate = moment().add(7, "days");
     availabilitySlots.forEach((slot) => {
       if (!processedSlots.has(slot.id)) {
         processedSlots.add(slot.id);
@@ -565,7 +555,7 @@ exports.fashionDesignerTimeSlot = async (req, res) => {
     });
     var generateSlotResponse = async (slots) => {
       var responses = [];
-      var customer_id;
+      // var customer_id;
       for (var slot of slots) {
         var isAvailable = await FDService.isSlotAvailable(user_id, slot.start_time, slot.end_time);
         var status, check_availability;
@@ -581,8 +571,22 @@ exports.fashionDesignerTimeSlot = async (req, res) => {
         var foundConfig = daysOfWeekConfig.find((config) => config.value === slot.week_day);
         var dayValue = foundConfig?.value || "";
         var durationConfig = appointmentTimeConfig.find((config) => config.slot === "duration");
-        var duration = parseInt(durationConfig.time);
-        var mybook = user_id === customer_id ? 1 : 0;
+        var duration = parseInt(durationConfig.time);              
+        var bookedSlots = await FDService.bookedSlots(user_id);
+        var check_availability = true; 
+        for (var i = 0; i < bookedSlots.length; i++) {
+          if (slot.start_time === bookedSlots[i].start_time &&slot.end_time === bookedSlots[i].end_time &&slot.appointment_date === bookedSlots[i].appointment_date) {
+            check_availability = false; // Set to false if a match is found
+            break; 
+          }
+        }
+        var hasBookedSlot = bookedSlots.some(bookedSlot => (
+          bookedSlot.user_id === customer_id &&
+          bookedSlot.start_time === slot.start_time &&
+          bookedSlot.end_time === slot.end_time &&
+          bookedSlot.appointment_date === slot.appointment_date
+        ));    
+        var mybook = hasBookedSlot ? 1 : 0 
         responses.push({
           status: status,
           mybook: mybook,
@@ -617,59 +621,24 @@ exports.fashionDesignerTimeSlot = async (req, res) => {
       var eveningSlots = [];
       if (availabilityCheck) {
         var fashionDesignerDay = availabilitySlotsForDay[0]; // Assume the first slot
-        var fashionDesignerStartTime = moment(
-          fashionDesignerDay.start_time,
-          "HH:mm:ss"
-        );
-        var fashionDesignerEndTime = moment(
-          fashionDesignerDay.end_time,
-          "HH:mm:ss"
-        );
+        var fashionDesignerStartTime = moment(fashionDesignerDay.start_time,"HH:mm:ss");
+        var fashionDesignerEndTime = moment(fashionDesignerDay.end_time,"HH:mm:ss");
         var startTime = fashionDesignerStartTime.clone();
         var endTime = fashionDesignerEndTime.clone();
         while (startTime < endTime) {
-          var slotEndTime = moment(startTime, "HH:mm:ss")
-            .add(30, "minutes")
-            .format("HH:mm:ss");
-          if (
-            moment(startTime, "HH:mm:ss").isBetween(
-              fashionDesignerStartTime,
-              fashionDesignerEndTime
-            )
-          ) {
-            if (
-              moment(startTime, "HH:mm:ss").isBetween(
-                moment("08:00:00", "HH:mm:ss"),
-                moment("12:00:00", "HH:mm:ss")
-              )
-            ) {
+          var slotEndTime = moment(startTime, "HH:mm:ss").add(30, "minutes").format("HH:mm:ss");
+          if (moment(startTime, "HH:mm:ss").isBetween(fashionDesignerStartTime,fashionDesignerEndTime)) {
+            if (moment(startTime, "HH:mm:ss").isBetween(moment("08:00:00", "HH:mm:ss"), moment("12:00:00", "HH:mm:ss"))) {
               morningSlots.push({
                 start_time: startTime.format("HH:mm:ss"),
                 end_time: slotEndTime,
               });
-            } else if (
-              moment(startTime, "HH:mm:ss").isBetween(
-                moment("12:00:00", "HH:mm:ss"),
-                moment("17:00:00", "HH:mm:ss")
-              )
-            ) {
-              afternoonSlots.push({
-                start_time: startTime.format("HH:mm:ss"),
-                end_time: slotEndTime,
-              });
-            } else if (
-              moment(startTime, "HH:mm:ss").isBetween(
-                moment("17:00:00", "HH:mm:ss"),
-                moment("20:00:00", "HH:mm:ss")
-              )
-            ) {
-              eveningSlots.push({
-                start_time: startTime.format("HH:mm:ss"),
-                end_time: slotEndTime,
-              });
+            } else if (moment(startTime, "HH:mm:ss").isBetween(moment("12:00:00", "HH:mm:ss"),moment("17:00:00", "HH:mm:ss"))) {
+              afternoonSlots.push({start_time: startTime.format("HH:mm:ss"),end_time: slotEndTime,});
+            } else if (moment(startTime, "HH:mm:ss").isBetween(moment("17:00:00", "HH:mm:ss"), moment("20:00:00", "HH:mm:ss"))) {
+              eveningSlots.push({start_time: startTime.format("HH:mm:ss"),end_time: slotEndTime,});
             }
           }
-
           startTime = moment(slotEndTime, "HH:mm:ss");
         }
       }
@@ -681,18 +650,6 @@ exports.fashionDesignerTimeSlot = async (req, res) => {
         }
         : {};
       var selected = false;
-      // console.log(user_id)
-      // var userId = 1378
-      // var fd_start_time = '11:00:00'
-      // var fd_end_time = '11:30:00'
-      // var appointment_date = '2023-09-12'
-      // var bookedSlots = await FDService.slotAvailability(userId, fd_start_time, fd_end_time, appointment_date)
-      // console.log(bookedSlots)
-      // if (bookedSlots.user_id && bookedSlots.start_time && bookedSlots.end_time && bookedSlots.appointment_date) {
-      //   check_availability = true
-      // } else {
-      //   check_availability = false
-      // }
       if (availabilityCheck && !firstAvailabilityFound) {
         selected = true;
         firstAvailabilityFound = true;
@@ -712,6 +669,23 @@ exports.fashionDesignerTimeSlot = async (req, res) => {
       response.appointment_slot_time.push(daySlot);
       startDate.add(1, "day");
     }
+    response.appointment_slot_time = response.appointment_slot_time.map((daySlot) => {
+      if (daySlot.availability) {
+        daySlot.timerange.morning = daySlot.timerange.morning.map((morningSlot) => {
+          morningSlot.date = daySlot.date;
+          return morningSlot;
+        });
+        daySlot.timerange.afternoon = daySlot.timerange.afternoon.map((afternoonSlot) => {
+          afternoonSlot.date = daySlot.date;
+          return afternoonSlot;
+        });
+        daySlot.timerange.evening = daySlot.timerange.evening.map((eveningSlot) => {
+          eveningSlot.date = daySlot.date;
+          return eveningSlot;
+        });
+      }
+      return daySlot;
+    });
     var secretKey = "tensorflow";
     var token = generateAccessToken(mobile_number, secretKey);
     if (!token) {
