@@ -537,6 +537,7 @@ exports.fashionDesignerTimeSlot = async (req, res) => {
         ? firstName + " " + lastName
         : firstName || lastName;
     var schedule = await FDService.getWeeklyScheduleByUserId(user_id);
+// console.log(schedule)
     var weekSchedules = schedule.map((designer) => {
       var weekDay = designer.week_day;
       var availabilityText = designer.check_availability === 1 ? true : false;

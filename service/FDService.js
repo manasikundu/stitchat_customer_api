@@ -584,6 +584,21 @@ exports.slotAvailability = async (user_id, start_time, end_time, appointment_dat
   }
 };
 
+exports.bookedSlots = async (user_id) => {
+  try {
+    var query = `
+    SELECT *
+      FROM public.sarter__fashion_designer_appointment
+      WHERE user_id = ${user_id}
+    `;
+    var result = await db.query(query);
+    return result[0]
+  } catch (error) {
+    return error;
+  }
+};
+
+
 exports.bookAppointment = async (appointmentData) => {
   try {
     var isSlotAvailable = await exports.slotAvailability(
