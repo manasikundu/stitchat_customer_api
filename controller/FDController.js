@@ -515,7 +515,7 @@ exports.fashionDesignerTimeSlot = async (req, res) => {
         Message: "Invalid parameter.",
       });
     }
-    designerDetails = await FDService.getDesignerDetailsByUserId(user_id)
+    designerDetails = await FDService.getDesignerDetailsByUserId(user_id);
     if (designerDetails.length === 0) {
       return res.status(404).send({
         HasError: true,
@@ -525,7 +525,7 @@ exports.fashionDesignerTimeSlot = async (req, res) => {
     }
     var firstName = designerDetails[0]["first_name"];
     var lastName = designerDetails[0]["last_name"];
-    var fullName =firstName && lastName? firstName + " " + lastName: firstName || lastName;
+    var fullName = firstName && lastName ? firstName + " " + lastName : firstName || lastName;
     var schedule = await FDService.getWeeklyScheduleByUserId(user_id);
     var weekSchedules = schedule.map((designer) => {
       var weekDay = designer.week_day;
@@ -545,7 +545,7 @@ exports.fashionDesignerTimeSlot = async (req, res) => {
     var boutiqueInfo = await FDService.getBoutiqueInfo();
     var availabilitySlots = await FDService.getAvailability(user_id);
     var processedSlots = new Set();
-    var response = { appointment_slot_time: [], };
+    var response = { appointment_slot_time: [] };
     var startDate = moment().add(1, "day");
     var endDate = moment().add(7, "days");
     availabilitySlots.forEach((slot) => {
@@ -555,7 +555,6 @@ exports.fashionDesignerTimeSlot = async (req, res) => {
     });
     var generateSlotResponse = async (slots) => {
       var responses = [];
-      // var customer_id;
       for (var slot of slots) {
         var isAvailable = await FDService.isSlotAvailable(user_id, slot.start_time, slot.end_time);
         var status, check_availability;
@@ -571,22 +570,26 @@ exports.fashionDesignerTimeSlot = async (req, res) => {
         var foundConfig = daysOfWeekConfig.find((config) => config.value === slot.week_day);
         var dayValue = foundConfig?.value || "";
         var durationConfig = appointmentTimeConfig.find((config) => config.slot === "duration");
-        var duration = parseInt(durationConfig.time);              
+        var duration = parseInt(durationConfig.time);
         var bookedSlots = await FDService.bookedSlots(user_id);
-        var check_availability = true; 
+        var check_availability = true;
         for (var i = 0; i < bookedSlots.length; i++) {
-          if (slot.start_time === bookedSlots[i].start_time &&slot.end_time === bookedSlots[i].end_time &&slot.appointment_date === bookedSlots[i].appointment_date) {
+          if (
+            slot.start_time === bookedSlots[i].start_time &&
+            slot.end_time === bookedSlots[i].end_time &&
+            slot.appointment_date === bookedSlots[i].appointment_date
+          ) {
             check_availability = false; // Set to false if a match is found
-            break; 
+            break;
           }
         }
-        var hasBookedSlot = bookedSlots.some(bookedSlot => (
+        var hasBookedSlot = bookedSlots.some((bookedSlot) => 
           bookedSlot.user_id === customer_id &&
           bookedSlot.start_time === slot.start_time &&
           bookedSlot.end_time === slot.end_time &&
           bookedSlot.appointment_date === slot.appointment_date
-        ));    
-        var mybook = hasBookedSlot ? 1 : 0 
+        );
+        var mybook = hasBookedSlot ? 1 : 0;
         responses.push({
           status: status,
           mybook: mybook,
@@ -597,9 +600,7 @@ exports.fashionDesignerTimeSlot = async (req, res) => {
           slot_start_time: slotStartTime.format("HH:mm:ss"),
           slot_end_time: slotEndTime.format("HH:mm:ss"),
           slot_view_time: slotStartTime.format("hh:mm A"),
-          slot_view_time_details: `${slotStartTime.format(
-            "hh:mm A"
-          )} - ${slotEndTime.format("hh:mm A")}`,
+          slot_view_time_details: `${slotStartTime.format("hh:mm A")} - ${slotEndTime.format("hh:mm A")}`,
           date: moment().add(dayValue, "days").format("YYYY-MM-DD"),
         });
       }
@@ -621,25 +622,48 @@ exports.fashionDesignerTimeSlot = async (req, res) => {
       var eveningSlots = [];
       if (availabilityCheck) {
         var fashionDesignerDay = availabilitySlotsForDay[0]; // Assume the first slot
-        var fashionDesignerStartTime = moment(fashionDesignerDay.start_time,"HH:mm:ss");
-        var fashionDesignerEndTime = moment(fashionDesignerDay.end_time,"HH:mm:ss");
-        var startTime = fashionDesignerStartTime.clone();
-        var endTime = fashionDesignerEndTime.clone();
-        while (startTime < endTime) {
-          var slotEndTime = moment(startTime, "HH:mm:ss").add(30, "minutes").format("HH:mm:ss");
-          if (moment(startTime, "HH:mm:ss").isBetween(fashionDesignerStartTime,fashionDesignerEndTime)) {
-            if (moment(startTime, "HH:mm:ss").isBetween(moment("08:00:00", "HH:mm:ss"), moment("12:00:00", "HH:mm:ss"))) {
-              morningSlots.push({
-                start_time: startTime.format("HH:mm:ss"),
-                end_time: slotEndTime,
-              });
-            } else if (moment(startTime, "HH:mm:ss").isBetween(moment("12:00:00", "HH:mm:ss"),moment("17:00:00", "HH:mm:ss"))) {
-              afternoonSlots.push({start_time: startTime.format("HH:mm:ss"),end_time: slotEndTime,});
-            } else if (moment(startTime, "HH:mm:ss").isBetween(moment("17:00:00", "HH:mm:ss"), moment("20:00:00", "HH:mm:ss"))) {
-              eveningSlots.push({start_time: startTime.format("HH:mm:ss"),end_time: slotEndTime,});
-            }
+        var startTime = fashionDesignerDay.start_time;
+        var endTime = fashionDesignerDay.end_time;
+        var startTimeParts = startTime.split(':');
+        var endTimeParts = endTime.split(':');
+        var startHour = parseInt(startTimeParts[0]);
+        var startMinute = parseInt(startTimeParts[1]);
+        var endHour = parseInt(endTimeParts[0]);
+        var endMinute = parseInt(endTimeParts[1]);
+        var timeDiffInMinutes = (endHour - startHour) * 60 + (endMinute - startMinute);
+        if (timeDiffInMinutes = 30) {
+          // Slot is half an hour, directly add it to the appropriate slot
+          if (startHour >= 8 && startHour < 12) {
+            morningSlots.push({
+              start_time: startTime,
+              end_time: endTime,
+            });
+          } else if (startHour >= 12 && startHour < 17) {
+            afternoonSlots.push({
+              start_time: startTime,
+              end_time: endTime,
+            });
+          } else if (startHour >= 17 && startHour < 20) {
+            eveningSlots.push({
+              start_time: startTime,
+              end_time: endTime,
+            });
           }
-          startTime = moment(slotEndTime, "HH:mm:ss");
+        } else {
+          // Slot is not half an hour, split it into 30-minute slots
+          var currentStartTime = startTime;
+          while (currentStartTime < endTime) {
+            var currentEndTime = moment(currentStartTime, "HH:mm:ss").add(30, "minutes").format("HH:mm:ss");
+            var slotStartHour = parseInt(currentStartTime.split(':')[0]);
+            if (slotStartHour >= 8 && slotStartHour < 12) {
+              morningSlots.push({ start_time: currentStartTime, end_time: currentEndTime });
+            } else if (slotStartHour >= 12 && slotStartHour < 17) {
+              afternoonSlots.push({ start_time: currentStartTime, end_time: currentEndTime });
+            } else if (slotStartHour >= 17 && slotStartHour < 20) {
+              eveningSlots.push({ start_time: currentStartTime, end_time: currentEndTime });
+            }
+            currentStartTime = currentEndTime;
+          }
         }
       }
       var timerange = availabilityCheck
@@ -741,6 +765,7 @@ exports.fashionDesignerTimeSlot = async (req, res) => {
           ],
         },
       };
+
       return res.status(200).send({
         result,
         HasError: false,
@@ -752,7 +777,7 @@ exports.fashionDesignerTimeSlot = async (req, res) => {
     console.error("Error in fashionDesignerTimeSlot:", error);
     res.status(500).send({ error: "An error occurred while fetching designer details." });
   }
-}
+};
 
 // add and update address
 exports.addNewAddress = async (req, res) => {
