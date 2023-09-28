@@ -312,7 +312,7 @@ exports.cancelOrder = async (req, res) => {
       } else {
         return res.status(200).send({
           HasError: false,
-          Message: "Order and items canceled successfully.",
+          Message: "Order cancelled successfully.",
         });
       }
     }
