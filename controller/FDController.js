@@ -161,7 +161,6 @@ exports.fashionDesignerList = async (req, res) => {
           availableTime = `${startTime} - ${endTime}`;
         }
       }
-
       var full_name = user.prefix + " " + user.first_name;
       if (user.last_name !== null) {
         full_name += " " + user.last_name;
@@ -169,6 +168,7 @@ exports.fashionDesignerList = async (req, res) => {
       var designerBoutiqueInfo = boutiqueInfo.find(
         (boutique) => boutique.id === user.id
       );
+      var maskedNumber = Service.maskMobileNumber(user.mobile_number)
       if (designerBoutiqueInfo) {
         var {
           id, boutique_id, boutique_name, coutry_state, city, area, address, location_lat, location_lng, about_me, communication_mode, language_speak, education, experience, base_price, offer_price,
@@ -193,7 +193,7 @@ exports.fashionDesignerList = async (req, res) => {
           register_date: moment(user.reg_on, "YYYY-MM-DD hh:mm:ss").format(
             "DD-MM-YYYY hh:mm A"
           ),
-          mobile_number: user.mobile_number,
+          mobile_number: maskedNumber,
           email: user.email_id,
           role: user.role,
           role_name: user.role === 4 ? "Designer" : user.role,
@@ -298,7 +298,7 @@ exports.FashionDesignerDetails = async (req, res) => {
       req.ip
     );
     const boutiqueInfo = await db.query(`select * from sarter__boutique_basic_info where id in(select boutique_id from sarter__boutique_user_map where user_id =${user_id})`)
-    console.log(boutiqueInfo)
+    // console.log(boutiqueInfo)
     // var designerDetails = [];
     // if (user_id) {
     const designerDetails = await FDService.getDesignerDetailsByUserId(user_id);
@@ -860,7 +860,6 @@ exports.addNewAddress = async (req, res) => {
       for (let i in result) {
         var state = await FDService.stateList(result[i].state);
         var cityName = await FDService.cityList(result[i].city);
-
         var formattedAddress = {};
         (formattedAddress.id = result[i].id),
           (formattedAddress.first_name = result[i].first_name),
@@ -897,7 +896,7 @@ exports.addNewAddress = async (req, res) => {
       for (let i in result) {
         var state = await FDService.stateList(result[i].state);
         var cityName = await FDService.cityList(result[i].city);
-
+        var maskedNumber = await Service.maskMobileNumber(result[i].mobile_number)
         var formattedAddress = {};
         (formattedAddress.id = result[i].id),
           (formattedAddress.first_name = result[i].first_name),
@@ -909,7 +908,7 @@ exports.addNewAddress = async (req, res) => {
           (formattedAddress.state_name = state.name),
           (formattedAddress.city = result[i].city),
           (formattedAddress.city_name = cityName.name),
-          (formattedAddress.mobile_number = result[i].mobile_number),
+          (formattedAddress.mobile_number = maskedNumber),
           (formattedAddress.pincode = result[i].pincode),
           (formattedAddress.is_primary = result[i].is_primary),
           (formattedAddress.is_verify = result[i].is_verify),
@@ -1080,6 +1079,7 @@ exports.getAddressList = async (req, res) => {
       for (let i in result) {
         var state = await FDService.stateList(result[i].state);
         var cityName = await FDService.cityList(result[i].city);
+        maskedNumber = await Service.maskMobileNumber(result[i].mobile_number)
 
         var formattedAddress = {};
         (formattedAddress.id = result[i].id),
@@ -1092,7 +1092,7 @@ exports.getAddressList = async (req, res) => {
           (formattedAddress.state_name = state.name),
           (formattedAddress.city = result[i].city),
           (formattedAddress.city_name = cityName.name),
-          (formattedAddress.mobile_number = result[i].mobile_number),
+          (formattedAddress.mobile_number = maskedNumber),
           (formattedAddress.pincode = result[i].pincode),
           (formattedAddress.is_primary = result[i].is_primary),
           (formattedAddress.is_verify = result[i].is_verify),
@@ -1322,6 +1322,7 @@ exports.fashionDesignerAppointmentDetails = async (req, res) => {
       data.fashiondesignerappointmentDetails = fashiondesignerappointmentDetails;
       var result2 = await FDService.getAddressByUserId(user_id);
       var address = {}
+      var maskedNumber = await Service.maskMobileNumber(result2.mobile_number)
 
       if (result2) {
         result2 = result2.toJSON()
@@ -1334,7 +1335,7 @@ exports.fashionDesignerAppointmentDetails = async (req, res) => {
         address.city = result2.city ? result2.city : ''
         address.state = result2.state ? result2.state : ''
         address.pincode = result2.pincode ? result2.pincode : ''
-        address.cmobile = result2.mobile_number ? result2.mobile_number : ''
+        address.cmobile = maskedNumber ? maskedNumber : ''
         address.is_primary = result2.is_primary ? result2.is_primary : ''
         address.is_verify = result2.is_verify ? result2.is_verify : ''
         address.verify_date = result2.verify_date ? result2.verify_date : ''

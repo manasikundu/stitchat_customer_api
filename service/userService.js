@@ -194,7 +194,7 @@ exports.getUserByUserId = async (id) => {
   return result.toJSON()
 }
 
-exports.maskMobileNumber = async (phoneNumber) => {
+exports.maskMobileNumber = (phoneNumber) => {
   if (phoneNumber.length < 4) {
     return phoneNumber; 
   }

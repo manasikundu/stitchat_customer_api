@@ -205,8 +205,6 @@ exports.getNearestBoutiqueList = async (req, res) => {
     );
     var responseData = {};
     var expirationTime = 600;
-
-
     if (sortedBoutiques.length === 1) {
       responseData = {
         nearbyBoutiques: [
@@ -244,15 +242,17 @@ exports.getNearestBoutiqueList = async (req, res) => {
           })
           : s3.getSignedUrl("getObject", {
             Bucket: process.env.AWS_BUCKET,
-            Key: `category_item/default-img.jpg`,
+            Key: `boutique/default-img.jpg`,
             Expires: expirationTime,
           })
+        var maskedNumber = Service.maskMobileNumber(boutique.contact_number)
+  
         responseData.nearbyBoutiques.push({
           id: boutique.id,
           boutique_name: boutique.boutique_name,
           address: boutique.address,
           image: boutiqueLogoUrl,
-          contact_number: boutique.contact_number,
+          contact_number: maskedNumber,
           category: mapCategoryType(boutique.categoryType),
           latitude: boutique.location_lat,
           longitude: boutique.location_lng,
@@ -307,7 +307,7 @@ exports.boutiqueDetails = async (req, res) => {
     const finaldata = []
     const dataJson = {}
     const basicInfo = {}
-    var maskedNumber = await Service.maskMobileNumber(result.contact_number)
+    var maskedNumber = Service.maskMobileNumber(result.contact_number)
     var boutiqueLogo = "";
     var boutiqueLogo = result.boutique_logo
             ? await s3.getSignedUrl("getObject", {
@@ -317,7 +317,7 @@ exports.boutiqueDetails = async (req, res) => {
           })
           : s3.getSignedUrl("getObject", {
             Bucket: process.env.AWS_BUCKET,
-            Key: `category_item/default-img.jpg`,
+            Key: `boutique/default-img.jpg`,
             Expires: expirationTime,
     })
     basicInfo.id = result.id ? result.id : 0

@@ -150,6 +150,7 @@ exports.orderDetails = async (req, res) => {
       var deliveryTime = orderDelivery.find(
         (deliver_time) => deliver_time.order_id === order.id
       );
+      var maskedNumber = Service.maskMobileNumber(order.mobile_number)
       orderDetails = {
         id: order.id,
         booking_code: order.booking_code,
@@ -158,7 +159,7 @@ exports.orderDetails = async (req, res) => {
         customer_firstname: order.first_name,
         customer_lastname: order.last_name,
         customer_name: order.first_name + " " + order.last_name,
-        customer_mobile_number: order.mobile_number,
+        customer_mobile_number: maskedNumber,
         customer_email_id: order.email_id,
         total_quantity: order.total_quantity,
         subtotal_amount: order.subtotal_amount,
