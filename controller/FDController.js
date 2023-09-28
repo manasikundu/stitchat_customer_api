@@ -1304,6 +1304,10 @@ exports.fashionDesignerAppointmentDetails = async (req, res) => {
   try {
     const { user_id, appointment_id } = req.query;
     var result1 = await FDService.appointmentDetails(appointment_id);
+    const btq_id = await db.query(`select * from sarter__boutique_user_map where user_id=${user_id}`);
+    const id = btq_id[0][0].boutique_id;
+    const exp=await db.query(`select experience from sarter__boutique_basic_info where id=${id}`)
+    console.log(exp)
     const data = {}
     var formatTime = (time) => moment(time, "HH:mm:ss").format("hh:mm A");
 
@@ -1327,7 +1331,7 @@ exports.fashionDesignerAppointmentDetails = async (req, res) => {
       fashiondesignerappointmentDetails.fashiondesigner_firstname = result3.first_name ? result3.first_name : ''
       fashiondesignerappointmentDetails.fashiondesigner_lastname = result3.last_name ? result3.last_name : ''
       fashiondesignerappointmentDetails.profile_img = result3.profile_photo ? result3.profile_photo : ''
-      fashiondesignerappointmentDetails.experience = 0
+      fashiondesignerappointmentDetails.experience = exp[0][0]?exp[0][0].experience:0
       fashiondesignerappointmentDetails.viewstarttime = formatTime(result1.start_time)
       fashiondesignerappointmentDetails.viewendtime = formatTime(result1.end_time)
       fashiondesignerappointmentDetails.cancelflag = true
