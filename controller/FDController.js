@@ -1363,6 +1363,13 @@ exports.fashionDesignerAppointmentDetails = async (req, res) => {
         rating.comment = appointmentRatings.comment ? appointmentRatings.comment : ''
       }
       data.fashiondesignerappointmentDetails.appointmentRatings = rating;
+      if (Object.keys(rating).length === 0) {
+        data.fashiondesignerappointmentDetails.appointmentRatings = {
+          "rate_id": '',
+          "rate": '',
+          "comment": ''
+        };
+      }
     } else {
       return res.status(200).send({
         HasError: false,
