@@ -193,3 +193,14 @@ exports.getUserByUserId = async (id) => {
   const result = await Users.findOne({ where: { id: id } })
   return result.toJSON()
 }
+
+exports.maskMobileNumber = async (phoneNumber) => {
+  if (phoneNumber.length < 4) {
+    return phoneNumber; 
+  }
+  const firstTwo = phoneNumber.slice(0, 2);
+  const lastTwo = phoneNumber.slice(-2);
+  const middleMask = '*'.repeat(phoneNumber.length - 4);
+  const maskedNumber = `${firstTwo}${middleMask}${lastTwo}`;
+  return maskedNumber;
+}

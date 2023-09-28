@@ -307,10 +307,10 @@ exports.boutiqueDetails = async (req, res) => {
     const finaldata = []
     const dataJson = {}
     const basicInfo = {}
-    var maskedNumber = Service.maskMobileNumber(result.contact_number)
+    var maskedNumber = await Service.maskMobileNumber(result.contact_number)
     var boutiqueLogo = "";
-        var boutiqueLogo = result.boutique_logo
-          ? await s3.getSignedUrl("getObject", {
+    var boutiqueLogo = result.boutique_logo
+            ? await s3.getSignedUrl("getObject", {
             Bucket: process.env.AWS_BUCKET,
             Key: `boutique/${result.boutique_logo}`,
             Expires: expirationTime,
@@ -319,12 +319,7 @@ exports.boutiqueDetails = async (req, res) => {
             Bucket: process.env.AWS_BUCKET,
             Key: `category_item/default-img.jpg`,
             Expires: expirationTime,
-          })
-    // var boutiqueLogo = s3.getSignedUrl("getObject", {
-    //   Bucket: process.env.AWS_BUCKET,
-    //   Key: `boutique/${result.boutique_logo}`,
-    //   Expires: expirationTime
-    // })
+    })
     basicInfo.id = result.id ? result.id : 0
     basicInfo.boutique_name = result.boutique_name ? result.boutique_name : ''
     basicInfo.boutique_code = result.boutique_code ? result.boutique_code : ''
