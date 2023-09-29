@@ -321,16 +321,20 @@ exports.FashionDesignerDetails = async (req, res) => {
       }
       const result2 = await db.query(`select * from sarter__category_item_dic where id in(select parent_id from sarter__category_item_dic where id=${result1[0][i].service_id})`);
       var category = [];
-      const categoryJson = {};
+      var categoryJson = {};
       categoryJson.category_id = result2[0][0].id;
       categoryJson.category_name = result2[0][0].name;
       const catagoryImage = await db.query(`SELECT * FROM sarter__category_item_images where category_id in(select parent_id from sarter__category_item_dic where id=${result1[0][i].service_id})`);
-      var category_image = s3.getSignedUrl("getObject", {
-        Bucket: process.env.AWS_BUCKET,
-        Key: `category_item/${catagoryImage[0][0].image}`,
-        Expires: expirationTime,
-      });
-      categoryJson.category_image = category_image;
+      if (catagoryImage[0][0]) {
+        var category_image = s3.getSignedUrl("getObject", {
+          Bucket: process.env.AWS_BUCKET,
+          Key: `category_item/${catagoryImage[0][0].image}`,
+          Expires: expirationTime,
+        });
+        categoryJson.category_image = category_image;
+      } else {
+        categoryJson.category_image = '';
+      }
       const result3 = await db.query(`select * from sarter__category_item_dic where id=${result1[0][i].service_id}`);
       const item = [];
       const itemJson = {};
