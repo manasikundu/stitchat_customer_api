@@ -624,6 +624,9 @@ exports.fashionDesignerTimeSlot = async (req, res) => {
         var fashionDesignerDay = availabilitySlotsForDay[0]; // Assume the first slot
         var startTime = fashionDesignerDay.start_time;
         var endTime = fashionDesignerDay.end_time;
+        console.log("start time : ", startTime)
+        console.log("end time : ", endTime)
+
         var startTimeParts = startTime.split(':');
         var endTimeParts = endTime.split(':');
         var startHour = parseInt(startTimeParts[0]);
@@ -631,19 +634,21 @@ exports.fashionDesignerTimeSlot = async (req, res) => {
         var endHour = parseInt(endTimeParts[0]);
         var endMinute = parseInt(endTimeParts[1]);
         var timeDiffInMinutes = (endHour - startHour) * 60 + (endMinute - startMinute);
-        if (timeDiffInMinutes = 30) {
+        console.log("time : ", timeDiffInMinutes)
+
+        if (timeDiffInMinutes === 30) {
           // Slot is half an hour, directly add it to the appropriate slot
-          if (startHour >= 8 && startHour < 12) {
+          if (startHour <= 8 && startHour <= 12) {
             morningSlots.push({
               start_time: startTime,
               end_time: endTime,
             });
-          } else if (startHour >= 12 && startHour < 17) {
+          } else if (startHour <= 12 && startHour <= 17) {
             afternoonSlots.push({
               start_time: startTime,
               end_time: endTime,
             });
-          } else if (startHour >= 17 && startHour < 20) {
+          } else if (startHour <= 17 && startHour <= 20) {
             eveningSlots.push({
               start_time: startTime,
               end_time: endTime,
@@ -652,14 +657,14 @@ exports.fashionDesignerTimeSlot = async (req, res) => {
         } else {
           // Slot is not half an hour, split it into 30-minute slots
           var currentStartTime = startTime;
-          while (currentStartTime < endTime) {
+          while (currentStartTime <= endTime) {
             var currentEndTime = moment(currentStartTime, "HH:mm:ss").add(30, "minutes").format("HH:mm:ss");
             var slotStartHour = parseInt(currentStartTime.split(':')[0]);
-            if (slotStartHour >= 8 && slotStartHour < 12) {
+            if (slotStartHour <= 8 && slotStartHour <= 12) {
               morningSlots.push({ start_time: currentStartTime, end_time: currentEndTime });
-            } else if (slotStartHour >= 12 && slotStartHour < 17) {
+            } else if (slotStartHour <= 12 && slotStartHour <= 17) {
               afternoonSlots.push({ start_time: currentStartTime, end_time: currentEndTime });
-            } else if (slotStartHour >= 17 && slotStartHour < 20) {
+            } else if (slotStartHour <= 17 && slotStartHour <= 20) {
               eveningSlots.push({ start_time: currentStartTime, end_time: currentEndTime });
             }
             currentStartTime = currentEndTime;
