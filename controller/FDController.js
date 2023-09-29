@@ -624,9 +624,6 @@ exports.fashionDesignerTimeSlot = async (req, res) => {
         var fashionDesignerDay = availabilitySlotsForDay[0]; // Assume the first slot
         var startTime = fashionDesignerDay.start_time;
         var endTime = fashionDesignerDay.end_time;
-        console.log("start time : ", startTime)
-        console.log("end time : ", endTime)
-
         var startTimeParts = startTime.split(':');
         var endTimeParts = endTime.split(':');
         var startHour = parseInt(startTimeParts[0]);
@@ -634,8 +631,6 @@ exports.fashionDesignerTimeSlot = async (req, res) => {
         var endHour = parseInt(endTimeParts[0]);
         var endMinute = parseInt(endTimeParts[1]);
         var timeDiffInMinutes = (endHour - startHour) * 60 + (endMinute - startMinute);
-        console.log("time : ", timeDiffInMinutes)
-
         if (timeDiffInMinutes === 30) {
           // Slot is half an hour, directly add it to the appropriate slot
           if (startHour <= 8 && startHour <= 12) {
