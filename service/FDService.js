@@ -549,7 +549,7 @@ exports.getDesignersByRole = async () => {
 exports.isSlotAvailable = async (user_id, startTime, endTime) => {
   try {
     var query = `
-      SELECT status
+      SELECT *
       FROM public.sarter__fashion_designer_appointment
       WHERE user_id = ${user_id}
       AND start_time <= '${endTime}'

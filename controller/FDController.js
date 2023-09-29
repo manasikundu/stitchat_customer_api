@@ -536,6 +536,7 @@ exports.fashionDesignerTimeSlot = async (req, res) => {
       var availabilityText = designer.check_availability === 1 ? true : false;
       var startTime = designer.start_time;
       var endTime = designer.end_time;
+
       var dayConfig = daysOfWeekConfig.find((config) => config.value === weekDay);
       var dayName = dayConfig ? dayConfig.day : "";
       var formatTime = (time) => moment(time, "HH:mm:ss").format("hh:mm A");
@@ -561,52 +562,69 @@ exports.fashionDesignerTimeSlot = async (req, res) => {
       var responses = [];
       for (var slot of slots) {
         var isAvailable = await FDService.isSlotAvailable(user_id, slot.start_time, slot.end_time);
+        // console.log(isAvailable)
         var status, check_availability;
         if (isAvailable && isAvailable.status === 1) {
           status = 0;
-          check_availability = false;
+          // check_availability = false;
         } else {
           status = 1;
-          check_availability = true;
-        }
+          // check_availability = true;
+        }    
         var slotStartTime = moment(slot.start_time, "HH:mm:ss");
         var slotEndTime = moment(slot.end_time, "HH:mm:ss");
+        // var slotStartTime = slot.start_time
+        // var slotEndTime = slot.end_time
         var foundConfig = daysOfWeekConfig.find((config) => config.value === slot.week_day);
         var dayValue = foundConfig?.value || "";
         var durationConfig = appointmentTimeConfig.find((config) => config.slot === "duration");
         var duration = parseInt(durationConfig.time);
         var bookedSlots = await FDService.bookedSlots(user_id);
-        var check_availability = true;
-        for (var i = 0; i < bookedSlots.length; i++) {
-          if (
-            slot.start_time === bookedSlots[i].start_time &&
-            slot.end_time === bookedSlots[i].end_time &&
-            slot.appointment_date === bookedSlots[i].appointment_date
-          ) {
-            check_availability = false; // Set to false if a match is found
-            break;
+        var arr = [];
+        for (var i in bookedSlots) {
+          var json = {};
+          json.user_id = bookedSlots[i].user_id
+          json.start_time = bookedSlots[i].start_time;
+          json.end_time = bookedSlots[i].end_time;
+          json.appointment_date = bookedSlots[i].appointment_date; 
+          var matches = bookedSlots.some(function(slot) {
+            return (
+              slot.start_time === json.start_time &&
+              slot.end_time === json.end_time &&
+              slot.appointment_date === json.appointment_date
+            );
+          });        
+          json.check_availability = matches;
+          arr.push(json);
           }
+        var isAvailableValues = arr.map(item => item.isAvailable);
+        // console.log(isAvailableValues)
+        var check_availability;
+        if (isAvailableValues.every(value => value === true)) {
+          check_availability = true;
+        } else {
+          check_availability = false;
         }
         var hasBookedSlot = bookedSlots.some((bookedSlot) => 
-          bookedSlot.user_id === customer_id &&
+          bookedSlot.customer_id === customer_id &&
           bookedSlot.start_time === slot.start_time &&
           bookedSlot.end_time === slot.end_time &&
           bookedSlot.appointment_date === slot.appointment_date
         );
         var mybook = hasBookedSlot ? 1 : 0;
-        responses.push({
-          status: status,
-          mybook: mybook,
-          duration: duration.toString(),
-          check_availability: check_availability,
-          strtotime_start_time: slotStartTime.unix(),
-          strtotime_end_time: slotEndTime.unix(),
-          slot_start_time: slotStartTime.format("HH:mm:ss"),
-          slot_end_time: slotEndTime.format("HH:mm:ss"),
-          slot_view_time: slotStartTime.format("hh:mm A"),
-          slot_view_time_details: `${slotStartTime.format("hh:mm A")} - ${slotEndTime.format("hh:mm A")}`,
-          date: moment().add(dayValue, "days").format("YYYY-MM-DD"),
-        });
+        var slotJson = {};
+        slotJson.status = status;
+        slotJson.mybook = mybook;
+        slotJson.duration = duration.toString();
+        slotJson.check_availability = matches;
+        slotJson.strtotime_start_time = slotStartTime.unix();
+        slotJson.strtotime_end_time = slotEndTime.unix();
+        slotJson.slot_start_time = slot.start_time;
+        slotJson.slot_end_time = slot.end_time;
+        slotJson.slot_view_time = slotStartTime.format("hh:mm A");
+        slotJson.slot_view_time_details = `${slotStartTime.format("hh:mm A")} - ${slotEndTime.format("hh:mm A")}`;
+        slotJson.date = moment().add(dayValue, "days").format("YYYY-MM-DD");    
+        responses.push(slotJson);
       }
       return responses;
     };
@@ -628,6 +646,8 @@ exports.fashionDesignerTimeSlot = async (req, res) => {
         var fashionDesignerDay = availabilitySlotsForDay[0]; // Assume the first slot
         var startTime = fashionDesignerDay.start_time;
         var endTime = fashionDesignerDay.end_time;
+        // var startTime = "08:00:00"
+        // var endTime = "20:00:00"
         var startTimeParts = startTime.split(':');
         var endTimeParts = endTime.split(':');
         var startHour = parseInt(startTimeParts[0]);
@@ -635,35 +655,27 @@ exports.fashionDesignerTimeSlot = async (req, res) => {
         var endHour = parseInt(endTimeParts[0]);
         var endMinute = parseInt(endTimeParts[1]);
         var timeDiffInMinutes = (endHour - startHour) * 60 + (endMinute - startMinute);
+       
         if (timeDiffInMinutes === 30) {
           // Slot is half an hour, directly add it to the appropriate slot
-          if (startHour <= 8 && startHour <= 12) {
-            morningSlots.push({
-              start_time: startTime,
-              end_time: endTime,
-            });
-          } else if (startHour <= 12 && startHour <= 17) {
-            afternoonSlots.push({
-              start_time: startTime,
-              end_time: endTime,
-            });
-          } else if (startHour <= 17 && startHour <= 20) {
-            eveningSlots.push({
-              start_time: startTime,
-              end_time: endTime,
-            });
+          if (startHour >= 8 && startHour < 12) {
+            morningSlots.push({start_time: startTime,end_time: endTime,});
+          } else if (startHour >= 12 && startHour < 17) {
+            afternoonSlots.push({start_time: startTime,end_time: endTime,});
+          } else if (startHour >= 17 && startHour < 20) {
+            eveningSlots.push({start_time: startTime,end_time: endTime,});
           }
         } else {
           // Slot is not half an hour, split it into 30-minute slots
           var currentStartTime = startTime;
-          while (currentStartTime <= endTime) {
+          while (currentStartTime < endTime) {
             var currentEndTime = moment(currentStartTime, "HH:mm:ss").add(30, "minutes").format("HH:mm:ss");
             var slotStartHour = parseInt(currentStartTime.split(':')[0]);
-            if (slotStartHour <= 8 && slotStartHour <= 12) {
+            if (slotStartHour >= 8 && slotStartHour < 12) {
               morningSlots.push({ start_time: currentStartTime, end_time: currentEndTime });
-            } else if (slotStartHour <= 12 && slotStartHour <= 17) {
+            } else if (slotStartHour >= 12 && slotStartHour < 17) {
               afternoonSlots.push({ start_time: currentStartTime, end_time: currentEndTime });
-            } else if (slotStartHour <= 17 && slotStartHour <= 20) {
+            } else if (slotStartHour >= 17 && slotStartHour < 20) {
               eveningSlots.push({ start_time: currentStartTime, end_time: currentEndTime });
             }
             currentStartTime = currentEndTime;
