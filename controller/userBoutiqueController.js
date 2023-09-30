@@ -245,8 +245,8 @@ exports.getNearestBoutiqueList = async (req, res) => {
             Key: `boutique/default-img.jpg`,
             Expires: expirationTime,
           })
-        var maskedNumber = Service.maskMobileNumber(boutique.contact_number)
-  
+        var maskedNumber = boutique.contact_number !== null ? Service.maskMobileNumber(boutique.contact_number) : null;
+          
         responseData.nearbyBoutiques.push({
           id: boutique.id,
           boutique_name: boutique.boutique_name,
