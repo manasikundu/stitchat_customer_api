@@ -550,7 +550,7 @@ exports.fashionDesignerTimeSlot = async (req, res) => {
     var processedSlots = new Set();
     var response = { appointment_slot_time: [] };
     var startDate = moment().add(1, "day");
-    var endDate = moment().add(7, "days");
+    var endDate = moment().add(8, "days");
     availabilitySlots.forEach((slot) => {
       if (!processedSlots.has(slot.id)) {
         processedSlots.add(slot.id);
