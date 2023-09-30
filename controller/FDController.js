@@ -138,7 +138,6 @@ exports.fashionDesignerList = async (req, res) => {
           availability: availabilityText,
         };
       });
-
       var availableTime = "";
       if (userSchedule.length > 0) {
         var sortedSchedule = userSchedule.sort(
@@ -508,10 +507,10 @@ exports.fashionDesignerTimeSlot = async (req, res) => {
   try {
     var user_id = req.body.fashion_designer_id;
     var customer_id = req.body.user_id;
-    var mobile_number = req.body.mobile_number;
-    var method_name = await Service.getCallingMethodName();
-    var apiEndpointInput = JSON.stringify(req.body);
-    var apiTrack = await Service.trackApi(req.query.user_id,method_name,apiEndpointInput,req.query.device_id,req.query.device_info,req.ip);
+    const mobile_number = req.body.mobile_number;
+    const method_name = await Service.getCallingMethodName();
+    const apiEndpointInput = JSON.stringify(req.body);
+    const apiTrack = await Service.trackApi(req.query.user_id,method_name,apiEndpointInput,req.query.device_id,req.query.device_info,req.ip);
     if (isNaN(user_id) || user_id === "") {
       return res.status(400).send({
         HasError: true,
@@ -519,7 +518,7 @@ exports.fashionDesignerTimeSlot = async (req, res) => {
         Message: "Invalid parameter.",
       });
     }
-    designerDetails = await FDService.getDesignerDetailsByUserId(user_id);
+    var designerDetails = await FDService.getDesignerDetailsByUserId(user_id);
     if (designerDetails.length === 0) {
       return res.status(404).send({
         HasError: true,
@@ -536,7 +535,6 @@ exports.fashionDesignerTimeSlot = async (req, res) => {
       var availabilityText = designer.check_availability === 1 ? true : false;
       var startTime = designer.start_time;
       var endTime = designer.end_time;
-
       var dayConfig = daysOfWeekConfig.find((config) => config.value === weekDay);
       var dayName = dayConfig ? dayConfig.day : "";
       var formatTime = (time) => moment(time, "HH:mm:ss").format("hh:mm A");
@@ -558,80 +556,12 @@ exports.fashionDesignerTimeSlot = async (req, res) => {
         processedSlots.add(slot.id);
       }
     });
-    var generateSlotResponse = async (slots) => {
-      var responses = [];
-      for (var slot of slots) {
-        var isAvailable = await FDService.isSlotAvailable(user_id, slot.start_time, slot.end_time);
-        // console.log(isAvailable)
-        var status, check_availability;
-        if (isAvailable && isAvailable.status === 1) {
-          status = 0;
-          // check_availability = false;
-        } else {
-          status = 1;
-          // check_availability = true;
-        }    
-        var slotStartTime = moment(slot.start_time, "HH:mm:ss");
-        var slotEndTime = moment(slot.end_time, "HH:mm:ss");
-        // var slotStartTime = slot.start_time
-        // var slotEndTime = slot.end_time
-        var foundConfig = daysOfWeekConfig.find((config) => config.value === slot.week_day);
-        var dayValue = foundConfig?.value || "";
-        var durationConfig = appointmentTimeConfig.find((config) => config.slot === "duration");
-        var duration = parseInt(durationConfig.time);
-        var bookedSlots = await FDService.bookedSlots(user_id);
-        var arr = [];
-        for (var i in bookedSlots) {
-          var json = {};
-          json.user_id = bookedSlots[i].user_id
-          json.start_time = bookedSlots[i].start_time;
-          json.end_time = bookedSlots[i].end_time;
-          json.appointment_date = bookedSlots[i].appointment_date; 
-          var matches = bookedSlots.some(function(slot) {
-            return (
-              slot.start_time === json.start_time &&
-              slot.end_time === json.end_time &&
-              slot.appointment_date === json.appointment_date
-            );
-          });        
-          json.check_availability = matches;
-          arr.push(json);
-          }
-        var isAvailableValues = arr.map(item => item.isAvailable);
-        // console.log(isAvailableValues)
-        var check_availability;
-        if (isAvailableValues.every(value => value === true)) {
-          check_availability = true;
-        } else {
-          check_availability = false;
-        }
-        var hasBookedSlot = bookedSlots.some((bookedSlot) => 
-          bookedSlot.customer_id === customer_id &&
-          bookedSlot.start_time === slot.start_time &&
-          bookedSlot.end_time === slot.end_time &&
-          bookedSlot.appointment_date === slot.appointment_date
-        );
-        var mybook = hasBookedSlot ? 1 : 0;
-        var slotJson = {};
-        slotJson.status = status;
-        slotJson.mybook = mybook;
-        slotJson.duration = duration.toString();
-        slotJson.check_availability = matches;
-        slotJson.strtotime_start_time = slotStartTime.unix();
-        slotJson.strtotime_end_time = slotEndTime.unix();
-        slotJson.slot_start_time = slot.start_time;
-        slotJson.slot_end_time = slot.end_time;
-        slotJson.slot_view_time = slotStartTime.format("hh:mm A");
-        slotJson.slot_view_time_details = `${slotStartTime.format("hh:mm A")} - ${slotEndTime.format("hh:mm A")}`;
-        slotJson.date = moment().add(dayValue, "days").format("YYYY-MM-DD");    
-        responses.push(slotJson);
-      }
-      return responses;
-    };
     var firstAvailabilityFound = false;
     var generateSlotResponseForDate = async (date) => {
       var dayOfWeek = date.format("dddd");
-      var availabilitySlotsForDay = availabilitySlots.filter((slot) => daysOfWeekConfig[slot.week_day - 1].day === dayOfWeek);
+      var availabilitySlotsForDay = availabilitySlots.filter(
+        (slot) => daysOfWeekConfig[slot.week_day - 1].day === dayOfWeek
+      );
       var availabilityCheck = false;
       for (var slot of weekSchedules) {
         if (slot.level === date.format("dddd")) {
@@ -644,50 +574,32 @@ exports.fashionDesignerTimeSlot = async (req, res) => {
       var eveningSlots = [];
       if (availabilityCheck) {
         var fashionDesignerDay = availabilitySlotsForDay[0]; // Assume the first slot
-        var startTime = fashionDesignerDay.start_time;
-        var endTime = fashionDesignerDay.end_time;
-        // var startTime = "08:00:00"
-        // var endTime = "20:00:00"
-        var startTimeParts = startTime.split(':');
-        var endTimeParts = endTime.split(':');
-        var startHour = parseInt(startTimeParts[0]);
-        var startMinute = parseInt(startTimeParts[1]);
-        var endHour = parseInt(endTimeParts[0]);
-        var endMinute = parseInt(endTimeParts[1]);
-        var timeDiffInMinutes = (endHour - startHour) * 60 + (endMinute - startMinute);
-       
-        if (timeDiffInMinutes === 30) {
-          // Slot is half an hour, directly add it to the appropriate slot
-          if (startHour >= 8 && startHour < 12) {
-            morningSlots.push({start_time: startTime,end_time: endTime,});
-          } else if (startHour >= 12 && startHour < 17) {
-            afternoonSlots.push({start_time: startTime,end_time: endTime,});
-          } else if (startHour >= 17 && startHour < 20) {
-            eveningSlots.push({start_time: startTime,end_time: endTime,});
+        var fashionDesignerStartTime = fashionDesignerDay.start_time;
+        var fashionDesignerEndTime = fashionDesignerDay.end_time;
+        var startTime = "08:00:00";
+        var endTime = "20:00:00";
+        while (startTime <= endTime) {
+          var slotEndTime = moment(startTime, "HH:mm:ss").add(30, "minutes").format("HH:mm:ss");
+          var status = 0;
+          if (startTime >= fashionDesignerStartTime && startTime < fashionDesignerEndTime) {
+            status = 1; // Set status to 1 when within the designer's available time
           }
-        } else {
-          // Slot is not half an hour, split it into 30-minute slots
-          var currentStartTime = startTime;
-          while (currentStartTime < endTime) {
-            var currentEndTime = moment(currentStartTime, "HH:mm:ss").add(30, "minutes").format("HH:mm:ss");
-            var slotStartHour = parseInt(currentStartTime.split(':')[0]);
-            if (slotStartHour >= 8 && slotStartHour < 12) {
-              morningSlots.push({ start_time: currentStartTime, end_time: currentEndTime });
-            } else if (slotStartHour >= 12 && slotStartHour < 17) {
-              afternoonSlots.push({ start_time: currentStartTime, end_time: currentEndTime });
-            } else if (slotStartHour >= 17 && slotStartHour < 20) {
-              eveningSlots.push({ start_time: currentStartTime, end_time: currentEndTime });
-            }
-            currentStartTime = currentEndTime;
+          if (startTime >= "08:00:00" && startTime < "12:00:00") {
+            morningSlots.push({ start_time: startTime, end_time: slotEndTime });
+          } else if (startTime >= "12:00:00" && startTime < "17:00:00") {
+            afternoonSlots.push({ start_time: startTime, end_time: slotEndTime });
+          } else if (startTime >= "17:00:00" && startTime < "20:00:00") {
+            eveningSlots.push({ start_time: startTime, end_time: slotEndTime });
           }
+          startTime = slotEndTime;
         }
       }
       var timerange = availabilityCheck
         ? {
-          morning: await generateSlotResponse(morningSlots),
-          afternoon: await generateSlotResponse(afternoonSlots),
-          evening: await generateSlotResponse(eveningSlots),
-        }
+            morning: await generateSlotResponse(morningSlots, fashionDesignerStartTime, fashionDesignerEndTime),
+            afternoon: await generateSlotResponse(afternoonSlots, fashionDesignerStartTime, fashionDesignerEndTime),
+            evening: await generateSlotResponse(eveningSlots, fashionDesignerStartTime, fashionDesignerEndTime),
+          }
         : {};
       var selected = false;
       if (availabilityCheck && !firstAvailabilityFound) {
@@ -703,6 +615,46 @@ exports.fashionDesignerTimeSlot = async (req, res) => {
         timerange: timerange,
       };
       return daySlot;
+    };
+    var generateSlotResponse = async (slots, fashionDesignerStartTime, fashionDesignerEndTime) => {
+      var responses = [];
+      for (var slot of slots) {
+        var status = 0;
+        if (slot.start_time >= fashionDesignerStartTime && slot.start_time < fashionDesignerEndTime) {
+          status = 1;
+        }
+        var check_availability = status === 1;
+        var durationConfig = appointmentTimeConfig.find((config) => config.slot === "duration");
+        var duration = parseInt(durationConfig.time);
+        var bookedSlots = await FDService.bookedSlots(user_id);
+        var hasBookedSlot = bookedSlots.some(
+          (bookedSlot) =>
+            bookedSlot.customer_id === customer_id &&
+            bookedSlot.start_time === slot.start_time &&
+            bookedSlot.end_time === slot.end_time &&
+            bookedSlot.appointment_date === slot.appointment_date);
+        var mybook = hasBookedSlot ? 1 : 0;
+        var isBooked = bookedSlots.some((bookedSlot) =>
+        bookedSlot.customer_id === customer_id &&
+          bookedSlot.start_time === slot.start_time &&
+          bookedSlot.end_time === slot.end_time &&
+          bookedSlot.appointment_date === slot.appointment_date);
+        var check_availability = status === 1 && !isBooked;
+        var slotJson = {};
+        slotJson.status = status;
+        slotJson.mybook = mybook;
+        slotJson.duration = duration.toString();
+        slotJson.check_availability = check_availability;
+        slotJson.strtotime_start_time = moment(slot.start_time, "HH:mm:ss").unix();
+        slotJson.strtotime_end_time = moment(slot.end_time, "HH:mm:ss").unix();
+        slotJson.slot_start_time = slot.start_time;
+        slotJson.slot_end_time = slot.end_time;
+        slotJson.slot_view_time = moment(slot.start_time, "HH:mm:ss").format("hh:mm A");
+        slotJson.slot_view_time_details = `${moment(slot.start_time, "HH:mm:ss").format("hh:mm A")} - ${moment(slot.end_time, "HH:mm:ss").format("hh:mm A")}`;
+        slotJson.date = moment().add(slot.week_day - 1, "days").format("YYYY-MM-DD");
+        responses.push(slotJson);
+      }
+      return responses;
     };
     while (startDate.isBefore(endDate)) {
       var daySlot = await generateSlotResponseForDate(startDate);
@@ -759,29 +711,10 @@ exports.fashionDesignerTimeSlot = async (req, res) => {
           timeslot: response.appointment_slot_time,
           dayOfWeek: [formattedDaysOfWeek],
           appointmentTime: [formattedAppointmentConfig],
-          communication_modes: [
-            {
-              id: 1,
-              name: "Call",
-            },
-            {
-              id: 2,
-              name: "Video Call",
-            },
-          ],
-          languages: [
-            {
-              id: 1,
-              name: "English",
-            },
-            {
-              id: 2,
-              name: "Hindi",
-            },
-          ],
+          communication_modes: [{ id: 1, name: "Call" }, { id: 2, name: "Video Call" }],
+          languages: [{ id: 1, name: "English" }, { id: 2, name: "Hindi" }],
         },
       };
-
       return res.status(200).send({
         result,
         HasError: false,
