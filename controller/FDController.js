@@ -178,6 +178,12 @@ exports.fashionDesignerList = async (req, res) => {
           user_id: user.user_id,
           about_me:
             "I am a Fashion designer, fusing elegance and modernity into timeless designs that inspire . ",
+          image: 
+          s3.getSignedUrl("getObject", {
+            Bucket: process.env.AWS_BUCKET,
+            Key: "employee/default-img.jpg", // Provide the correct Key as a string
+            Expires: expirationTime,
+          }), 
           boutique_id: boutique_id,
           boutique_name: boutique_name,
           address: address,
@@ -629,19 +635,20 @@ exports.fashionDesignerTimeSlot = async (req, res) => {
         var durationConfig = appointmentTimeConfig.find((config) => config.slot === "duration");
         var duration = parseInt(durationConfig.time);
         var bookedSlots = await FDService.bookedSlots(user_id);
-        var hasBookedSlot = bookedSlots.some(
-          (bookedSlot) =>
-            bookedSlot.customer_id === customer_id &&
-            bookedSlot.start_time === slot.start_time &&
-            bookedSlot.end_time === slot.end_time &&
-            bookedSlot.appointment_date === slot.appointment_date);
-        var mybook = hasBookedSlot ? 1 : 0;
+        // var hasBookedSlot = bookedSlots.some(
+        //   (bookedSlot) =>
+        //     bookedSlot.customer_id === customer_id &&
+        //     bookedSlot.start_time === slot.start_time &&
+        //     bookedSlot.end_time === slot.end_time &&
+        //     bookedSlot.appointment_date === slot.appointment_date);
+        // var mybook = hasBookedSlot ? 1 : 0;
         var isBooked = bookedSlots.some((bookedSlot) =>
         bookedSlot.customer_id === customer_id &&
           bookedSlot.start_time === slot.start_time &&
           bookedSlot.end_time === slot.end_time &&
           bookedSlot.appointment_date === slot.appointment_date);
         var check_availability = status === 1 && !isBooked;
+        var mybook = isBooked ? 1 : 0
         var slotJson = {};
         slotJson.status = status;
         slotJson.mybook = mybook;
