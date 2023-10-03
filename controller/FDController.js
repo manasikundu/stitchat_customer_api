@@ -1099,21 +1099,37 @@ exports.bookAppointment = async (req, res) => {
     });
     }
     if (
-      !Number.isInteger(fashion_designer_id) ||
-      !Number.isInteger(user_id) ||
-      !Number.isInteger(address_id) ||
-      !moment(appointment_date, "YYYY-MM-DD", true).isValid() ||
-      !moment(start_time, "HH:mm:ss", true).isValid() ||
-      !moment(end_time, "HH:mm:ss", true).isValid() ||
-      isNaN(parseFloat(total_fees)) ||
-      !isFinite(total_fees) ||
-      total_fees < 0 ||
-      moment(start_time, "HH:mm:ss").isSameOrAfter(moment(end_time, "HH:mm:ss"))
+      isNaN(fashion_designer_id) ||
+      isNaN(user_id) ||
+      isNaN(address_id) ||
+      parseFloat(total_fees) < 0
     ) {
       return res.status(400).send({
         HasError: true,
         StatusCode: 400,
         Message: "Invalid parameters.",
+      });
+    }
+    if (!moment(appointment_date, "YYYY-MM-DD", true).isValid() ||
+      !moment(start_time, "HH:mm:ss", true).isValid() ||
+      !moment(end_time, "HH:mm:ss", true).isValid()) {
+      return res.status(400).send({
+        HasError: true,
+        StatusCode: 400,
+        Message: "Invalid date or time format.",
+      });
+    }
+    if (
+      !moment(appointment_date, "YYYY-MM-DD", true).isValid() ||
+      !moment(start_time, "HH:mm:ss", true).isValid() ||
+      !moment(end_time, "HH:mm:ss", true).isValid() ||
+      !/^\d{2}:\d{2}:\d{2}$/.test(start_time) ||
+      !/^\d{2}:\d{2}:\d{2}$/.test(end_time)
+    ) {
+      return res.status(400).send({
+        HasError: true,
+        StatusCode: 400,
+        Message: "Invalid date or time format. Use HH:mm:ss format.",
       });
     }
     var currentDate = moment().format("YYYY-MM-DD");
@@ -1137,14 +1153,9 @@ exports.bookAppointment = async (req, res) => {
     var slotAvailability = await FDService.getAvailability(fashion_designer_id);
     var appointmentStartTime = start_time
     var appointmentEndTime = end_time
-    console.log("start time : ", appointmentStartTime)
-    console.log("start time : ", appointmentEndTime)
     var isValidTimeSlot = slotAvailability.some((slot) => {
       var slotStartTime = slot.start_time
       var slotEndTime = slot.end_time
-      console.log("start time of slot: ", slotStartTime)
-      console.log("end time of slot: ", slotEndTime)
-
       return (
         slot.week_day == appointmentWeekDay &&
         slot.check_availability == 1 &&
@@ -1159,7 +1170,6 @@ exports.bookAppointment = async (req, res) => {
         Message: "Invalid time. Please select a valid time slot.",
       });    
     } else {
-      // Create the appointmentData object
     var appointmentData = {
       user_id: fashion_designer_id,
       customer_id: user_id,
@@ -1171,7 +1181,6 @@ exports.bookAppointment = async (req, res) => {
       status: 1,
       address_id: address_id,
     };
-    console.log("bvbmnnbhjfghm")
     // Check if the requested slot is available
     var isSlotAvailable = await FDService.slotAvailability(
       fashion_designer_id,
@@ -1191,41 +1200,7 @@ exports.bookAppointment = async (req, res) => {
         Message: "Slot is already booked. Please select another time slot.",
       });
     }
-
-    }
-    
-    // // Create the appointmentData object
-    // var appointmentData = {
-    //   user_id: fashion_designer_id,
-    //   customer_id: user_id,
-    //   appointment_date: moment(appointment_date).format("YYYY-MM-DD"),
-    //   start_time: start_time,
-    //   end_time: end_time,
-    //   total_fees: parseFloat(total_fees),
-    //   transaction_id: 0,
-    //   status: 1,
-    //   address_id: address_id,
-    // };
-    // console.log("bvbmnnbhjfghm")
-    // // Check if the requested slot is available
-    // var isSlotAvailable = await FDService.slotAvailability(
-    //   fashion_designer_id,
-    //   start_time,
-    //   end_time,
-    //   appointment_date
-    // );
-    // if (isSlotAvailable) {
-    //   var appointment = await FDService.bookAppointment(appointmentData);
-    //   return res.status(200).send({
-    //     HasError: false,
-    //     Message: "Thank you for booking the slot.",
-    //   });
-    // } else {
-    //   return res.status(200).send({
-    //     HasError: true,
-    //     Message: "Slot is already booked. Please select another time slot.",
-    //   });
-    // }
+  } 
   } catch (error) {
     console.log(error);
     return res.status(500).send({

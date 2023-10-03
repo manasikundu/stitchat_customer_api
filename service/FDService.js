@@ -605,7 +605,7 @@ exports.bookAppointment = async (appointmentData) => {
       appointmentData.appointment_date,
       appointmentData.start_time,
       appointmentData.end_time
-    );
+    )
     if (isSlotAvailable) {
       var currentDate = new Date();
       var formattedDate = currentDate.toISOString().slice(0, 19).replace("T", " ");
