@@ -11,6 +11,7 @@ const { generateAccessToken, auth } = require("../jwt");
 const s3 = require("../config/s3Config");
 const dotenv = require("dotenv");
 dotenv.config();
+const Appointment = require("../model/appointmentModel")
 
 var expirationTime = 600;
 
@@ -192,7 +193,8 @@ exports.fashionDesignerList = async (req, res) => {
           register_date: moment(user.reg_on, "YYYY-MM-DD hh:mm:ss").format(
             "DD-MM-YYYY hh:mm A"
           ),
-          mobile_number: maskedNumber,
+          mobile_number: user.mobile_number,
+          masked_mobile_number: maskedNumber,
           email: user.email_id,
           role: user.role,
           role_name: user.role === 4 ? "Designer" : user.role,
@@ -815,9 +817,12 @@ exports.addNewAddress = async (req, res) => {
       );
       const result = await FDService.getAddressList(query);
       const data = [];
-      for (let i in result) {
+
+      for (var i in result) {
         var state = await FDService.stateList(result[i].state);
         var cityName = await FDService.cityList(result[i].city);
+        var maskedNumber = result[i].mobile_number !== null ? Service.maskMobileNumber(result[i].mobile_number) : null;
+
         var formattedAddress = {};
         (formattedAddress.id = result[i].id),
           (formattedAddress.first_name = result[i].first_name),
@@ -830,6 +835,7 @@ exports.addNewAddress = async (req, res) => {
           (formattedAddress.city = result[i].city),
           (formattedAddress.city_name = cityName.name),
           (formattedAddress.mobile_number = result[i].mobile_number),
+          (formattedAddress.masked_mobile_number = maskedNumber),
           (formattedAddress.pincode = result[i].pincode),
           (formattedAddress.is_primary = result[i].is_primary),
           (formattedAddress.is_verify = result[i].is_verify),
@@ -866,7 +872,8 @@ exports.addNewAddress = async (req, res) => {
           (formattedAddress.state_name = state.name),
           (formattedAddress.city = result[i].city),
           (formattedAddress.city_name = cityName.name),
-          (formattedAddress.mobile_number = maskedNumber),
+          (formattedAddress.mobile_number = result[i].mobile_number),
+          (formattedAddress.masked_mobile_number = maskedNumber),
           (formattedAddress.pincode = result[i].pincode),
           (formattedAddress.is_primary = result[i].is_primary),
           (formattedAddress.is_verify = result[i].is_verify),
@@ -1050,7 +1057,8 @@ exports.getAddressList = async (req, res) => {
           (formattedAddress.state_name = state.name),
           (formattedAddress.city = result[i].city),
           (formattedAddress.city_name = cityName.name),
-          (formattedAddress.mobile_number = maskedNumber),
+          (formattedAddress.mobile_number = result[i].mobile_number),
+          (formattedAddress.masked_mobile_number = maskedNumber),
           (formattedAddress.pincode = result[i].pincode),
           (formattedAddress.is_primary = result[i].is_primary),
           (formattedAddress.is_verify = result[i].is_verify),
@@ -1080,15 +1088,16 @@ exports.getAddressList = async (req, res) => {
 // book appointment
 exports.bookAppointment = async (req, res) => {
   try {
-    var {
-      fashion_designer_id,
-      user_id,
-      appointment_date,
-      start_time,
-      end_time,
-      address_id,
-      total_fees,
-    } = req.body;
+    var {fashion_designer_id,user_id,appointment_date,start_time,end_time,address_id,total_fees} = req.body
+    var designer = await FDService.getDesignerDetailsByUserId(fashion_designer_id);
+    var user = await Appointment.findOne({where: {customer_id: user_id}});
+    if (designer.length===0 || !user) {
+      return res.status(400).send({
+      HasError: true,
+      StatusCode: 400,
+      Message: "Invalid fashion designer or user.",
+    });
+    }
     if (
       !Number.isInteger(fashion_designer_id) ||
       !Number.isInteger(user_id) ||
@@ -1107,7 +1116,50 @@ exports.bookAppointment = async (req, res) => {
         Message: "Invalid parameters.",
       });
     }
-    // Create the appointmentData object
+    var currentDate = moment().format("YYYY-MM-DD");
+    if (moment(appointment_date).isBefore(currentDate)) {
+      return res.status(400).send({
+        HasError: true,
+        StatusCode: 400,
+        Message: "Invalid appointment date.",
+      });
+    }
+    var appointmentWeekDay = daysOfWeekConfig.find(
+      (day) => day.day === moment(appointment_date).format("dddd")
+    )?.value;
+    if (!appointmentWeekDay) {
+      return res.status(400).send({
+        HasError: true,
+        StatusCode: 400,
+        Message: "Invalid appointment day.",
+      });
+    }
+    var slotAvailability = await FDService.getAvailability(fashion_designer_id);
+    var appointmentStartTime = start_time
+    var appointmentEndTime = end_time
+    console.log("start time : ", appointmentStartTime)
+    console.log("start time : ", appointmentEndTime)
+    var isValidTimeSlot = slotAvailability.some((slot) => {
+      var slotStartTime = slot.start_time
+      var slotEndTime = slot.end_time
+      console.log("start time of slot: ", slotStartTime)
+      console.log("end time of slot: ", slotEndTime)
+
+      return (
+        slot.week_day == appointmentWeekDay &&
+        slot.check_availability == 1 &&
+        appointmentStartTime >= slotStartTime &&
+        appointmentEndTime <= slotEndTime
+      );
+    })
+    if (!isValidTimeSlot) {
+      return res.status(400).send({
+        HasError: true,
+        StatusCode: 400,
+        Message: "Invalid time. Please select a valid time slot.",
+      });    
+    } else {
+      // Create the appointmentData object
     var appointmentData = {
       user_id: fashion_designer_id,
       customer_id: user_id,
@@ -1119,6 +1171,7 @@ exports.bookAppointment = async (req, res) => {
       status: 1,
       address_id: address_id,
     };
+    console.log("bvbmnnbhjfghm")
     // Check if the requested slot is available
     var isSlotAvailable = await FDService.slotAvailability(
       fashion_designer_id,
@@ -1138,6 +1191,41 @@ exports.bookAppointment = async (req, res) => {
         Message: "Slot is already booked. Please select another time slot.",
       });
     }
+
+    }
+    
+    // // Create the appointmentData object
+    // var appointmentData = {
+    //   user_id: fashion_designer_id,
+    //   customer_id: user_id,
+    //   appointment_date: moment(appointment_date).format("YYYY-MM-DD"),
+    //   start_time: start_time,
+    //   end_time: end_time,
+    //   total_fees: parseFloat(total_fees),
+    //   transaction_id: 0,
+    //   status: 1,
+    //   address_id: address_id,
+    // };
+    // console.log("bvbmnnbhjfghm")
+    // // Check if the requested slot is available
+    // var isSlotAvailable = await FDService.slotAvailability(
+    //   fashion_designer_id,
+    //   start_time,
+    //   end_time,
+    //   appointment_date
+    // );
+    // if (isSlotAvailable) {
+    //   var appointment = await FDService.bookAppointment(appointmentData);
+    //   return res.status(200).send({
+    //     HasError: false,
+    //     Message: "Thank you for booking the slot.",
+    //   });
+    // } else {
+    //   return res.status(200).send({
+    //     HasError: true,
+    //     Message: "Slot is already booked. Please select another time slot.",
+    //   });
+    // }
   } catch (error) {
     console.log(error);
     return res.status(500).send({
