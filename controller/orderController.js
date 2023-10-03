@@ -49,36 +49,68 @@ exports.orderList = async (req, res) => {
     );
     var boutiqueOrders = await orderService.boutiqueOrder(user_id);
     var orderList = [];
-    for (var order of boutiqueOrders) {
-      var boutiqueAddress = await orderService.boutiqueAddress();
-      var orderStatusName = await orderService.orderStatus(order.id);
-      var orderDelivery = await orderService.orderDelivery();
-      var orderStatus = orderStatusName.find(
-        (status) => status.id === order.order_status_id
-      );
-      var delivery = orderDelivery.find(
-        (delivery_date) => delivery_date.order_id === order.id
-      );
-      var orderListArray = {
-        id: order.id,
-        booking_code: order.booking_code,
-        boutique_id: order.boutique_id,
-        customer_id: order.customer_id,
-        total_quantity: order.total_quantity,
-        subtotal_amount: order.subtotal_amount,
-        total_payable_amount: order.total_payable_amount,
-        order_status: order.order_status_id,
-        order_status_name: orderStatus.order_status_name,
-        order_datetime: order.created_at,
-        delivery_date: delivery.delivery_date,
-        boutique_name: boutiqueAddress[0].boutique_name,
-        boutique_address: boutiqueAddress[0].address,
-        boutique_country_state: boutiqueAddress[0].coutry_state,
-        boutique_city: boutiqueAddress[0].city,
-        boutique_area: boutiqueAddress[0].area,
-        boutique_landmark: boutiqueAddress[0].landmark,
-      };
+    for (var i in boutiqueOrders) {
+      var orderListArray = {}
+      orderListArray.id = boutiqueOrders[i].id ? boutiqueOrders[i].id : 0
+      orderListArray.booking_code = boutiqueOrders[i].booking_code ? boutiqueOrders[i].booking_code : ''
+      orderListArray.boutique_id = boutiqueOrders[i].boutique_id ? boutiqueOrders[i].boutique_id : 0
+      orderListArray.customer_id = boutiqueOrders[i].customer_id ? boutiqueOrders[i].customer_id : 0
+      orderListArray.total_quantity = boutiqueOrders[i].total_quantity ? boutiqueOrders[i].total_quantity : 0
+      orderListArray.subtotal_amount = boutiqueOrders[i].subtotal_amount ? boutiqueOrders[i].subtotal_amount : 0
+      orderListArray.total_payable_amount = boutiqueOrders[i].total_payable_amount ? boutiqueOrders[i].total_payable_amount : 0
+      orderListArray.order_status = boutiqueOrders[i].order_status_id ? boutiqueOrders[i].order_status_id : 0
+      var orderStatusName = await orderService.orderStatusName(boutiqueOrders[i].order_status_id);
+      orderListArray.order_status_name = orderStatusName ? orderStatusName[0][0].status : ''
+      orderListArray.order_datetime = boutiqueOrders[i].created_at ? boutiqueOrders[i].created_at : ''
+      var orderDelivery = await orderService.deliveryDate(boutiqueOrders[i].id);
+      orderListArray.delivery_date = orderDelivery ? orderDelivery[0][0].delivery_date : ''
+      var boutiqueAddress = await orderService.BoutiqueAddress(boutiqueOrders[i].id);
+      if (boutiqueAddress) {
+        boutiqueAddress = boutiqueAddress.toJSON()
+      }
+      orderListArray.boutique_name = boutiqueAddress?boutiqueAddress.boutique_name : ''
+      orderListArray.boutique_address = boutiqueAddress?boutiqueAddress.address : ''
+      orderListArray.boutique_country_state = boutiqueAddress?boutiqueAddress.country_state : ''
+      orderListArray.boutique_city = boutiqueAddress?boutiqueAddress.city : ''
+      orderListArray.boutique_area = boutiqueAddress?boutiqueAddress.area : ''
+      orderListArray.boutique_landmark = boutiqueAddress?boutiqueAddress.landmark : ''
       orderList.push(orderListArray);
+
+
+      // console.log( boutiqueOrders[order].order_status_id)
+      // var boutiqueAddress = await orderService.BoutiqueAddress(boutiqueOrders[order].id);
+      // // console.log(boutiqueAddress)
+      // if(boutiqueAddress){
+      //   boutiqueAddress=boutiqueAddress.toJSON()
+      // }
+      // var orderStatusName = await orderService.orderStatus(order.id);
+      // // console.log(orderStatusName)
+      // var orderDelivery = await orderService.orderDelivery();
+      // var orderStatus = orderStatusName.find(
+      //   (status) => status.id === order.order_status_id
+      // );
+      // var delivery = orderDelivery.find(
+      //   (delivery_date) => delivery_date.order_id === order.id
+      // );
+      // var orderListArray = {
+      //   id: order.id,
+      //   booking_code: order.booking_code,
+      //   boutique_id: order.boutique_id,
+      //   customer_id: order.customer_id,
+      //   total_quantity: order.total_quantity,
+      //   subtotal_amount: order.subtotal_amount,
+      //   total_payable_amount: order.total_payable_amount,
+      //   order_status: order.order_status_id,
+      //   order_status_name: orderStatus.order_status_name,
+      //   order_datetime: order.created_at,
+      //   delivery_date: delivery.delivery_date,
+      //   boutique_name: boutiqueAddress?boutiqueAddress.boutique_name:'',
+      //   boutique_address: boutiqueAddress?boutiqueAddress.address:'',
+      //   boutique_country_state: boutiqueAddress?boutiqueAddress.coutry_state:'',
+      //   boutique_city: boutiqueAddress?boutiqueAddress.city:'',
+      //   boutique_area: boutiqueAddress?boutiqueAddress.area:"",
+      //   boutique_landmark: boutiqueAddress?boutiqueAddress.landmark:"",
+      // };
     }
     orderList.sort((a, b) => b.id - a.id);
 
@@ -198,7 +230,7 @@ exports.orderDetails = async (req, res) => {
           Expires: expirationTime,
         });
         var material_image = item.material_image || [];
-        var cat_name      
+        var cat_name
         if (category[0].category_type === 1) {
           cat_id = 1
           cat_name = "Men"
@@ -249,7 +281,7 @@ exports.orderDetails = async (req, res) => {
     var itemArray = itemList.map((item) => ({
       ...item,
       measurement_info: meas,
-    })) 
+    }))
     if (Object.keys(orderDetails).length !== 0) {
       return res.status(200).send({
         result: {
