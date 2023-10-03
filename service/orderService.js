@@ -1,5 +1,6 @@
 const db = require("../dbConnection");
 const Users = require("../model/userModel");
+const Boutique=require('../model/userBoutiqueInfoModel')
 
 // order list
 exports.boutiqueOrder = async (user_id) => {
@@ -53,7 +54,10 @@ exports.boutiqueAddress = async (filter) => {
     return error;
   }
 };
-
+exports.BoutiqueAddress=async(id)=>{
+  const result=await Boutique.findOne({where:{id:id}})
+  return result
+}
 exports.orderStatus = async () => {
   try {
     var query = `SELECT
@@ -70,6 +74,10 @@ exports.orderStatus = async () => {
     return error;
   }
 };
+exports.orderStatusName=async(id)=>{
+  var result=db.query(`select * from sarter__order_status_dic where id=${id}`)
+  return result
+}
 
 exports.orderDelivery = async () => {
   try {
@@ -89,6 +97,11 @@ exports.orderDelivery = async () => {
     return error;
   }
 };
+
+exports.deliveryDate=async(order_id)=>{
+  var result=db.query(`select * from sarter__boutique_orders_items where order_id=${order_id}`)
+  return result
+}
 
 // order details
 exports.boutiqueOrderByOrderId = async (order_id) => {
