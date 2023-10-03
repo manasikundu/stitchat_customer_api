@@ -62,7 +62,6 @@ exports.orderStatus = async () => {
     WHERE
         id IN (SELECT order_status FROM public.sarter__boutique_orders)`;
     var result = await db.query(query);
-    console.log(result[0])
     return result[0];
   } catch (error) {
     console.log(error);

@@ -79,6 +79,8 @@ exports.orderList = async (req, res) => {
       };
       orderList.push(orderListArray);
     }
+    orderList.sort((a, b) => b.id - a.id);
+
     // // Generate access token using the provided secretKey
     // var secretKey = "tensorflow";
     // var token = generateAccessToken(mobile_number, secretKey);
