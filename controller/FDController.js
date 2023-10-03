@@ -624,7 +624,7 @@ exports.fashionDesignerTimeSlot = async (req, res) => {
       };
       return daySlot;
     };
-    var generateSlotResponse = async (slots, fashionDesignerStartTime, fashionDesignerEndTime) => {
+    var generateSlotResponse = async (slots, fashionDesignerStartTime, fashionDesignerEndTime, date) => {
       var responses = [];
       for (var slot of slots) {
         var status = 0;
@@ -635,20 +635,22 @@ exports.fashionDesignerTimeSlot = async (req, res) => {
         var durationConfig = appointmentTimeConfig.find((config) => config.slot === "duration");
         var duration = parseInt(durationConfig.time);
         var bookedSlots = await FDService.bookedSlots(user_id);
+        var hasBookedSlot = bookedSlots.find(
+          (bookedSlot) =>
+            bookedSlot.customer_id === customer_id &&
+            bookedSlot.start_time === slot.start_time &&
+            bookedSlot.end_time === slot.end_time 
+            // bookedSlot.appointment_date === slot.appointment_date
+        );
+        
+        var mybook = hasBookedSlot ? 1 : 0; 
         var isBooked = bookedSlots.some((bookedSlot) =>
         bookedSlot.customer_id === customer_id &&
           bookedSlot.start_time === slot.start_time &&
           bookedSlot.end_time === slot.end_time &&
           bookedSlot.appointment_date === slot.appointment_date);
-        var check_availability = status === 1 && !isBooked;
-        var bookedSlot = bookedSlots.find(
-          (bookedSlot) =>
-            bookedSlot.customer_id === customer_id &&
-            bookedSlot.start_time === slot.start_time &&
-            bookedSlot.end_time === slot.end_time &&
-            bookedSlot.appointment_date === slot.appointment_date
-        );
-        var mybook = bookedSlot ? 1 : 0;        
+        var check_availability = mybook === 1 ? false : status === 1 && !isBooked;
+ 
         var slotJson = {};
         slotJson.status = status;
         slotJson.mybook = mybook;
@@ -1131,12 +1133,13 @@ exports.bookAppointment = async (req, res) => {
       !moment(start_time, "HH:mm:ss", true).isValid() ||
       !moment(end_time, "HH:mm:ss", true).isValid() ||
       !/^\d{2}:\d{2}:\d{2}$/.test(start_time) ||
-      !/^\d{2}:\d{2}:\d{2}$/.test(end_time)
+      !/^\d{2}:\d{2}:\d{2}$/.test(end_time) ||
+      !moment(end_time, "HH:mm:ss").isSameOrAfter(moment(start_time, "HH:mm:ss").add(30, 'minutes'))
     ) {
       return res.status(400).send({
         HasError: true,
         StatusCode: 400,
-        Message: "Invalid date or time format. Use HH:mm:ss format.",
+        Message: "Invalid date or time format.",
       });
     }
     var currentDate = moment().format("YYYY-MM-DD");
