@@ -69,6 +69,7 @@ exports.orderList = async (req, res) => {
         total_payable_amount: order.total_payable_amount,
         order_status: order.order_status_id,
         order_status_name: orderStatus.order_status_name,
+        order_datetime: order.created_at,
         delivery_date: delivery.delivery_date,
         boutique_name: boutiqueAddress[0].boutique_name,
         boutique_address: boutiqueAddress[0].address,

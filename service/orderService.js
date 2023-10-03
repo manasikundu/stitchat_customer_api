@@ -16,6 +16,7 @@ exports.boutiqueOrder = async (user_id) => {
                         tax_applied_amount,
                         total_payable_amount,
                         order_status AS order_status_id,
+                        created_at,
                         first_name,
                         last_name,
                         mobile_number,
@@ -30,6 +31,7 @@ exports.boutiqueOrder = async (user_id) => {
     return error;
   }
 };
+
 
 exports.boutiqueAddress = async (filter) => {
   try {
