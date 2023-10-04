@@ -20,7 +20,6 @@ var otpStats = {}; // In-memory cache to store OTP generation stats
 exports.insertMobileNumber = async (req, res) => {
   try {
     var newUserData = req.body;
-    console.log(newUserData);
     var insertError = [];
 
     if (
@@ -51,7 +50,6 @@ exports.insertMobileNumber = async (req, res) => {
 
     // var method_name = 'insertMobileNumber'
     var method_name = await Service.getCallingMethodName();
-    console.log(method_name);
     var apiEndpointInput = JSON.stringify(newUserData);
 
     // Track API hit
@@ -151,7 +149,6 @@ exports.insertMobileNumber = async (req, res) => {
 exports.verifyOTP = async (req, res) => {
   try {
     var { mobile_number, otp } = req.body;
-
     if (!mobile_number || !otp) {
       return res.status(400).send({
         HasError: true,
@@ -159,9 +156,7 @@ exports.verifyOTP = async (req, res) => {
         Message: "Invalid parameter.",
       });
     } else {
-      // Retrieve the user by mobile number from the database
       var user = await Users.findOne({ where: { mobile_number } });
-
       if (!user) {
         return res.status(400).send({
           HasError: true,
@@ -182,34 +177,41 @@ exports.verifyOTP = async (req, res) => {
         });
       } else {
         // OTP is valid, mobile number is verified
+        const data = req.body
+        delete data['mobile_number'];
+        delete data['otp'];
+
+        const result = await Service.updateProfile(user.id, data)
+        console.log(result[1][0].toJSON())
+        var data=result[1][0].toJSON()
         var formattedUser = {
-          user_id: user.id,
-          first_name: user.first_name || "",
-          middle_name: user.middle_name || "",
-          last_name: user.last_name || "",
-          mobile_number: user.mobile_number || "",
-          email_id: user.email_id || "",
-          mob_verify_status: user.mob_verify_status,
-          email_verify_status: user.email_verify_status,
-          reg_on: user.reg_on ? moment(user.reg_on).format("DD-MM-YYYY hh:mm A") : "",
-          last_login_on: user.last_login_on ? moment(user.last_login_on).format("DD-MM-YYYY hh:mm A") : "",
-          user_type_id: user.user_type_id,
-          user_type_name: user.user_type_name || "",
-          created_by_user_id: user.created_by_user_id,
-          device_id: user.device_id || "",
-          device_info: user.device_info || "",
-          status_id: user.status_id,
-          status_name: user.status_name || "",
-          mobile_verify_on: user.mobile_verify_on || "",
-          email_verify_on: user.email_verify_on || "",
-          prefix: user.prefix || "",
-          otp: user.otp,
-          add_date: user.created_at ? moment(user.created_at).format("DD-MM-YYYY hh:mm A") : "",
-          parent_id: user.parent_id,
-          role: user.role || "",
-          profile_photo: user.profile_photo || "",
-          id_proof: user.id_proof || "",
-          gift_coin: user.gift_coin || "0.00",
+          user_id: data.id,
+          first_name: data.first_name ?data.first_name: "",
+          middle_name: data.middle_name ?data.middle_name: "",
+          last_name: data.last_name ?data.last_name:"",
+          mobile_number: data.mobile_number?data.mobile_number: "",
+          email_id: data.email_id ? data.email_id: "",
+          mob_verify_status: data.mob_verify_status?data.mob_verify_status:0,
+          email_verify_status: data.email_verify_status?data.email_verify_status:0,
+          reg_on: data.reg_on ? moment(data.reg_on).format("DD-MM-YYYY hh:mm A") : "",
+          last_login_on: data.last_login_on ? moment(data.last_login_on).format("DD-MM-YYYY hh:mm A") : "",
+          user_type_id: data.user_type_id ?data.user_type_id:0,
+          user_type_name: data.user_type_name || "",
+          created_by_user_id: data.created_by_user_id ?data.created_by_user_id:0,
+          device_id: data.device_id ?data.device_id :"",
+          device_info: data.device_info ?data.device_info : "",
+          status_id: data.status_id?data.status_id:0,
+          status_name: data.status_name ?data.status_name: "",
+          mobile_verify_on: data.mobile_verify_on ?data.mobile_verify_on: "",
+          email_verify_on: data.email_verify_on ? data.email_verify_on : "",
+          prefix: data.prefix ?data.prefix : "",
+          otp: data.otp,
+          add_date: data.created_at ? moment(data.created_at).format("DD-MM-YYYY hh:mm A") : "",
+          parent_id: data.parent_id,
+          role: data.role ?data.role:"",
+          profile_photo: data.profile_photo ?data.profile_photo : "",
+          id_proof: data.id_proof ?data.id_proof:"",
+          gift_coin: data.gift_coin ?data.gift_coin : "0.00",
         };
         // OTP is valid, mobile number is verified
         return res.status(200).send({
