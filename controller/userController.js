@@ -177,12 +177,11 @@ exports.verifyOTP = async (req, res) => {
         });
       } else {
         // OTP is valid, mobile number is verified
-        const data = req.body
-        delete data['mobile_number'];
-        delete data['otp'];
+        const data1 = req.body
+        delete data1['mobile_number'];
+        delete data1['otp'];
 
-        const result = await Service.updateProfile(user.id, data)
-        console.log(result[1][0].toJSON())
+        const result = await Service.updateProfile(user.id, data1)
         var data=result[1][0].toJSON()
         var formattedUser = {
           user_id: data.id,
