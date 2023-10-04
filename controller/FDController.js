@@ -11,7 +11,8 @@ const { generateAccessToken, auth } = require("../jwt");
 const s3 = require("../config/s3Config");
 const dotenv = require("dotenv");
 dotenv.config();
-const Appointment = require("../model/appointmentModel")
+const Appointment = require("../model/appointmentModel");
+const { tr } = require("date-fns/locale");
 
 var expirationTime = 600;
 
@@ -608,9 +609,9 @@ exports.fashionDesignerTimeSlot = async (req, res) => {
       }
       var timerange = availabilityCheck
         ? {
-            morning: await generateSlotResponse(morningSlots, fashionDesignerStartTime, fashionDesignerEndTime),
-            afternoon: await generateSlotResponse(afternoonSlots, fashionDesignerStartTime, fashionDesignerEndTime),
-            evening: await generateSlotResponse(eveningSlots, fashionDesignerStartTime, fashionDesignerEndTime),
+            morning: await generateSlotResponse(morningSlots, fashionDesignerStartTime, fashionDesignerEndTime, date),
+            afternoon: await generateSlotResponse(afternoonSlots, fashionDesignerStartTime, fashionDesignerEndTime, date),
+            evening: await generateSlotResponse(eveningSlots, fashionDesignerStartTime, fashionDesignerEndTime, date),
           }
         : {};
       var selected = false;
@@ -628,9 +629,11 @@ exports.fashionDesignerTimeSlot = async (req, res) => {
       };
       return daySlot;
     };
-    var generateSlotResponse = async (slots, fashionDesignerStartTime, fashionDesignerEndTime, date) => {
+    
+    var generateSlotResponse = async (slots, fashionDesignerStartTime, fashionDesignerEndTime, appointment_date) => {
       var responses = [];
       for (var slot of slots) {
+        slot.appointment_date = appointment_date.format("YYYY-MM-DD"); 
         var status = 0;
         if (slot.start_time >= fashionDesignerStartTime && slot.start_time < fashionDesignerEndTime) {
           status = 1;
@@ -646,17 +649,14 @@ exports.fashionDesignerTimeSlot = async (req, res) => {
             bookedSlot.end_time === slot.end_time 
             // bookedSlot.appointment_date === slot.appointment_date
         );
-        
-        var mybook = hasBookedSlot ? 1 : 0; 
-        var isBooked = bookedSlots.some((bookedSlot) =>
-        bookedSlot.customer_id === customer_id &&
-          bookedSlot.start_time === slot.start_time &&
-          bookedSlot.end_time === slot.end_time &&
-          bookedSlot.appointment_date === slot.appointment_date);
-          
-        var check_availability = mybook === 1 ? false : status === 1 && !isBooked
-
- 
+        var mybook = hasBookedSlot ? 1 : 0;
+        var isBooked = bookedSlots.some(
+          (bookedSlot) =>
+            bookedSlot.start_time === slot.start_time &&
+            bookedSlot.end_time === slot.end_time &&
+            bookedSlot.appointment_date === slot.appointment_date
+        );
+        var check_availability = isBooked ? false : true;
         var slotJson = {};
         slotJson.status = status;
         slotJson.mybook = mybook;
@@ -1105,8 +1105,9 @@ exports.bookAppointment = async (req, res) => {
   try {
     var {fashion_designer_id,user_id,appointment_date,start_time,end_time,address_id,total_fees} = req.body
     var designer = await FDService.getDesignerDetailsByUserId(fashion_designer_id);
-    var user = await Appointment.findOne({where: {customer_id: user_id}});
-    if (designer.length===0 || !user) {
+    // var user = await Users.findOne({where: {customer_id: id}});
+    var user = await Users.findOne({where: {id: user_id, user_type_id: 3}});
+    if (designer.length===0 ) {
       return res.status(400).send({
       HasError: true,
       StatusCode: 400,
