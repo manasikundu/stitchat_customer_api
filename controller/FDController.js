@@ -178,12 +178,11 @@ exports.fashionDesignerList = async (req, res) => {
           user_id: user.user_id,
           about_me:
             "I am a Fashion designer, fusing elegance and modernity into timeless designs that inspire . ",
-          image: 
-          s3.getSignedUrl("getObject", {
+          image: s3.getSignedUrl("getObject", {
             Bucket: process.env.AWS_BUCKET,
-            Key: "employee/default-img.jpg", // Provide the correct Key as a string
+            Key: `employee/user-default-img.jpg`,
             Expires: expirationTime,
-          }), 
+          }),
           boutique_id: boutique_id,
           boutique_name: boutique_name,
           address: address,
@@ -447,6 +446,11 @@ exports.FashionDesignerDetails = async (req, res) => {
           designer_name: fullName,
           about_me:
             "I am a Fashion designer, fusing elegance and modernity into timeless designs that inspire . ",
+          image: s3.getSignedUrl("getObject", {
+              Bucket: process.env.AWS_BUCKET,
+              Key: `employee/user-default-img.jpg`,
+              Expires: expirationTime,
+            }),  
           boutique_id: boutiqueInfo[0][0].boutique_id ? boutiqueInfo[0][0].boutique_id : 0,
           boutique_name: boutiqueInfo[0][0].boutique_name ? boutiqueInfo[0][0].boutique_name : '',
           address: boutiqueInfo[0][0].address ? boutiqueInfo[0][0].address : '',
