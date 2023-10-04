@@ -150,7 +150,6 @@ exports.orderList = async (req, res) => {
 // order details
 exports.orderDetails = async (req, res) => {
   try {
-    var user_id = req.query.user_id;
     var order_id = req.query.order_id;
     if (order_id == undefined || !Number.isInteger(parseInt(order_id))) {
       return res.status(400).json({
@@ -161,14 +160,7 @@ exports.orderDetails = async (req, res) => {
     }
     var method_name = await Service.getCallingMethodName();
     var apiEndpointInput = JSON.stringify(req.body);
-    var apiTrack = await Service.trackApi(
-      req.query.user_id,
-      method_name,
-      apiEndpointInput,
-      req.query.device_id,
-      req.query.device_info,
-      req.ip
-    );
+    var apiTrack = await Service.trackApi(req.query.user_id,method_name,apiEndpointInput,req.query.device_id,req.query.device_info,req.ip);
     var customerType = await orderService.customerType(order_id);
     var boutiqueOrders = await orderService.boutiqueOrderByOrderId(order_id);
     var orderDetails = {};

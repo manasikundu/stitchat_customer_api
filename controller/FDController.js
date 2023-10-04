@@ -653,7 +653,9 @@ exports.fashionDesignerTimeSlot = async (req, res) => {
           bookedSlot.start_time === slot.start_time &&
           bookedSlot.end_time === slot.end_time &&
           bookedSlot.appointment_date === slot.appointment_date);
-        var check_availability = mybook === 1 ? false : status === 1 && !isBooked;
+          
+        var check_availability = mybook === 1 ? false : status === 1 && !isBooked
+
  
         var slotJson = {};
         slotJson.status = status;
