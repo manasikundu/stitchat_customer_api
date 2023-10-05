@@ -39,14 +39,7 @@ exports.orderList = async (req, res) => {
 
     var method_name = await Service.getCallingMethodName();
     var apiEndpointInput = JSON.stringify(req.body);
-    var apiTrack = await Service.trackApi(
-      req.query.user_id,
-      method_name,
-      apiEndpointInput,
-      req.query.device_id,
-      req.query.device_info,
-      req.ip
-    );
+    var apiTrack = await Service.trackApi(req.query.user_id,method_name,apiEndpointInput,req.query.device_id,req.query.device_info,req.ip);
     var boutiqueOrders = await orderService.boutiqueOrder(user_id);
     var orderList = [];
     for (var i in boutiqueOrders) {
@@ -64,7 +57,7 @@ exports.orderList = async (req, res) => {
       orderListArray.order_datetime = boutiqueOrders[i].created_at ? boutiqueOrders[i].created_at : ''
       var orderDelivery = await orderService.deliveryDate(boutiqueOrders[i].id);
       orderListArray.delivery_date = orderDelivery ? orderDelivery[0][0].delivery_date : ''
-      var boutiqueAddress = await orderService.BoutiqueAddress(boutiqueOrders[i].id);
+      var boutiqueAddress = await orderService.BoutiqueAddress(boutiqueOrders[i].boutique_id);
       if (boutiqueAddress) {
         boutiqueAddress = boutiqueAddress.toJSON()
       }

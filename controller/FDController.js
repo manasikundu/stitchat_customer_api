@@ -1114,35 +1114,21 @@ exports.bookAppointment = async (req, res) => {
       Message: "Invalid fashion designer or user.",
     });
     }
-    if (
-      isNaN(fashion_designer_id) ||
-      isNaN(user_id) ||
-      isNaN(address_id) ||
-      parseFloat(total_fees) < 0
-    ) {
+    if (isNaN(fashion_designer_id) ||isNaN(user_id) ||isNaN(address_id) ||parseFloat(total_fees) < 0) {
       return res.status(400).send({
         HasError: true,
         StatusCode: 400,
         Message: "Invalid parameters.",
       });
     }
-    if (!moment(appointment_date, "YYYY-MM-DD", true).isValid() ||
-      !moment(start_time, "HH:mm:ss", true).isValid() ||
-      !moment(end_time, "HH:mm:ss", true).isValid()) {
+    if (!moment(appointment_date, "YYYY-MM-DD", true).isValid() ||!moment(start_time, "HH:mm:ss", true).isValid() ||!moment(end_time, "HH:mm:ss", true).isValid()) {
       return res.status(400).send({
         HasError: true,
         StatusCode: 400,
         Message: "Invalid date or time format.",
       });
     }
-    if (
-      !moment(appointment_date, "YYYY-MM-DD", true).isValid() ||
-      !moment(start_time, "HH:mm:ss", true).isValid() ||
-      !moment(end_time, "HH:mm:ss", true).isValid() ||
-      !/^\d{2}:\d{2}:\d{2}$/.test(start_time) ||
-      !/^\d{2}:\d{2}:\d{2}$/.test(end_time) ||
-      !moment(end_time, "HH:mm:ss").isSameOrAfter(moment(start_time, "HH:mm:ss").add(30, 'minutes'))
-    ) {
+    if (!moment(appointment_date, "YYYY-MM-DD", true).isValid() ||!moment(start_time, "HH:mm:ss", true).isValid() ||!moment(end_time, "HH:mm:ss", true).isValid() ||!/^\d{2}:\d{2}:\d{2}$/.test(start_time) ||!/^\d{2}:\d{2}:\d{2}$/.test(end_time) ||!moment(end_time, "HH:mm:ss").isSameOrAfter(moment(start_time, "HH:mm:ss").add(30, 'minutes'))) {
       return res.status(400).send({
         HasError: true,
         StatusCode: 400,
@@ -1157,9 +1143,7 @@ exports.bookAppointment = async (req, res) => {
         Message: "Invalid appointment date.",
       });
     }
-    var appointmentWeekDay = daysOfWeekConfig.find(
-      (day) => day.day === moment(appointment_date).format("dddd")
-    )?.value;
+    var appointmentWeekDay = daysOfWeekConfig.find((day) => day.day === moment(appointment_date).format("dddd"))?.value;
     if (!appointmentWeekDay) {
       return res.status(400).send({
         HasError: true,
