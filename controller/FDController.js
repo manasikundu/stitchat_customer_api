@@ -638,7 +638,7 @@ exports.fashionDesignerTimeSlot = async (req, res) => {
         if (slot.start_time >= fashionDesignerStartTime && slot.start_time < fashionDesignerEndTime) {
           status = 1;
         }
-        var check_availability = status === 1;
+        // var check_availability = status === 1;
         var durationConfig = appointmentTimeConfig.find((config) => config.slot === "duration");
         var duration = parseInt(durationConfig.time);
         var bookedSlots = await FDService.bookedSlots(user_id);
@@ -656,7 +656,13 @@ exports.fashionDesignerTimeSlot = async (req, res) => {
             bookedSlot.end_time === slot.end_time &&
             bookedSlot.appointment_date === slot.appointment_date
         );
-        var check_availability = isBooked ? false : true;
+        // var check_availability = isBooked ? false : true;
+        // var check_availability = status === 1 && isBooked ? true : false; 
+        if(status==1 && !isBooked){
+          check_availability = true
+        } else {
+          check_availability = false
+        }
         var slotJson = {};
         slotJson.status = status;
         slotJson.mybook = mybook;

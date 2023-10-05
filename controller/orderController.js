@@ -52,7 +52,7 @@ exports.orderList = async (req, res) => {
       orderListArray.subtotal_amount = boutiqueOrders[i].subtotal_amount ? boutiqueOrders[i].subtotal_amount : 0
       orderListArray.total_payable_amount = boutiqueOrders[i].total_payable_amount ? boutiqueOrders[i].total_payable_amount : 0
       orderListArray.order_status = boutiqueOrders[i].order_status_id ? boutiqueOrders[i].order_status_id : 0
-      var orderStatusName = await orderService.orderStatusName(boutiqueOrders[i].order_status_id);
+      var orderStatusName = await orderService.orderStatusName(boutiqueOrders[i].order_status_id)
       orderListArray.order_status_name = orderStatusName ? orderStatusName[0][0].status : ''
       orderListArray.order_datetime = boutiqueOrders[i].created_at ? boutiqueOrders[i].created_at : ''
       var orderDelivery = await orderService.deliveryDate(boutiqueOrders[i].id);
