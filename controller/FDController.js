@@ -1105,7 +1105,7 @@ exports.bookAppointment = async (req, res) => {
   try {
     var {fashion_designer_id,user_id,appointment_date,start_time,end_time,address_id,total_fees} = req.body
     var designer = await FDService.getDesignerDetailsByUserId(fashion_designer_id);
-    // var user = await Users.findOne({where: {customer_id: id}});
+    // var user = await Appointment.findOne({where: {customer_id: user_id}});
     var user = await Users.findOne({where: {id: user_id, user_type_id: 3}});
     if (designer.length===0 ) {
       return res.status(400).send({
