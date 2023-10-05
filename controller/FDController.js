@@ -448,10 +448,10 @@ exports.FashionDesignerDetails = async (req, res) => {
           about_me:
             "I am a Fashion designer, fusing elegance and modernity into timeless designs that inspire . ",
           image: s3.getSignedUrl("getObject", {
-              Bucket: process.env.AWS_BUCKET,
-              Key: `employee/user-default-img.jpg`,
-              Expires: expirationTime,
-            }),  
+            Bucket: process.env.AWS_BUCKET,
+            Key: `employee/user-default-img.jpg`,
+            Expires: expirationTime,
+          }),
           boutique_id: boutiqueInfo[0][0].boutique_id ? boutiqueInfo[0][0].boutique_id : 0,
           boutique_name: boutiqueInfo[0][0].boutique_name ? boutiqueInfo[0][0].boutique_name : '',
           address: boutiqueInfo[0][0].address ? boutiqueInfo[0][0].address : '',
@@ -523,7 +523,7 @@ exports.fashionDesignerTimeSlot = async (req, res) => {
     const mobile_number = req.body.mobile_number;
     const method_name = await Service.getCallingMethodName();
     const apiEndpointInput = JSON.stringify(req.body);
-    const apiTrack = await Service.trackApi(req.query.user_id,method_name,apiEndpointInput,req.query.device_id,req.query.device_info,req.ip);
+    const apiTrack = await Service.trackApi(req.query.user_id, method_name, apiEndpointInput, req.query.device_id, req.query.device_info, req.ip);
     if (isNaN(user_id) || user_id === "") {
       return res.status(400).send({
         HasError: true,
@@ -646,8 +646,8 @@ exports.fashionDesignerTimeSlot = async (req, res) => {
           (bookedSlot) =>
             bookedSlot.customer_id === customer_id &&
             bookedSlot.start_time === slot.start_time &&
-            bookedSlot.end_time === slot.end_time 
-            // bookedSlot.appointment_date === slot.appointment_date
+            bookedSlot.end_time === slot.end_time
+          // bookedSlot.appointment_date === slot.appointment_date
         );
         var mybook = hasBookedSlot ? 1 : 0;
         var isBooked = bookedSlots.some(
@@ -1109,16 +1109,16 @@ exports.getAddressList = async (req, res) => {
 // book appointment
 exports.bookAppointment = async (req, res) => {
   try {
-    var {fashion_designer_id,user_id,appointment_date,start_time,end_time,address_id,total_fees} = req.body
+    var { fashion_designer_id, user_id, appointment_date, start_time, end_time, address_id, total_fees } = req.body
     var designer = await FDService.getDesignerDetailsByUserId(fashion_designer_id);
     // var user = await Appointment.findOne({where: {customer_id: user_id}});
     var user = await Users.findOne({where: {id: user_id, user_type_id: 3}});
     if (designer.length===0 ) {
       return res.status(400).send({
-      HasError: true,
-      StatusCode: 400,
-      Message: "Invalid fashion designer or user.",
-    });
+        HasError: true,
+        StatusCode: 400,
+        Message: "Invalid fashion designer or user.",
+      });
     }
     if (isNaN(fashion_designer_id) ||isNaN(user_id) ||isNaN(address_id) ||parseFloat(total_fees) < 0) {
       return res.status(400).send({
@@ -1175,39 +1175,39 @@ exports.bookAppointment = async (req, res) => {
         HasError: true,
         StatusCode: 400,
         Message: "Invalid time. Please select a valid time slot.",
-      });    
-    } else {
-    var appointmentData = {
-      user_id: fashion_designer_id,
-      customer_id: user_id,
-      appointment_date: moment(appointment_date).format("YYYY-MM-DD"),
-      start_time: start_time,
-      end_time: end_time,
-      total_fees: parseFloat(total_fees),
-      transaction_id: 0,
-      status: 1,
-      address_id: address_id,
-    };
-    // Check if the requested slot is available
-    var isSlotAvailable = await FDService.slotAvailability(
-      fashion_designer_id,
-      start_time,
-      end_time,
-      appointment_date
-    );
-    if (isSlotAvailable) {
-      var appointment = await FDService.bookAppointment(appointmentData);
-      return res.status(200).send({
-        HasError: false,
-        Message: "Thank you for booking the slot.",
       });
     } else {
-      return res.status(200).send({
-        HasError: true,
-        Message: "Slot is already booked. Please select another time slot.",
-      });
+      var appointmentData = {
+        user_id: fashion_designer_id,
+        customer_id: user_id,
+        appointment_date: moment(appointment_date).format("YYYY-MM-DD"),
+        start_time: start_time,
+        end_time: end_time,
+        total_fees: parseFloat(total_fees),
+        transaction_id: 0,
+        status: 1,
+        address_id: address_id,
+      };
+      // Check if the requested slot is available
+      var isSlotAvailable = await FDService.slotAvailability(
+        fashion_designer_id,
+        start_time,
+        end_time,
+        appointment_date
+      );
+      if (isSlotAvailable) {
+        var appointment = await FDService.bookAppointment(appointmentData);
+        return res.status(200).send({
+          HasError: false,
+          Message: "Thank you for booking the slot.",
+        });
+      } else {
+        return res.status(200).send({
+          HasError: true,
+          Message: "Slot is already booked. Please select another time slot.",
+        });
+      }
     }
-  } 
   } catch (error) {
     console.log(error);
     return res.status(500).send({
@@ -1256,10 +1256,21 @@ exports.appointmentList = async (req, res) => {
         dataJson.full_name = (result1.first_name ? result1.first_name : "") + (result1.last_name ? " " + result1.last_name : "")
         data.push(dataJson);
       }
+      const approvedArray = [];
+      const otherArray = [];
+
+      // Use the reduce method to split data into evenArray and oddArray
+      data.reduce((accumulator, currentValue) => {
+        if (currentValue.status  === 1) {
+          approvedArray.push(currentValue);
+        } else {
+          otherArray.push(currentValue);
+        }
+      }, []);
       return res.status(200).send({
         HasError: false,
         message: "Appointment list fetched succesfully.",
-        result: data,
+        result: {approvedArray:approvedArray,otherArray:otherArray}
       });
     } else {
       return res.status(200).send({
@@ -1308,14 +1319,14 @@ exports.fashionDesignerAppointmentDetails = async (req, res) => {
     var result1 = await FDService.appointmentDetails(appointment_id);
     const btq_id = await db.query(`select * from sarter__boutique_user_map where user_id=${user_id}`);
     const id = btq_id[0][0].boutique_id;
-    const exp=await db.query(`select experience from sarter__boutique_basic_info where id=${id}`)
+    const exp = await db.query(`select experience from sarter__boutique_basic_info where id=${id}`)
     console.log(exp)
     const data = {}
     var formatTime = (time) => moment(time, "HH:mm:ss").format("hh:mm A");
 
     if (result1) {
       result1 = result1.toJSON()
-      const result3 = await Service.getUserByUserId(result1.user_id)      
+      const result3 = await Service.getUserByUserId(result1.user_id)
       const fashiondesignerappointmentDetails = {}
       fashiondesignerappointmentDetails.id = result1.id ? result1.id : 0
       fashiondesignerappointmentDetails.fashion_designer_id = result1.user_id ? result1.user_id : 0
@@ -1333,7 +1344,7 @@ exports.fashionDesignerAppointmentDetails = async (req, res) => {
       fashiondesignerappointmentDetails.fashiondesigner_firstname = result3.first_name ? result3.first_name : ''
       fashiondesignerappointmentDetails.fashiondesigner_lastname = result3.last_name ? result3.last_name : ''
       fashiondesignerappointmentDetails.profile_img = result3.profile_photo ? result3.profile_photo : ''
-      fashiondesignerappointmentDetails.experience = exp[0][0]?exp[0][0].experience:0
+      fashiondesignerappointmentDetails.experience = exp[0][0] ? exp[0][0].experience : 0
       fashiondesignerappointmentDetails.viewstarttime = formatTime(result1.start_time)
       fashiondesignerappointmentDetails.viewendtime = formatTime(result1.end_time)
       fashiondesignerappointmentDetails.cancelflag = true
