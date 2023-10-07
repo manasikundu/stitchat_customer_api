@@ -148,6 +148,8 @@ exports.insertMobileNumber = async (req, res) => {
 exports.verifyOTP = async (req, res) => {
   try {
     var { mobile_number, otp } = req.body;
+    mobile_number= mobile_number.split(' ').join('')
+
     if (!mobile_number || !otp) {
       return res.status(400).send({
         HasError: true,
@@ -178,7 +180,7 @@ exports.verifyOTP = async (req, res) => {
         // OTP is valid, mobile number is verified
         const data1 = req.body
         delete data1['mobile_number'];
-        delete data1['otp'];
+        // delete data1['otp'];
 
         const result = await Service.updateProfile(user.id, data1)
         var data=result[1][0].toJSON()
