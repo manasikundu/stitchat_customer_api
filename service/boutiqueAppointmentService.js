@@ -50,15 +50,27 @@ exports.boutiqueAppointment = async (boutiqueAppointmentData) => {
       return error;
     }
 }
+
+exports.itemInBoutiqueSlot = async (boutique_id) => {
+    try {
+      var query = `SELECT
+      bi.id AS boutique_id,
+      bi.boutique_name,
+      csd.id AS item_id,
+      csd.name AS item_name,
+      item_img.image AS item_image
+  FROM public.sarter__boutique_basic_info bi
+  JOIN public.sarter__boutique_service_dic bs ON bi.id = bs.boutique_id
+  JOIN public.sarter__category_item_dic csd ON bs.service_id = csd.id
+  LEFT JOIN public.sarter__category_item_images item_img ON csd.id = item_img.category_id AND csd.type = item_img.category_type
+  WHERE bi.id = ${boutique_id}`;
+  
+      var result = await db.query(query);
+      return result[0];
+    } catch (error) {
+      console.log("error : ", error);
+      return error;
+    }
+};
   
   
-// exports.boutiqueAppointment = async (boutiqueAppointmentData) => {
-//     try {
-//         const query = `insert `
-//         const boutiqueAppointment = await BoutiqueAppointment.create(boutiqueAppointmentData)
-//         return boutiqueAppointment
-//     } catch (error) {
-//         console.log("Error inserting boutiqie appointment : ", error)
-//         return error     
-//     }
-// }  

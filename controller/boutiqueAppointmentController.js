@@ -3,6 +3,11 @@ const Service = require('../service/userService')
 const moment = require('moment')
 const botiqueAppointment = require('../model/boutiqueAppointmentModel')
 const boutiqueService = require('../service/userBoutiqueService')
+const s3 = require("../config/s3Config");
+const dotenv = require("dotenv");
+dotenv.config();
+var expirationTime = 600;
+
 
 var daysOfWeekConfig = [
     { day: "Monday", value: 1 },
@@ -81,5 +86,77 @@ exports.bookBoutiqueAppointment = async (req, res) => {
       });
     }
 }
-  
+
+exports.bookBoutique = async (req, res) => {
+    try {
+        var customer_id = req.body.customer_id
+        var boutique_id = req.body.boutique_id
+        if (isNaN(customer_id) || customer_id === "" || isNaN(boutique_id) || boutique_id === "") {
+            return res.status(400).send({HasError: true,Message: "Invalid parameter."});
+        }
+        var boutiqueDetail = await boutiqueService.getBoutiqueByBoutiqueId(boutique_id)
+        if (!boutiqueDetail) {
+            return res.status(404).send({HasError: true,Message: "Boutique not found."});
+        }
+        var schedule = await botiqueAppointmentService.boutiqueWeeklySchedule(boutique_id);
+
+        var weekSchedules = schedule.map((boutique) => {
+            var weekDay = boutique.week_day;
+            var availabilityText = boutique.check_availability === 1 ? true : false;
+            var startTime = boutique.start_time;
+            var endTime = boutique.end_time;
+            var dayConfig = daysOfWeekConfig.find((config) => config.value === weekDay);
+            var dayName = dayConfig ? dayConfig.day : "";
+            var formatTime = (time) => moment(time, "HH:mm:ss").format("hh:mm A");
+            var resultTime = `${formatTime(startTime)} - ${formatTime(endTime)}`;
+            return {
+                day: weekDay,
+                dayName: dayName,
+                start_time: formatTime(startTime),
+                end_time: formatTime(endTime),
+                slot_time: resultTime,
+                availibility: availabilityText
+            };
+        })
+        
+        var items = await botiqueAppointmentService.itemInBoutiqueSlot(boutique_id)  
+        var itemArray = items.map((item) => {
+            return {
+                item_id: item.item_id,
+                item_name: item.item_name,
+                item_image: s3.getSignedUrl("getObject", {
+                    Bucket: process.env.AWS_BUCKET,
+                    Key: `category_item/${item.item_image}`,
+                    Expires: expirationTime,
+                }),
+            };
+        });
+        var maskedNumber = Service.maskMobileNumber(boutiqueDetail.contact_number)
+        var boutiqueLogo = "";
+        var boutiqueLogo = boutiqueDetail.boutique_logo
+              ? await s3.getSignedUrl("getObject", {
+              Bucket: process.env.AWS_BUCKET,
+              Key: `boutique/${boutiqueDetail.boutique_logo}`,
+              Expires: expirationTime,
+            })
+            : s3.getSignedUrl("getObject", {
+              Bucket: process.env.AWS_BUCKET,
+              Key: `boutique/default-img.jpg`,
+              Expires: expirationTime})  
+        var slotJson = {}
+        slotJson.boutique_id = boutique_id;
+        slotJson.boutique_name = boutiqueDetail.boutique_name
+        slotJson.address = boutiqueDetail.address
+        slotJson.image= boutiqueLogo
+        slotJson.contact_number = boutiqueDetail.contact_number
+        slotJson.masked_contact_number = maskedNumber
+        slotJson.timeslot = weekSchedules
+        
+        return res.status(200).send({HasError: false,boutiqueDetails: slotJson, item: itemArray});        
+        } catch (error) { 
+            console.log(error)
+            return res.status(500).send({HasError: true,Message: "Some error occured. "});        
+    }
+}
+    
   
