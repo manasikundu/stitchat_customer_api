@@ -8,6 +8,8 @@ const boutiqueRouter = require("./router/userBoutiqueRouter");
 const designersRouter = require("./router/FDRouter");
 const orderRouter = require("./router/orderRouter")
 const ratingRouter = require("./router/ratingRouter")
+const boutiqueAppointmentRouter = require("./router/boutiqueAppointmentRouter")
+
 
 const bodyParser = require("body-parser");
 app.use(cors());
@@ -30,6 +32,7 @@ app.use("", boutiqueRouter);
 app.use("", designersRouter);
 app.use("", orderRouter)
 app.use("", ratingRouter)
+app.use("", boutiqueAppointmentRouter)
 
 const port=8000
 app.listen(port,() => {

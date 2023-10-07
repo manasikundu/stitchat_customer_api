@@ -184,7 +184,6 @@ exports.verifyOTP = async (req, res) => {
 
         const result = await Service.updateProfile(user.id, data1)
         var data=result[1][0].toJSON()
-        console.log("result : ", result[0])
         var formattedUser = {
           user_id: data.id,
           first_name: data.first_name ?data.first_name: "",

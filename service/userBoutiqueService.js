@@ -214,3 +214,8 @@ exports.getBoutiqueById=async(boutique_id)=>{
   return result.toJSON()
 }
 
+exports.getBoutiqueByBoutiqueId=async(boutique_id)=>{
+  const result=await Boutique.findOne({where:{id:boutique_id}})
+  return result
+}
+
