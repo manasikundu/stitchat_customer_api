@@ -23,6 +23,7 @@
     "jsonwebtoken": "^9.0.2",
     "morgan": "^1.10.0",
     "node-geocoder": "^4.2.0",
+    "path": "^0.12.7",
     "pg": "^8.11.3",
     "sequelize": "^6.33.0"
   }

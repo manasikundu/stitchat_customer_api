@@ -11,6 +11,9 @@ const moment = require("moment");
 const jwt = require("jsonwebtoken");
 const { generateAccessToken, auth } = require("../jwt");
 const fs = require('fs')
+const s3 = require("../config/s3Config");
+const path = require('path');
+var expirationTime = 600;
 
 var OTP_EXPIRY_TIME = 3 * 60 * 1000; // 3 minutes in milliseconds
 var otpCache = {}; // In-memory cache to store OTP and its timestamp
@@ -148,7 +151,7 @@ exports.insertMobileNumber = async (req, res) => {
 exports.verifyOTP = async (req, res) => {
   try {
     var { mobile_number, otp } = req.body;
-    mobile_number= mobile_number.split(' ').join('')
+    mobile_number = mobile_number.split(' ').join('')
 
     if (!mobile_number || !otp) {
       return res.status(400).send({
@@ -183,35 +186,35 @@ exports.verifyOTP = async (req, res) => {
         // delete data1['otp'];
 
         const result = await Service.updateProfile(user.id, data1)
-        var data=result[1][0].toJSON()
+        var data = result[1][0].toJSON()
         var formattedUser = {
           user_id: data.id,
-          first_name: data.first_name ?data.first_name: "",
-          middle_name: data.middle_name ?data.middle_name: "",
-          last_name: data.last_name ?data.last_name:"",
-          mobile_number: data.mobile_number?data.mobile_number: "",
-          email_id: data.email_id ? data.email_id: "",
-          mob_verify_status: data.mob_verify_status?data.mob_verify_status:0,
-          email_verify_status: data.email_verify_status?data.email_verify_status:0,
+          first_name: data.first_name ? data.first_name : "",
+          middle_name: data.middle_name ? data.middle_name : "",
+          last_name: data.last_name ? data.last_name : "",
+          mobile_number: data.mobile_number ? data.mobile_number : "",
+          email_id: data.email_id ? data.email_id : "",
+          mob_verify_status: data.mob_verify_status ? data.mob_verify_status : 0,
+          email_verify_status: data.email_verify_status ? data.email_verify_status : 0,
           reg_on: data.reg_on ? moment(data.reg_on).format("DD-MM-YYYY hh:mm A") : "",
           last_login_on: data.last_login_on ? moment(data.last_login_on).format("DD-MM-YYYY hh:mm A") : "",
-          user_type_id: data.user_type_id ?data.user_type_id:0,
+          user_type_id: data.user_type_id ? data.user_type_id : 0,
           user_type_name: data.user_type_name || "",
-          created_by_user_id: data.created_by_user_id ?data.created_by_user_id:0,
-          device_id: data.device_id ?data.device_id :"",
-          device_info: data.device_info ?data.device_info : "",
-          status_id: data.status_id?data.status_id:0,
-          status_name: data.status_name ?data.status_name: "",
-          mobile_verify_on: data.mobile_verify_on ?data.mobile_verify_on: "",
+          created_by_user_id: data.created_by_user_id ? data.created_by_user_id : 0,
+          device_id: data.device_id ? data.device_id : "",
+          device_info: data.device_info ? data.device_info : "",
+          status_id: data.status_id ? data.status_id : 0,
+          status_name: data.status_name ? data.status_name : "",
+          mobile_verify_on: data.mobile_verify_on ? data.mobile_verify_on : "",
           email_verify_on: data.email_verify_on ? data.email_verify_on : "",
-          prefix: data.prefix ?data.prefix : "",
+          prefix: data.prefix ? data.prefix : "",
           otp: data.otp,
           add_date: data.created_at ? moment(data.created_at).format("DD-MM-YYYY hh:mm A") : "",
           parent_id: data.parent_id,
-          role: data.role ?data.role:"",
-          profile_photo: data.profile_photo ?data.profile_photo : "",
-          id_proof: data.id_proof ?data.id_proof:"",
-          gift_coin: data.gift_coin ?data.gift_coin : "0.00",
+          role: data.role ? data.role : "",
+          profile_photo: data.profile_photo ? data.profile_photo : "",
+          id_proof: data.id_proof ? data.id_proof : "",
+          gift_coin: data.gift_coin ? data.gift_coin : "0.00",
         };
         // OTP is valid, mobile number is verified
         return res.status(200).send({
@@ -497,7 +500,19 @@ exports.userProfile = async (req, res) => {
       customerInfo.prefix = result1.prefix ? result1.prefix : ''
       customerInfo.parent_id = result1.parent_id ? result1.parent_id : 0
       customerInfo.role = result1.role ? result1.role : 0
-      customerInfo.profile_photo = result1.profile_photo ? result1.profile_photo : ''
+      if (result1.profile_photo) {
+        console.log(result1.profile_photo)
+        var photo = s3.getSignedUrl("getObject", {
+          Bucket: process.env.AWS_BUCKET,
+          Key: result1.profile_photo,
+          Expires: expirationTime,
+        });
+        console.log(photo)
+        customerInfo.profile_photo = photo
+
+      }else{
+        customerInfo.profile_photo = ''
+      }
       customerInfo.id_proof = result1.id_proof ? result1.id_proof : ''
       customerInfo.gift_coin = result1.gift_coin ? result1.gift_coin : 0
 
@@ -617,6 +632,49 @@ exports.privacyPolicy = async (req, res) => {
       HasError: false,
       result: policySections
     })
+  } catch (error) {
+    console.log(error)
+    res.status(500).send({ message: "Something went wrong.", HasError: true })
+  }
+}
+
+exports.profilePicUpload = async (req, res) => {
+  try {
+    var user_id = req.body.user_id
+    var buf = Buffer.from(req.body.profile_image.replace(/^data:image\/\w+;base64,/, ""), 'base64')
+    if (req.body.profile_image) {
+      console.log(path.extname(req.body.profile_image))
+      var logo = user_id + path.extname(req.body.profile_image)
+      console.log(logo)
+      var logoPath = "employee/" + logo;
+      var data = { 'profile_photo': logoPath }
+      const params = {
+        Bucket: process.env.AWS_BUCKET,
+        Key: logoPath,
+        Body: buf,
+        ContentEncoding: 'base64',
+      };
+      s3.upload(params, (err, data) => {
+        if (err) {
+          console.log(err)
+        } else {
+          console.log('File Uploaded sucessfully')
+        }
+      });
+      const result = await Service.updateProfile(user_id, data)
+      if (result[0] != 0) {
+        return res.status(200).send({
+          message: "Successfully Updated.",
+          HasError: false
+        })
+      } else {
+        return res.status(500).send({
+          message: "failed to update",
+          HasError: true
+        })
+      }
+    }
+
   } catch (error) {
     console.log(error)
     res.status(500).send({ message: "Something went wrong.", HasError: true })
