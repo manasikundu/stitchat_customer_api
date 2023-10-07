@@ -789,7 +789,7 @@ exports.addNewAddress = async (req, res) => {
           !pincode)) ||
       (req.body.addressId && !Number.isInteger(req.body.addressId))
     ) {
-      return res.status(400).json({
+      return res.status(400).send({
         HasError: true,
         StatusCode: 400,
         message: "Invalid parameters.",
@@ -1120,21 +1120,21 @@ exports.bookAppointment = async (req, res) => {
         Message: "Invalid fashion designer or user.",
       });
     }
-    if (isNaN(fashion_designer_id) ||isNaN(user_id) ||isNaN(address_id) ||parseFloat(total_fees) < 0) {
+    if (isNaN(fashion_designer_id) ||isNaN(user_id)||isNaN(address_id)||parseFloat(total_fees) < 0) {
       return res.status(400).send({
         HasError: true,
         StatusCode: 400,
         Message: "Invalid parameters.",
       });
     }
-    if (!moment(appointment_date, "YYYY-MM-DD", true).isValid() ||!moment(start_time, "HH:mm:ss", true).isValid() ||!moment(end_time, "HH:mm:ss", true).isValid()) {
+    if (!moment(appointment_date, "YYYY-MM-DD", true).isValid()||!moment(start_time, "HH:mm:ss", true).isValid()||!moment(end_time, "HH:mm:ss", true).isValid()) {
       return res.status(400).send({
         HasError: true,
         StatusCode: 400,
         Message: "Invalid date or time format.",
       });
     }
-    if (!moment(appointment_date, "YYYY-MM-DD", true).isValid() ||!moment(start_time, "HH:mm:ss", true).isValid() ||!moment(end_time, "HH:mm:ss", true).isValid() ||!/^\d{2}:\d{2}:\d{2}$/.test(start_time) ||!/^\d{2}:\d{2}:\d{2}$/.test(end_time) ||!moment(end_time, "HH:mm:ss").isSameOrAfter(moment(start_time, "HH:mm:ss").add(30, 'minutes'))) {
+    if (!moment(appointment_date, "YYYY-MM-DD", true).isValid()||!moment(start_time, "HH:mm:ss", true).isValid()||!moment(end_time, "HH:mm:ss", true).isValid() ||!/^\d{2}:\d{2}:\d{2}$/.test(start_time) ||!/^\d{2}:\d{2}:\d{2}$/.test(end_time) ||!moment(end_time, "HH:mm:ss").isSameOrAfter(moment(start_time, "HH:mm:ss").add(30, 'minutes'))) {
       return res.status(400).send({
         HasError: true,
         StatusCode: 400,
@@ -1338,8 +1338,11 @@ exports.fashionDesignerAppointmentDetails = async (req, res) => {
       fashiondesignerappointmentDetails.total_fees = result1.total_fees ? result1.total_fees : ''
       fashiondesignerappointmentDetails.transaction_id = result1.transaction_id ? result1.transaction_id : ''
       fashiondesignerappointmentDetails.status = result1.status ? result1.status : ''
-      fashiondesignerappointmentDetails.add_date = result1.created_at ? result1.created_at : ''
-      fashiondesignerappointmentDetails.update_date = result1.update_at ? result1.update_at : ''
+      // moment(slot.end_time, "HH:mm:ss")
+      fashiondesignerappointmentDetails.add_date = moment(result1.created_at).format('YYYY-MM-DD HH:mm:ss') ? moment(result1.created_at).format('YYYY-MM-DD HH:mm:ss') : ''
+      fashiondesignerappointmentDetails.update_date = moment(result1.update_at).format('YYYY-MM-DD HH:mm:ss') ? moment(result1.update_at).format('YYYY-MM-DD HH:mm:ss') : ''
+      // fashiondesignerappointmentDetails.add_date = moment(result1.created_at, "HH:mm:ss") ? moment(result1.created_at, "HH:mm:ss") : ''
+      // fashiondesignerappointmentDetails.update_date = moment(result1.update_at, "HH:mm:ss") ? moment(result1.update_at, "HH:mm:ss") : ''
       fashiondesignerappointmentDetails.address_id = result1.address_id ? result1.address_id : 0
       fashiondesignerappointmentDetails.fashiondesigner_firstname = result3.first_name ? result3.first_name : ''
       fashiondesignerappointmentDetails.fashiondesigner_lastname = result3.last_name ? result3.last_name : ''
@@ -1381,8 +1384,10 @@ exports.fashionDesignerAppointmentDetails = async (req, res) => {
         address.cmobile = maskedNumber ? maskedNumber : ''
         address.is_primary = result2.is_primary ? result2.is_primary : ''
         address.is_verify = result2.is_verify ? result2.is_verify : ''
-        address.verify_date = result2.verify_date ? result2.verify_date : ''
-        address.add_date = result2.created_at ? result2.created_at : ''
+        address.verify_date = moment(result2.verify_date).format('YYYY-MM-DD HH:mm:ss') ? moment(result2.verify_date).format('YYYY-MM-DD HH:mm:ss') : ''
+        // address.verify_date = result2.verify_date ? result2.verify_date : ''
+        // address.add_date = result2.created_at ? result2.created_at : ''
+        address.add_date = moment(result2.created_at).format('YYYY-MM-DD HH:mm:ss') ? moment(result2.created_at).format('YYYY-MM-DD HH:mm:ss') : ''
         address.clname = result2.last_name ? result2.last_name : ''
 
         if (result2.state) {

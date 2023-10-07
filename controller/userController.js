@@ -23,13 +23,12 @@ exports.insertMobileNumber = async (req, res) => {
     var insertError = [];
 
     if (
-      !newUserData.mobile_number ||
-      !/^\+?[1-9]\d{9}$/.test(newUserData.mobile_number.replace(/\D/g, ""))
+      !newUserData.mobile_number||  !/^\+?[1-9]\d{9}$/.test(newUserData.mobile_number.replace(/\D/g, "").split(' ').join(''))
+      // !/^\+?[1-9]\d{9}$/.test(newUserData.mobile_number.replace(/\D/g, ""))
     ) {
       insertError.push({
         field: "phone_no",
-        message:
-          "Invalid phone number. Phone number must be a 10-digit number (with or without leading zeroes) optionally preceded by a + sign.",
+        message: "Invalid phone number.",
       });
     }
 
@@ -183,6 +182,7 @@ exports.verifyOTP = async (req, res) => {
 
         const result = await Service.updateProfile(user.id, data1)
         var data=result[1][0].toJSON()
+        console.log("result : ", result[0])
         var formattedUser = {
           user_id: data.id,
           first_name: data.first_name ?data.first_name: "",
