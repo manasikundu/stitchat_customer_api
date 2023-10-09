@@ -151,8 +151,9 @@ exports.boutiqueSlot = async (req, res) => {
         slotJson.contact_number = boutiqueDetail.contact_number
         slotJson.masked_contact_number = maskedNumber
         slotJson.timeslot = weekSchedules
+        slotJson.item = itemArray
         
-        return res.status(200).send({HasError: false,boutiqueDetails: slotJson, item: itemArray});        
+        return res.status(200).send({HasError: false, Message: "Boutique slot fetched successfully.", boutiqueDetails: slotJson});        
         } catch (error) { 
             console.log(error)
             return res.status(500).send({HasError: true,Message: "Some error occured. "});        
