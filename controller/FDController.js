@@ -1418,7 +1418,7 @@ exports.fashionDesignerAppointmentDetails = async (req, res) => {
       if (appointmentRatings) {
         appointmentRatings = appointmentRatings.toJSON()
         rating.rate_id = appointmentRatings.id ? appointmentRatings.id : ''
-        rating.rate = parseFloat(appointmentRatings.rate) ? parseFloat(appointmentRatings.rate) : ''
+        rating.rate = parseFloat(appointmentRatings.rate) ? parseFloat(appointmentRatings.rate) : 0
         rating.comment = appointmentRatings.comment ? appointmentRatings.comment : ''
       }
       else {
