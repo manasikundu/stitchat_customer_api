@@ -805,9 +805,8 @@ exports.addNewAddress = async (req, res) => {
       });
     }
     if (!/^\+?[1-9]\d{9}$/.test(mobile_number.replace(/\D/g, ""))) {
-      return res.status(400).json({
-        HasError: true,
-        StatusCode: 400,
+      return res.status(200).send({
+        HasError: false,
         message: "Invalid phone number. ",
       });
     }
