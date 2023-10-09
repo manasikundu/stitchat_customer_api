@@ -791,7 +791,6 @@ exports.addNewAddress = async (req, res) => {
           !last_name ||
           !user_id ||
           !street ||
-          landmark ||
           !state ||
           !city ||
           !mobile_number ||
@@ -807,7 +806,7 @@ exports.addNewAddress = async (req, res) => {
     if (!/^\+?[1-9]\d{9}$/.test(mobile_number.replace(/\D/g, ""))) {
       return res.status(200).send({
         HasError: true,
-        message: "Invalid phone number. ",
+        message: "Please enter valid mobile number. ",
       });
     }
     var formatDate = (dateString) =>
