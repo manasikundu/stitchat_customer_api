@@ -729,7 +729,16 @@ exports.fashionDesignerTimeSlot = async (req, res) => {
           communication_name: "Call, Video Call",
           language_type: "1, 2",
           language_speak: "English, Hindi",
-          profile_photo: designerDetails[0].profile_photo,
+          profile_photo: designerDetails[0].profile_photo ? s3.getSignedUrl("getObject", {
+            Bucket: process.env.AWS_BUCKET,
+            Key: designerDetails[0].profile_photo,
+            Expires: expirationTime,
+          }) : s3.getSignedUrl("getObject", {
+            Bucket: process.env.AWS_BUCKET,
+            Key: 'employee/user-default-img.jpg',
+            Expires: expirationTime,
+          }),
+          // profile_photo: designerDetails[0].profile_photo ,
           availability: weekSchedules,
           timeslot: response.appointment_slot_time,
           dayOfWeek: [formattedDaysOfWeek],
