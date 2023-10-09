@@ -25,16 +25,13 @@ exports.insertMobileNumber = async (req, res) => {
     var newUserData = req.body;
     var insertError = [];
 
-    if (
-      !newUserData.mobile_number||  !/^\+?[1-9]\d{9}$/.test(newUserData.mobile_number.replace(/\D/g, "").split(' ').join(''))
-      // !/^\+?[1-9]\d{9}$/.test(newUserData.mobile_number.replace(/\D/g, ""))
-    ) {
+    if (!newUserData.mobile_number || !/^\+?[1-9]\d{9}$/.test(newUserData.mobile_number.replace(/\D/g, "")) || newUserData.mobile_number.includes(" ")) {
       insertError.push({
         field: "phone_no",
-        message: "Invalid phone number.",
+        message: "Invalid phone number."
       });
     }
-
+    
     // Check if there are any validation errors
     if (insertError.length > 0) {
       return res
@@ -150,9 +147,23 @@ exports.insertMobileNumber = async (req, res) => {
 // verify otp
 exports.verifyOTP = async (req, res) => {
   try {
-    var { mobile_number, otp } = req.body;
-    mobile_number = mobile_number.split(' ').join('')
-
+    // var { mobile_number, otp } = req.body;
+    var mobile_number = req.body.mobile_number
+    otp = req.body.otp
+    var insertError = [];
+    if (!mobile_number || !/^\+?[1-9]\d{9}$/.test(mobile_number.replace(/\D/g, "")) || mobile_number.includes(" ")) {
+      insertError.push({
+        field: "phone_no",
+        message: "Invalid phone number."
+      });
+    }
+    
+    // Check if there are any validation errors
+    if (insertError.length > 0) {
+      return res
+        .status(400)
+        .send({ HasError: true, StatusCode: 400, errors: insertError });
+    }
     if (!mobile_number || !otp) {
       return res.status(400).send({
         HasError: true,
