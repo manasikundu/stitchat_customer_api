@@ -206,10 +206,13 @@ exports.verifyOTP = async (req, res) => {
         // delete data1['otp'];
         // Mark the OTP as verified
         verifiedOTPs.add(otp);
+        if (otp) {
+          var token = generateAccessToken(mobile_number, otp)
 
         const result = await Service.updateProfile(user.id, data1)
         var data = result[1][0].toJSON()
         var formattedUser = {
+          token: token,
           user_id: data.id,
           first_name: data.first_name ? data.first_name : "",
           middle_name: data.middle_name ? data.middle_name : "",
@@ -246,6 +249,7 @@ exports.verifyOTP = async (req, res) => {
           Message: "OTP verified successfully!",
         });
       }
+    }
     }
   } catch (error) {
     console.error("Error verifying OTP:", error);
@@ -314,7 +318,6 @@ exports.apiTrackList = async (req, res) => {
     };
 
     var method_name = await Service.getCallingMethodName();
-    console.log(method_name);
     var apiEndpointInput = JSON.stringify(req.query);
 
     // Track API hit
@@ -350,173 +353,6 @@ exports.apiTrackList = async (req, res) => {
       StatusCode: 500,
       Message: "An error occurred while retrieving customer(s).",
       error: error.message,
-    });
-  }
-};
-
-// login
-exports.logIn = async (req, res) => {
-  try {
-    var mobileNumber = req.body.mobile_number;
-    var fcmToken = req.body.fcm_token;
-    var secretKey = req.body.secret_key;
-    var device_id = req.body.device_id;
-    var device_info = req.body.device_info;
-    var otp = req.body.otp;
-
-    // Check if mobile_number is valid
-    var insertError = [];
-    if (!mobileNumber || !/^\+?[1-9]\d{9}$/.test(mobileNumber.replace(/\D/g, "")) || mobileNumber.includes(" ")) {
-      insertError.push({
-        field: "phone_no",
-        message: "Invalid phone number."
-      });
-    }
-    
-    // Check if there are any validation errors
-    if (insertError.length > 0) {
-      return res
-        .status(400)
-        .send({ HasError: true, StatusCode: 400, errors: insertError });
-    }
-
-    var method_name = await Service.getCallingMethodName();
-    var apiEndpointInput = JSON.stringify(req.body);
-
-    // Track API hit
-    apiTrack = await Service.trackApi(
-      req.query.user_id,
-      method_name,
-      apiEndpointInput,
-      req.query.device_id,
-      req.query.device_info,
-      req.ip
-    );
-    var users = await Service.checkMobile(mobileNumber);
-    if (users) {
-      if (secretKey === "tensorflow") {
-      // Generate access token using the provided secretKey
-      var token = generateAccessToken(mobileNumber, secretKey);
-  
-      if (token) {
-        
-        var basicInfo = {
-          id: users.id,
-          prefix: users.prefix,
-          first_name: users.first_name,
-          last_name: users.last_name,
-          registered_on: moment(users.reg_on).format("DD-MM-YYYY hh:mm A") ? moment(users.reg_on).format("DD-MM-YYYY hh:mm A") : '' ,
-          mobille_number: users.mobile_number,
-          email: users.email_id,
-          device_id: users.device_id,
-          device_info: users.device_info,
-          fcm_token: users.fcm_token,
-          status_id: users.status_id,
-          status: users.status_name,
-          profile_photo: users.profile_photo,
-          role: users.role,
-        };
-        // Prepare the response data with optional fields
-        var responseData = {
-          HasError: false,
-          StatusCode: 200,
-          success: true,
-          message: "Login successful",
-          token: token,
-          userInfo: basicInfo,
-        };
-
-        // Add optional fields if provided
-        if (device_id) {
-          responseData.device_id = device_id;
-        }
-
-        if (device_info) {
-          responseData.device_info = device_info;
-        }
-
-        if (fcmToken) {
-          responseData.fcm_token = fcmToken;
-        }
-
-        if (otp) {
-          responseData.otp = otp;
-        }
-
-        return res.status(200).send(responseData);
-      } else {
-        return res.status(500).send({
-          HasError: true,
-          StatusCode: 500,
-          message: "Failed to generate token",
-        });
-      } 
-    } else {
-      return res.status(401).send({
-        HasError: true,
-        StatusCode: 401,
-        message: "Invalid secret key",
-      });
-    }
-  } else {
-    // The mobile number is not registered
-    return res.status(401).send({
-      HasError: true,
-      StatusCode: 401,
-      message: "Invalid mobile number",
-    });
-  }
-
-  } catch (error) {
-    console.log(error);
-    return res.status(500).send({
-      HasError: true,
-      StatusCode: 500,
-      message: "An error occurred while logging in",
-    });
-  }
-};
-
-// verifyToken
-exports.verifyToken = (req, res, next) => {
-  try {
-    var b_token = req.headers.authorization;
-    if (!b_token) {
-      return res.status(401).send({
-        HasError: true,
-        StatusCode: 401,
-        message: "Token not provided",
-      });
-    } else {
-      var token = b_token.replace(/^Bearer\s+/, "");
-      // Verify token
-      var decoded = jwt.verify(token, secretKey);
-
-      // Check if the decoded mobile_number matches the request mobile_number
-      if (decoded.mobile_number !== req.body.mobile_number) {
-        return res.status(401).send({
-          HasError: true,
-          StatusCode: 401,
-          message: "Invalid token for this user",
-        });
-      } else {
-        // Token is valid
-        req.user = decoded; // Store the user info in the request
-        return res.status(200).send({
-          HasError: false,
-          StatusCode: 200,
-          message: "Token verified!",
-          user: req.user,
-        });
-      }
-    }
-
-  } catch (error) {
-    console.log(error);
-    return res.status(401).send({
-      HasError: true,
-      StatusCode: 401,
-      message: "Failed to authenticate token!",
     });
   }
 };
