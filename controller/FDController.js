@@ -808,7 +808,7 @@ exports.addNewAddress = async (req, res) => {
         HasError: true,
         message: "Please enter valid mobile number. ",
       });
-    } else {
+    }
     var formatDate = (dateString) =>
       moment(dateString, "YYYY-MM-DD HH:mm:ss").format("YYYY-MM-DD hh:mm A");
 
@@ -919,7 +919,6 @@ exports.addNewAddress = async (req, res) => {
         message: "Address added successfully",
       });
     }
-  }
   } catch (error) {
     console.error("Error adding/updating address:", error);
     return res.status(500).json({
