@@ -145,11 +145,20 @@ exports.insertMobileNumber = async (req, res) => {
 };
 
 // verify otp
+var verifiedOTPs = new Set();
+
 exports.verifyOTP = async (req, res) => {
   try {
     // var { mobile_number, otp } = req.body;
     var mobile_number = req.body.mobile_number
     otp = req.body.otp
+    if (verifiedOTPs.has(otp)) {
+      return res.status(400).send({
+        HasError: true,
+        StatusCode: 400,
+        Message: "OTP has already been verified for this account.",
+      });
+    }
     var insertError = [];
     if (!mobile_number || !/^\+?[1-9]\d{9}$/.test(mobile_number.replace(/\D/g, "")) || mobile_number.includes(" ")) {
       insertError.push({
@@ -189,12 +198,14 @@ exports.verifyOTP = async (req, res) => {
           HasError: true,
           StatusCode: 400,
           Message: "OTP has expired. Please request a new OTP.",
-        });
+        });  
       } else {
         // OTP is valid, mobile number is verified
         const data1 = req.body
         delete data1['mobile_number'];
         // delete data1['otp'];
+        // Mark the OTP as verified
+        verifiedOTPs.add(otp);
 
         const result = await Service.updateProfile(user.id, data1)
         var data = result[1][0].toJSON()
@@ -354,12 +365,19 @@ exports.logIn = async (req, res) => {
     var otp = req.body.otp;
 
     // Check if mobile_number is valid
-    if (!mobileNumber || !/^[1-9]\d{9}$/.test(mobileNumber)) {
-      return res.status(400).send({
-        HasError: true,
-        StatusCode: 400,
-        Message: "Invalid mobile number",
+    var insertError = [];
+    if (!mobileNumber || !/^\+?[1-9]\d{9}$/.test(mobileNumber.replace(/\D/g, "")) || mobileNumber.includes(" ")) {
+      insertError.push({
+        field: "phone_no",
+        message: "Invalid phone number."
       });
+    }
+    
+    // Check if there are any validation errors
+    if (insertError.length > 0) {
+      return res
+        .status(400)
+        .send({ HasError: true, StatusCode: 400, errors: insertError });
     }
 
     var method_name = await Service.getCallingMethodName();
@@ -379,14 +397,15 @@ exports.logIn = async (req, res) => {
       if (secretKey === "tensorflow") {
       // Generate access token using the provided secretKey
       var token = generateAccessToken(mobileNumber, secretKey);
-
+  
       if (token) {
+        
         var basicInfo = {
           id: users.id,
           prefix: users.prefix,
           first_name: users.first_name,
           last_name: users.last_name,
-          registered_on: moment(users.reg_on).format("DD-MM-YYYY hh:mm A"),
+          registered_on: moment(users.reg_on).format("DD-MM-YYYY hh:mm A") ? moment(users.reg_on).format("DD-MM-YYYY hh:mm A") : '' ,
           mobille_number: users.mobile_number,
           email: users.email_id,
           device_id: users.device_id,
@@ -439,6 +458,13 @@ exports.logIn = async (req, res) => {
         message: "Invalid secret key",
       });
     }
+  } else {
+    // The mobile number is not registered
+    return res.status(401).send({
+      HasError: true,
+      StatusCode: 401,
+      message: "Invalid mobile number",
+    });
   }
 
   } catch (error) {
