@@ -87,7 +87,7 @@ exports.bookBoutiqueAppointment = async (req, res) => {
     }
 }
 
-exports.bookBoutique = async (req, res) => {
+exports.boutiqueSlot = async (req, res) => {
     try {
         var customer_id = req.body.customer_id
         var boutique_id = req.body.boutique_id
