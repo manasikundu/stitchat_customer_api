@@ -62,20 +62,26 @@ exports.insertMobileNumber = async (req, res) => {
     );
 
     var otp;
+    var currentTimestamp = Date.now();
+      var currentDate = new Date(currentTimestamp);
+      var formattedDate = `${currentDate.getFullYear()}-${String(currentDate.getMonth() + 1).padStart(2, '0')}-${String(currentDate.getDate()).padStart(2, '0')} ${String(currentDate.getHours()).padStart(2, '0')}:${String(currentDate.getMinutes()).padStart(2, '0')}:${String(currentDate.getSeconds()).padStart(2, '0')}`;
+
 
     if (existingUser) {
+      
       // Mobile number exists, check if an OTP is already generated and valid
       if (
         otpCache[existingUser.mobile_number] &&
         Date.now() - otpCache[existingUser.mobile_number].timestamp <
         OTP_EXPIRY_TIME
       ) {
+
         // If the OTP is still valid, return the existing OTP
         otp = otpCache[existingUser.mobile_number].value;
 
         // Update the OTP in the database for the existing user
         var updateExistingUserOTP = await Users.update(
-          { otp, otp_timestamp: Date.now() },
+          { otp, otp_timestamp: Date.now(), updated_at: formattedDate},
           { where: { mobile_number: existingUser.mobile_number } }
         );
       } else {
@@ -88,7 +94,7 @@ exports.insertMobileNumber = async (req, res) => {
 
         // Store the new OTP in the database for the existing user
         var storeNewOTPForExistingUser = await Users.update(
-          { otp, otp_timestamp: Date.now() },
+          { otp, otp_timestamp: Date.now(), updated_at: formattedDate },
           { where: { mobile_number: existingUser.mobile_number } }
         );
       }
@@ -105,6 +111,9 @@ exports.insertMobileNumber = async (req, res) => {
     } else {
       // Generate OTP for the newly inserted mobile number and send it to the user's device using FCM
       otp = Service.generateOTP();
+      newUserData.reg_on = formattedDate;
+      newUserData.created_at = formattedDate;
+      newUserData.updated_at = formattedDate;
 
       // Store the OTP in the otpCache
       otpCache[newUserData.mobile_number] = {
@@ -113,9 +122,9 @@ exports.insertMobileNumber = async (req, res) => {
       };
 
       var newUser = await Service.insertNewUserWithOTP(newUserData,
-        otp,)
+        otp, formattedDate)
       if (newUser) {
-        return res.status(201).send({
+        return res.status(200).send({
           result: {
             otp,
             isPresent: false,

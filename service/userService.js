@@ -13,11 +13,14 @@ exports.generateOTP = () => {
 };
 
 // Service function to insert a new employee
-exports.insertNewUserWithOTP = async (userData, otp) => {
+exports.insertNewUserWithOTP = async (userData, otp, formattedDate) => {
   try {
     // Add the OTP to the userData object
     userData.otp = otp;
-
+    userData.reg_on = formattedDate;
+    userData.created_at = formattedDate;
+    userData.updated_at = formattedDate;
+    
     // Create a new user with the provided data
     var newUser = await Users.create(userData);
 

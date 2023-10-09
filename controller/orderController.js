@@ -199,6 +199,7 @@ exports.orderDetails = async (req, res) => {
     var items = await orderService.getItemsByOrderId(order_id);
     var category = await orderService.categoryType(order_id)
     var itemList = [];
+    
     for (var item of items) {
       var categoryType = await orderService.getCategoryByItemId(
         item.category_item_dic_id
