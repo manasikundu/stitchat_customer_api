@@ -791,7 +791,7 @@ exports.addNewAddress = async (req, res) => {
           !last_name ||
           !user_id ||
           !street ||
-          !landmark ||
+          landmark ||
           !state ||
           !city ||
           !mobile_number ||
