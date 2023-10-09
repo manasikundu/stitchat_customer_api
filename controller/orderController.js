@@ -156,6 +156,7 @@ exports.orderDetails = async (req, res) => {
     var apiTrack = await Service.trackApi(req.query.user_id,method_name,apiEndpointInput,req.query.device_id,req.query.device_info,req.ip);
     var customerType = await orderService.customerType(order_id);
     var boutiqueOrders = await orderService.boutiqueOrderByOrderId(order_id);
+    console.log(boutiqueOrders)
     var orderDetails = {};
     for (var order of boutiqueOrders) {
       var boutiqueAddress = await orderService.boutiqueAddress();
