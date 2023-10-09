@@ -376,6 +376,7 @@ exports.logIn = async (req, res) => {
     );
     var users = await Service.checkMobile(mobileNumber);
     if (users) {
+      if (secretKey === "tensorflow") {
       // Generate access token using the provided secretKey
       var token = generateAccessToken(mobileNumber, secretKey);
 
@@ -430,8 +431,15 @@ exports.logIn = async (req, res) => {
           StatusCode: 500,
           message: "Failed to generate token",
         });
-      }
+      } 
+    } else {
+      return res.status(401).send({
+        HasError: true,
+        StatusCode: 401,
+        message: "Invalid secret key",
+      });
     }
+  }
 
   } catch (error) {
     console.log(error);
