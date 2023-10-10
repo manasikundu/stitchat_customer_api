@@ -190,13 +190,24 @@ exports.getNearestBoutiqueList = async (req, res) => {
       });
     });
     sortedAndFilteredBoutiques.forEach((boutique) => {
-      var boutiqueDistance = geolib.getDistance(
-        { latitude, longitude },
-        { latitude: boutique.location_lat, longitude: boutique.location_lng }
-      );
-      boutique.distance = boutiqueDistance;
-      boutique.distanceInKm = boutiqueDistance / 1000;
+      if (boutique.location_lat && boutique.location_lng) {
+        var boutiqueDistance = geolib.getDistance(
+          { latitude, longitude },
+          { latitude: boutique.location_lat, longitude: boutique.location_lng }
+        );
+
+        boutique.distance = boutiqueDistance;
+        boutique.distanceInKm = boutiqueDistance / 1000;
+      }
     });
+    // sortedAndFilteredBoutiques.forEach((boutique) => {
+    //   var boutiqueDistance = geolib.getDistance(
+    //     { latitude, longitude },
+    //     { latitude: boutique.location_lat, longitude: boutique.location_lng }
+    //   );
+    //   boutique.distance = boutiqueDistance;
+    //   boutique.distanceInKm = boutiqueDistance / 1000;
+    // });
     var boutiquesWithin500km = sortedAndFilteredBoutiques.filter((boutique) => {
       return boutique.distance <= 500000; // 500 kilometers in meters
     });
