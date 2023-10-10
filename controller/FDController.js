@@ -16,6 +16,7 @@ const { tr } = require("date-fns/locale");
 
 var expirationTime = 600;
 
+
 var daysOfWeekConfig = [
   { day: "Monday", value: 1 },
   { day: "Tuesday", value: 2 },
@@ -803,12 +804,12 @@ exports.addNewAddress = async (req, res) => {
         message: "Invalid parameters.",
       });
     }
-    if (!/^\+?[1-9]\d{9}$/.test(mobile_number.replace(/\D/g, ""))) {
-      return res.status(200).send({
-        HasError: true,
-        message: "Please enter valid mobile number. ",
-      });
-    }
+    // if (!/^\+?[1-9]\d{9}$/.test(mobile_number.replace(/\D/g, ""))) {
+    //   return res.status(200).send({
+    //     HasError: true,
+    //     message: "Please enter valid mobile number. ",
+    //   });
+    // }
     var formatDate = (dateString) =>
       moment(dateString, "YYYY-MM-DD HH:mm:ss").format("YYYY-MM-DD hh:mm A");
 
