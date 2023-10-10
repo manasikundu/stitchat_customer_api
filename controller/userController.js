@@ -192,7 +192,6 @@ exports.verifyOTP = async (req, res) => {
       var user = await Users.findOne({ where: { mobile_number } });
       if (user) {
         if (user.otp.toString() == otp.toString()) {
-          console.log('2')
           console.log(Date.now())
           console.log(user.updated_at)
           console.log(OTP_EXPIRY_TIME)
