@@ -192,11 +192,8 @@ exports.verifyOTP = async (req, res) => {
       var user = await Users.findOne({ where: { mobile_number } });
       if (user) {
         if (user.otp.toString() == otp.toString()) {
-          console.log(Date.now())
-          console.log(user.updated_at)
-          console.log(OTP_EXPIRY_TIME)
-          console.log(Date.now() - user.updated_at)
-          if (Date.now() - user.updated_at > OTP_EXPIRY_TIME) {
+          var timestamp = new Date(user.updated_at).getTime();
+          if (Date.now() - timestamp > OTP_EXPIRY_TIME) {
             return res.status(400).send({
               HasError: true,
               StatusCode: 400,
