@@ -821,7 +821,7 @@ exports.addNewAddress = async (req, res) => {
     // Check if there are any validation errors
     if (insertError.length > 0) {
       return res
-        .status(400)
+        .status(200)
         .send({ HasError: true, errors: insertError });
     }
     var formatDate = (dateString) =>
