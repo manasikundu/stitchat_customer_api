@@ -176,6 +176,7 @@ exports.verifyOTP = async (req, res) => {
       });
     }
     
+    
     // Check if there are any validation errors
     if (insertError.length > 0) {
       return res
@@ -190,6 +191,9 @@ exports.verifyOTP = async (req, res) => {
       });
     } else {
       var user = await Users.findOne({ where: { mobile_number } });
+      console.log("Current date : ", Date.now())
+        console.log("user date : ", user.updated_at)
+
       if (!user) {
         return res.status(400).send({
           HasError: true,
@@ -202,7 +206,11 @@ exports.verifyOTP = async (req, res) => {
           StatusCode: 400,
           Message: "Invalid OTP. Please enter the correct OTP.",
         });
-      } else if (Date.now() - user.otp_timestamp > OTP_EXPIRY_TIME) {
+        
+      } else if (Date.now() - user.updated_at > OTP_EXPIRY_TIME) {
+        console.log("Current date : ", Date.now())
+        console.log("user date : ", user.otp_timestamp)
+
         return res.status(400).send({
           HasError: true,
           StatusCode: 400,
