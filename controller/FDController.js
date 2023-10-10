@@ -810,20 +810,7 @@ exports.addNewAddress = async (req, res) => {
     //     message: "Please enter valid mobile number. ",
     //   });
     // }
-    var insertError = [];
-    if (!mobile_number || !/^\+?[1-9]\d{9}$/.test(mobile_number.replace(/\D/g, "")) || mobile_number.includes(" ")) {
-      insertError.push({
-        field: "phone_no",
-        message: "Invalid phone number."
-      });
-    }
-
-    // Check if there are any validation errors
-    if (insertError.length > 0) {
-      return res
-        .status(200)
-        .send({ HasError: true, errors: insertError });
-    }
+    
     var formatDate = (dateString) =>
       moment(dateString, "YYYY-MM-DD HH:mm:ss").format("YYYY-MM-DD hh:mm A");
 
