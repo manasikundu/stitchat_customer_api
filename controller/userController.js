@@ -190,6 +190,7 @@ exports.verifyOTP = async (req, res) => {
       });
     } else {
       var user = await Users.findOne({ where: { mobile_number } });
+     
       if (!user) {
         return res.status(400).send({
           HasError: true,
