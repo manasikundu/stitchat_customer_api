@@ -220,7 +220,6 @@ exports.userProfile = async (req, res) => {
         });
         console.log(photo)
         customerInfo.profile_photo = photo
-
       } else {
         customerInfo.profile_photo = ''
       }
