@@ -28,7 +28,7 @@ exports.insertMobileNumber = async (req, res) => {
       insertError.push({field: "phone_no",message: "Invalid phone number."});
     }
     if (insertError.length > 0) {
-      return res.status(400).send({ HasError: true, StatusCode: 400, errors: insertError })}
+      return res.status(200).send({ HasError: true,errors: insertError })}
     newUserData.device_id = newUserData.device_id || "";
     newUserData.fcm_token = newUserData.fcm_token || "";
     var existingUser = await Users.findOne({where: { mobile_number: newUserData.mobile_number }});
