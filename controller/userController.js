@@ -17,193 +17,88 @@ var expirationTime = 600;
 
 var OTP_EXPIRY_TIME = 3 * 60 * 1000; // 3 minutes in milliseconds
 var otpCache = {}; // In-memory cache to store OTP and its timestamp
-var otpStats = {}; // In-memory cache to store OTP generation stats
+var verifiedOTPs = new Set();
 
 
 exports.insertMobileNumber = async (req, res) => {
   try {
     var newUserData = req.body;
     var insertError = [];
-
     if (!newUserData.mobile_number || !/^\+?[1-9]\d{9}$/.test(newUserData.mobile_number.replace(/\D/g, "")) || newUserData.mobile_number.includes(" ")) {
-      insertError.push({
-        field: "phone_no",
-        message: "Invalid phone number."
-      });
+      insertError.push({field: "phone_no",message: "Invalid phone number."});
     }
-
-    // Check if there are any validation errors
     if (insertError.length > 0) {
-      return res
-        .status(400)
-        .send({ HasError: true, StatusCode: 400, errors: insertError });
-    }
-
-    // Check if device_id and fcm_token are provided, if not set them to empty strings
+      return res.status(400).send({ HasError: true, StatusCode: 400, errors: insertError })}
     newUserData.device_id = newUserData.device_id || "";
     newUserData.fcm_token = newUserData.fcm_token || "";
-
-    var existingUser = await Users.findOne({
-      where: { mobile_number: newUserData.mobile_number },
-    });
-
-    // var method_name = 'insertMobileNumber'
+    var existingUser = await Users.findOne({where: { mobile_number: newUserData.mobile_number }});
     var method_name = await Service.getCallingMethodName();
     var apiEndpointInput = JSON.stringify(newUserData);
-
-    // Track API hit
-    apiTrack = await Service.trackApi(
-      existingUser ? existingUser.id : null,
-      method_name,
-      apiEndpointInput,
-      newUserData.device_id,
-      newUserData.device_info,
-      req.ip
-    );
-
+    apiTrack = await Service.trackApi(existingUser ? existingUser.id : null,method_name,apiEndpointInput,newUserData.device_id,newUserData.device_info,req.ip);
     var otp;
     var currentTimestamp = Date.now();
       var currentDate = new Date(currentTimestamp);
       var formattedDate = `${currentDate.getFullYear()}-${String(currentDate.getMonth() + 1).padStart(2, '0')}-${String(currentDate.getDate()).padStart(2, '0')} ${String(currentDate.getHours()).padStart(2, '0')}:${String(currentDate.getMinutes()).padStart(2, '0')}:${String(currentDate.getSeconds()).padStart(2, '0')}`;
-
-
     if (existingUser) {
-      
-      // Mobile number exists, check if an OTP is already generated and valid
-      if (
-        otpCache[existingUser.mobile_number] &&
-        Date.now() - otpCache[existingUser.mobile_number].timestamp <
-        OTP_EXPIRY_TIME
-      ) {
-
-        // If the OTP is still valid, return the existing OTP
+      if (otpCache[existingUser.mobile_number] && Date.now() - otpCache[existingUser.mobile_number].timestamp < OTP_EXPIRY_TIME) {
         otp = otpCache[existingUser.mobile_number].value;
-
-        // Update the OTP in the database for the existing user
-        var updateExistingUserOTP = await Users.update(
-          { otp, otp_timestamp: Date.now(), updated_at: formattedDate},
-          { where: { mobile_number: existingUser.mobile_number } }
-        );
+        var updateExistingUserOTP = await Users.update({ otp, otp_timestamp: Date.now(), updated_at: formattedDate},{ where: { mobile_number: existingUser.mobile_number }});
       } else {
-        // If the OTP has expired or not yet generated, generate a new one
         otp = Service.generateOTP();
-        otpCache[existingUser.mobile_number] = {
-          value: otp,
-          timestamp: Date.now(),
-        };
-
-        // Store the new OTP in the database for the existing user
-        var storeNewOTPForExistingUser = await Users.update(
-          { otp, otp_timestamp: Date.now(), updated_at: formattedDate },
-          { where: { mobile_number: existingUser.mobile_number } }
-        );
+        otpCache[existingUser.mobile_number] = {value: otp,timestamp: Date.now()};
+        var storeNewOTPForExistingUser = await Users.update({ otp, otp_timestamp: Date.now(), updated_at: formattedDate },{ where: { mobile_number: existingUser.mobile_number } });
       }
-
-      return res.status(200).send({
-        result: {
-          otp,
-          isPresent: true,
-        },
-        HasError: false,
-        StatusCode: 200,
-        Message: "OTP sent successfully.",
-      });
+      return res.status(200).send({result: {otp,isPresent: true},HasError: false,Message: "OTP sent successfully."});
     } else {
-      // Generate OTP for the newly inserted mobile number and send it to the user's device using FCM
       otp = Service.generateOTP();
       newUserData.reg_on = formattedDate;
       newUserData.created_at = formattedDate;
       newUserData.updated_at = formattedDate;
-
-      // Store the OTP in the otpCache
-      otpCache[newUserData.mobile_number] = {
-        value: otp,
-        timestamp: Date.now(),
-      };
-
-      var newUser = await Service.insertNewUserWithOTP(newUserData,
-        otp, formattedDate)
+      otpCache[newUserData.mobile_number] = {value: otp,timestamp: Date.now()};
+      var newUser = await Service.insertNewUserWithOTP(newUserData,otp, formattedDate)
       if (newUser) {
-        return res.status(200).send({
-          result: {
-            otp,
-            isPresent: false,
-          },
-          HasError: false,
-          StatusCode: 200,
-          Message:
-            "OTP sent successfully.",
-        });
+        return res.status(200).send({result: {otp,isPresent: false},HasError: false,Message:"OTP sent successfully."});
       } else {
-        // If there was an issue sending the OTP, handle it accordingly
-        return res.status(500).send({
-          HasError: false,
-          StatusCode: 500,
-          error: "Error sending OTP.",
-        });
+        return res.status(500).send({HasError: false,Message: "Error sending OTP."});
       }
     }
   } catch (error) {
     console.error("Error creating user:", error);
-    return res.status(500).send({
-      HasError: false,
-      StatusCode: 500,
-      error: "An error occurred while inserting the mobile number.",
-    });
+    return res.status(500).send({HasError: false,error: "An error occurred while inserting the mobile number."});
   }
-};
+}
 
 // verify otp
-var verifiedOTPs = new Set();
-
 exports.verifyOTP = async (req, res) => {
   try {
-    // var { mobile_number, otp } = req.body;
     var mobile_number = req.body.mobile_number
     otp = req.body.otp
     if (verifiedOTPs.has(otp)) {
-      return res.status(400).send({
-        HasError: true,
-        StatusCode: 400,
-        Message: "OTP has already been verified for this account.",
-      });
+      return res.status(400).send({HasError: true,StatusCode: 400,Message: "OTP has already been verified for this account."});
     }
     var insertError = [];
     if (!mobile_number || !/^\+?[1-9]\d{9}$/.test(mobile_number.replace(/\D/g, "")) || mobile_number.includes(" ")) {
-      insertError.push({
-        field: "phone_no",
-        message: "Invalid phone number."
-      });
+      insertError.push({field: "phone_no",message: "Invalid phone number."});
     }
-
-    // Check if there are any validation errors
     if (insertError.length > 0) {
-      return res
-        .status(400)
-        .send({ HasError: true, StatusCode: 400, errors: insertError });
+      return res.status(400).send({ HasError: true, errors: insertError });
     }
     if (!mobile_number || !otp) {
-      return res.status(400).send({
-        HasError: true,
-        StatusCode: 400,
-        Message: "Invalid parameter.",
-      });
+      return res.status(400).send({HasError: true,Message: "Invalid parameter."});
     } else {
       var user = await Users.findOne({ where: { mobile_number } });
       if (user) {
         if (user.otp.toString() == otp.toString()) {
           var timestamp = new Date(user.updated_at).getTime();
           if (Date.now() - timestamp > OTP_EXPIRY_TIME) {
-            return res.status(400).send({
-              HasError: true,
-              StatusCode: 400,
-              Message: "OTP has expired. Please request a new OTP.",
-            });
+            return res.status(400).send({HasError: true,Message: "OTP has expired. Please request a new OTP."});
           } else {
             const data1 = req.body
             delete data1['mobile_number'];
             // delete data1['otp'];
             verifiedOTPs.add(otp);
+            otp = Service.generateOTP();
+            otpCache[mobile_number] = { value: otp, timestamp: Date.now() };
             var token = generateAccessToken(mobile_number, otp)
             const result = await Service.updateProfile(user.id, data1)
             var data = result[1][0].toJSON()
@@ -237,108 +132,20 @@ exports.verifyOTP = async (req, res) => {
               id_proof: data.id_proof ? data.id_proof : "",
               gift_coin: data.gift_coin ? data.gift_coin : "0.00",
             };
-            return res.status(200).send({
-              userInfo: formattedUser,
-              HasError: false,
-              StatusCode: 200,
-              Message: "OTP verified successfully!",
-            });
+            return res.status(200).send({userInfo: formattedUser,HasError: false,StatusCode: 200,Message: "OTP verified successfully!"});
           }
         } else {
-          return res.status(400).send({
-            HasError: true,
-            StatusCode: 400,
-            Message: "Invalid OTP. Please enter the correct OTP.",
-          })
+          return res.status(400).send({HasError: true,Message: "Invalid OTP. Please enter the correct OTP."})
         }
       } else {
-        return res.status(400).send({
-          HasError: true,
-          StatusCode: 400,
-          Message: "User with the provided mobile number not found.",
-        });
+        return res.status(400).send({HasError: true,Message: "User with the provided mobile number not found."});
       }
-
-      // var user = await Users.findOne({ where: { mobile_number } });
-      // if (!user) {
-      //   return res.status(400).send({
-      //     HasError: true,
-      //     StatusCode: 400,
-      //     Message: "User with the provided mobile number not found.",
-      //   });
-      // } else if (user.otp.toString() !== otp.toString()) {
-      //   return res.status(400).send({
-      //     HasError: true,
-      //     StatusCode: 400,
-      //     Message: "Invalid OTP. Please enter the correct OTP.",
-      //   });
-      // } else if (Date.now() - user.otp_timestamp > OTP_EXPIRY_TIME) {
-      //   return res.status(400).send({
-      //     HasError: true,
-      //     StatusCode: 400,
-      //     Message: "OTP has expired. Please request a new OTP.",
-      //   });
-      // } else {
-      //   // OTP is valid, mobile number is verified
-      //   const data1 = req.body
-      //   delete data1['mobile_number'];
-      //   // delete data1['otp'];
-      //   // Mark the OTP as verified
-      //   verifiedOTPs.add(otp);
-      //   if (otp) {
-      //     var token = generateAccessToken(mobile_number, otp)
-
-      //     const result = await Service.updateProfile(user.id, data1)
-      //     var data = result[1][0].toJSON()
-      //     var formattedUser = {
-      //       token: token,
-      //       user_id: data.id,
-      //       first_name: data.first_name ? data.first_name : "",
-      //       middle_name: data.middle_name ? data.middle_name : "",
-      //       last_name: data.last_name ? data.last_name : "",
-      //       mobile_number: data.mobile_number ? data.mobile_number : "",
-      //       email_id: data.email_id ? data.email_id : "",
-      //       mob_verify_status: data.mob_verify_status ? data.mob_verify_status : 0,
-      //       email_verify_status: data.email_verify_status ? data.email_verify_status : 0,
-      //       reg_on: data.reg_on ? moment(data.reg_on).format("DD-MM-YYYY hh:mm A") : "",
-      //       last_login_on: data.last_login_on ? moment(data.last_login_on).format("DD-MM-YYYY hh:mm A") : "",
-      //       user_type_id: data.user_type_id ? data.user_type_id : 0,
-      //       user_type_name: data.user_type_name || "",
-      //       created_by_user_id: data.created_by_user_id ? data.created_by_user_id : 0,
-      //       device_id: data.device_id ? data.device_id : "",
-      //       device_info: data.device_info ? data.device_info : "",
-      //       status_id: data.status_id ? data.status_id : 0,
-      //       status_name: data.status_name ? data.status_name : "",
-      //       mobile_verify_on: data.mobile_verify_on ? data.mobile_verify_on : "",
-      //       email_verify_on: data.email_verify_on ? data.email_verify_on : "",
-      //       prefix: data.prefix ? data.prefix : "",
-      //       otp: data.otp,
-      //       add_date: data.created_at ? moment(data.created_at).format("DD-MM-YYYY hh:mm A") : "",
-      //       parent_id: data.parent_id,
-      //       role: data.role ? data.role : "",
-      //       profile_photo: data.profile_photo ? data.profile_photo : "",
-      //       id_proof: data.id_proof ? data.id_proof : "",
-      //       gift_coin: data.gift_coin ? data.gift_coin : "0.00",
-      //     };
-      //     // OTP is valid, mobile number is verified
-      //     return res.status(200).send({
-      //       userInfo: formattedUser,
-      //       HasError: false,
-      //       StatusCode: 200,
-      //       Message: "OTP verified successfully!",
-      //     });
-      //   }
-      // }
     }
   } catch (error) {
     console.error("Error verifying OTP:", error);
-    return res.status(500).send({
-      HasError: true,
-      StatusCode: 500,
-      Message: "An error occurred while verifying the OTP.",
-    });
+    return res.status(500).send({HasError: true,Message: "An error occurred while verifying the OTP."});
   }
-};
+}
 
 
 // Seach api track api track
