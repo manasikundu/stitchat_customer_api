@@ -91,7 +91,7 @@ exports.verifyOTP = async (req, res) => {
         if (user.otp.toString() == otp.toString()) {
           var timestamp = new Date(user.updated_at).getTime();
           if (Date.now() - timestamp > OTP_EXPIRY_TIME) {
-            return res.status(400).send({HasError: true,Message: "OTP has expired. Please request a new OTP."});
+            return res.status(400).send({HasError: true,Message: "OTP has expired. Please request a new OTP."})
           } else {
             const data1 = req.body
             delete data1['mobile_number'];

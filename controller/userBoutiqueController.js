@@ -186,12 +186,13 @@ exports.getNearestBoutiqueList = async (req, res) => {
         ],
       };
     } else {
-      responseData = {
-        nearbyBoutiques: [],
-      };
+      responseData = {nearbyBoutiques: []};
+      var uniqueIds = new Set()
       var boutiqueLogoUrl = "";
       for (var i = 0; i < sortedBoutiques.length; i++) {
         var boutique = sortedBoutiques[i];
+        if (!uniqueIds.has(boutique.id)) {
+          uniqueIds.add(boutique.id)
         var boutiqueLogoUrl = "";
         var boutiqueLogoUrl = boutique.boutique_logo
           ? await s3.getSignedUrl("getObject", {
@@ -218,6 +219,7 @@ exports.getNearestBoutiqueList = async (req, res) => {
         });
       }
     }
+  }
     var secretKey = "tensorflow";
     var token = generateAccessToken(mobile_number, secretKey);
     if (!token) {
