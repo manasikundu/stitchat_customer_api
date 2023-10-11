@@ -151,96 +151,39 @@ exports.verifyOTP = async (req, res) => {
 // Seach api track api track
 exports.apiTrackList = async (req, res) => {
   try {
-    let whereConditions = {};
-
+    var whereConditions = {};
     if (req.query.method) {
-      whereConditions.method_name = {
-        [Op.like]: `%${req.query.method}%`,
-      };
+      whereConditions.method_name = {[Op.like]: `%${req.query.method}%`};
     }
-
     if (req.query.start_date && req.query.end_date) {
       var startDate = new Date(req.query.start_date);
       var endDate = new Date(req.query.end_date);
-
       if (startDate > endDate) {
-        return res.status(400).send({
-          result: null,
-          HasError: true,
-          StatusCode: 400,
-          Message: "End date cannot be smaller than the start date.",
-        });
+        return res.status(400).send({result: null,HasError: true,Message: "End date cannot be smaller than the start date."});
       }
-
-      whereConditions.add_date = {
-        [Op.between]: [req.query.start_date, req.query.end_date],
-      };
-
+      whereConditions.add_date = {[Op.between]: [req.query.start_date, req.query.end_date]}
       var currentDateTime = new Date();
       if (endDate > currentDateTime) {
-        return res.status(400).send({
-          result: null,
-          HasError: true,
-          StatusCode: 400,
-          Message: "End date cannot exceed the current date.",
-        });
+        return res.status(400).send({result: null,HasError: true,Message: "End date cannot exceed the current date."});
       }
     } else if (req.query.start_date) {
-      // Modify the input format to match your timestamp format (YYYY-MM-DD HH:mm:ss)
       var formattedStartDate = `${req.query.start_date} 00:00:00`;
-      whereConditions.add_date = {
-        [Op.between]: [formattedStartDate, `${req.query.start_date} 23:59:59`],
-      };
+      whereConditions.add_date = {[Op.between]: [formattedStartDate, `${req.query.start_date} 23:59:59`]}
     }
-
     var searchTerm = req.query.searchTerm;
     var limit = req.query.limit ? parseInt(req.query.limit) : null;
     var offset = req.query.offset ? parseInt(req.query.offset) : null;
-
-    var filters = {
-      where: whereConditions,
-      order: [["id", "ASC"]],
-      limit: limit,
-      offset: offset,
-    };
-
+    var filters = {where: whereConditions,order: [["id", "ASC"]],limit: limit,offset: offset}
     var method_name = await Service.getCallingMethodName();
     var apiEndpointInput = JSON.stringify(req.query);
-
-    // Track API hit
-    apiTrack = await Service.trackApi(
-      req.query.user_id,
-      method_name,
-      apiEndpointInput,
-      req.query.device_id,
-      req.query.device_info,
-      req.ip
-    );
-
-    var users = await Service.searchCustomer(
-      filters,
-      Service.getCustomerDetails,
-      searchTerm
-    );
-
+    apiTrack = await Service.trackApi(req.query.user_id,method_name,apiEndpointInput,req.query.device_id,req.query.device_info,req.ip);
+    var users = await Service.searchCustomer(filters,Service.getCustomerDetails,searchTerm);
     if (!users) {
-      users = []; // Return an empty array if no data is found
+      users = []; 
     }
-
-    return res.status(200).send({
-      result: users,
-      HasError: false,
-      StatusCode: 200,
-      Message: "Customer search successful.",
-    });
+    return res.status(200).send({result: users,HasError: false,Message: "Customer search successful."});
   } catch (error) {
-    return res.status(500).send({
-      result: null,
-      HasError: true,
-      StatusCode: 500,
-      Message: "An error occurred while retrieving customer(s).",
-      error: error.message,
-    });
+    return res.status(500).send({result: null,HasError: true,Message: "An error occurred while retrieving customers.",error: error.message});
   }
 };
 
