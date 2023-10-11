@@ -1265,8 +1265,8 @@ exports.appointmentList = async (req, res) => {
         dataJson.full_name = (result1.first_name ? result1.first_name : "") + (result1.last_name ? " " + result1.last_name : "")
         data.push(dataJson);
       }
-      const approvedArray = [];
-      const otherArray = [];
+      var approvedArray = [];
+      var otherArray = [];
 
       // Use the reduce method to split data into evenArray and oddArray
       data.reduce((accumulator, currentValue) => {
@@ -1285,7 +1285,7 @@ exports.appointmentList = async (req, res) => {
       return res.status(200).send({
         HasError: false,
         message: "No Appointment list found.",
-        result: data,
+        result: {approvedArray:[],otherArray:[]},
       });
     }
   } catch (error) {
@@ -1436,7 +1436,7 @@ exports.fashionDesignerAppointmentDetails = async (req, res) => {
       return res.status(200).send({
         HasError: false,
         message: "No data found",
-        result: {},
+        result: [],
       });
     }
     return res.status(200).send({
