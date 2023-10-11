@@ -165,6 +165,8 @@ exports.getNearestBoutiqueList = async (req, res) => {
     var sortedBoutiques = boutiquesWithin500km.sort((a, b) => a.distance - b.distance);
     var responseData = {};
     var expirationTime = 600;
+    var masked_number = sortedBoutiques[0].contact_number !== null ? Service.maskMobileNumber(sortedBoutiques[0].contact_number) : null; 
+
     if (sortedBoutiques.length === 1) {
       responseData = {
         nearbyBoutiques: [
@@ -178,6 +180,7 @@ exports.getNearestBoutiqueList = async (req, res) => {
               Expires: expirationTime
             }),
             contact_number: sortedBoutiques[0].contact_number,
+            masked_contact_number: masked_number,
             category: mapCategoryType(sortedBoutiques[0].categoryType),
             latitude: sortedBoutiques[0].location_lat,
             longitude: sortedBoutiques[0].location_lng,
@@ -205,12 +208,13 @@ exports.getNearestBoutiqueList = async (req, res) => {
             Key: `boutique/default-img.jpg`,
             Expires: expirationTime,
           })
-        var maskedNumber = boutique.contact_number !== null ? Service.maskMobileNumber(boutique.contact_number) : null; 
+        var maskedNumber = boutique.contact_number !== null ? Service.maskMobileNumber(boutique.contact_number) : ''; 
         responseData.nearbyBoutiques.push({
           id: boutique.id,
           boutique_name: boutique.boutique_name,
           address: boutique.address,
           image: boutiqueLogoUrl,
+          contact_number: boutique.contact_number,
           contact_number: maskedNumber,
           category: mapCategoryType(boutique.categoryType),
           latitude: boutique.location_lat,
