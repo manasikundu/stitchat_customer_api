@@ -191,7 +191,7 @@ exports.userProfile = async (req, res) => {
   try {
     const mobile = req.body.mobile_number
 
-    const result1 = await Service.getUserDetails(mobile)
+    var result1 = await Service.getUserDetails(mobile)
     if (result1) {
       const customerInfo = {}
       customerInfo.id = result1.id

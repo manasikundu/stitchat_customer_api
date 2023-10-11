@@ -80,22 +80,11 @@ exports.getNearestBoutiqueList = async (req, res) => {
     var filter_by_item = req.body.filter_by_item;
     var search = req.body.search
     if (!latitude || !longitude) {
-      return res.status(400).json({
-        HasError: true,
-        StatusCode: 400,
-        message: "Invalid Credential.",
-      });
+      return res.status(400).send({HasError: true,message: "Invalid Credential."});
     }
     var method_name = await Service.getCallingMethodName();
     var apiEndpointInput = JSON.stringify(req.body);
-    apiTrack = await Service.trackApi(
-      req.query.user_id,
-      method_name,
-      apiEndpointInput,
-      req.query.device_id,
-      req.query.device_info,
-      req.ip
-    );
+    apiTrack = await Service.trackApi(req.query.user_id,method_name,apiEndpointInput,req.query.device_id,req.query.device_info,req.ip);
     var boutiques = [];
     if (letter) {
       boutiques = await BoutiqueService.getBoutiques(letter);
@@ -109,20 +98,10 @@ exports.getNearestBoutiqueList = async (req, res) => {
         BoutiqueService.sortBoutiques(boutiques, sortType)
       );
     }
-    if (
-      filter_by_gender !== undefined &&
-      filter_by_gender !== null &&
-      filter_by_gender !== ""
-    ) {
-      sortAndFilterFunctions.push((boutiques) =>
-        BoutiqueService.filterBoutiqueListByGender(boutiques, filter_by_gender)
-      );
+    if (filter_by_gender !== undefined && filter_by_gender !== null && filter_by_gender !== "") {
+      sortAndFilterFunctions.push((boutiques) => BoutiqueService.filterBoutiqueListByGender(boutiques, filter_by_gender));
     }
-    if (
-      filter_by_item !== undefined &&
-      filter_by_item !== null &&
-      filter_by_item !== ""
-    ) {
+    if (filter_by_item !== undefined && filter_by_item !== null && filter_by_item !== "") {
       sortAndFilterFunctions.push(async (boutiques) => {
         var filteredBoutiquesByItem =
           await BoutiqueService.filterBoutiquesByItem(filter_by_item);
@@ -138,9 +117,7 @@ exports.getNearestBoutiqueList = async (req, res) => {
     }
     var organizedServices = [];
     items.forEach((service) => {
-      var existingCategory = organizedServices.find(
-        (category) => category.category_name === service.parent_category_name
-      );
+      var existingCategory = organizedServices.find((category) => category.category_name === service.parent_category_name);
       if (!existingCategory) {
         existingCategory = {
           category_name: service.parent_category_name,
@@ -170,7 +147,6 @@ exports.getNearestBoutiqueList = async (req, res) => {
           { latitude, longitude },
           { latitude: boutique.location_lat, longitude: boutique.location_lng }
         );
-
         boutique.distance = boutiqueDistance;
         boutique.distanceInKm = boutiqueDistance / 1000;
       }
@@ -186,9 +162,7 @@ exports.getNearestBoutiqueList = async (req, res) => {
     var boutiquesWithin500km = sortedAndFilteredBoutiques.filter((boutique) => {
       return boutique.distance <= 500000; // 500 kilometers in meters
     });
-    var sortedBoutiques = boutiquesWithin500km.sort(
-      (a, b) => a.distance - b.distance
-    );
+    var sortedBoutiques = boutiquesWithin500km.sort((a, b) => a.distance - b.distance);
     var responseData = {};
     var expirationTime = 600;
     if (sortedBoutiques.length === 1) {
@@ -216,7 +190,6 @@ exports.getNearestBoutiqueList = async (req, res) => {
         nearbyBoutiques: [],
       };
       var boutiqueLogoUrl = "";
-
       for (var i = 0; i < sortedBoutiques.length; i++) {
         var boutique = sortedBoutiques[i];
         var boutiqueLogoUrl = "";
@@ -231,8 +204,7 @@ exports.getNearestBoutiqueList = async (req, res) => {
             Key: `boutique/default-img.jpg`,
             Expires: expirationTime,
           })
-        var maskedNumber = boutique.contact_number !== null ? Service.maskMobileNumber(boutique.contact_number) : null;
-          
+        var maskedNumber = boutique.contact_number !== null ? Service.maskMobileNumber(boutique.contact_number) : null; 
         responseData.nearbyBoutiques.push({
           id: boutique.id,
           boutique_name: boutique.boutique_name,
