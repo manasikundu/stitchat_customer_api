@@ -27,50 +27,25 @@ var geocoder = NodeGeocoder({
 exports.getAddress = async (req, res) => {
   try {
     var { latitude, longitude } = req.body;
-
     if (!latitude || !longitude) {
-      return res.status(400).json({
-        HasError: true,
-        StatusCode: 400,
-        message: "Invalid parameter.",
-      });
+      return res.status(400).send({HasError: true,message: "Invalid parameter."});
     }
     var method_name = await Service.getCallingMethodName();
     console.log(method_name);
     var apiEndpointInput = JSON.stringify(req.body);
-    apiTrack = await Service.trackApi(
-      req.query.user_id,
-      method_name,
-      apiEndpointInput,
-      req.query.device_id,
-      req.query.device_info,
-      req.ip
-    );
+    apiTrack = await Service.trackApi(req.query.user_id,method_name,apiEndpointInput,req.query.device_id,req.query.device_info,req.ip);
     var response = await geocoder.reverse({ lat: latitude, lon: longitude });
     var address = response[0]?.formattedAddress;
-
     if (address) {
-      return res.status(200).json({
-        HasError: false,
-        StatusCode: 200,
-        address,
-      });
+      return res.status(200).send({HasError: false,address});
     } else {
-      return res.status(404).json({
-        HasError: true,
-        StatusCode: 404,
-        message: "Address not found for the given latitude and longitude.",
-      });
+      return res.status(500).send({HasError: true,message: "Address not found for the given latitude and longitude."});
     }
   } catch (error) {
     console.error("Error processing request:", error);
-    return res.status(500).json({
-      HasError: true,
-      StatusCode: 500,
-      message: "An error occurred while processing the request.",
-    });
+    return res.status(500).send({HasError: true,message: "An error occurred while processing the request."});
   }
-};
+}
 
 // Nearest boutique from lat and long, sort_type filter
 exports.getNearestBoutiqueList = async (req, res) => {
