@@ -189,9 +189,9 @@ exports.apiTrackList = async (req, res) => {
 
 exports.userProfile = async (req, res) => {
   try {
-    const mobile = req.body.mobile_number
+    const id = req.body.user_id
 
-    var result1 = await Service.getUserDetails(mobile)
+    var result1 = await Service.getUserDetails(id)
     if (result1) {
       const customerInfo = {}
       customerInfo.id = result1.id

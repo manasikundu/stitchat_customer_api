@@ -175,9 +175,8 @@ exports.checkMobile = async (
 };
 
 
-exports.getUserDetails = async (mobile_number) => {
-  const result = await Users.findOne({ where: { mobile_number: mobile_number } })
-  console.log(result)
+exports.getUserDetails = async (id) => {
+  const result = await Users.findOne({ where: { id: id } })
   return result
 }
 exports.boutiqueMap = async (user_id) => {

@@ -24,6 +24,7 @@ var Users = sequelize.define(
     },
     mobile_number: {
       type: DataTypes.STRING,
+      unique: true
     },
     email_id: {
       type: DataTypes.STRING,
