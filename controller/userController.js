@@ -25,46 +25,47 @@ exports.insertMobileNumber = async (req, res) => {
     var newUserData = req.body;
     var insertError = [];
     if (!newUserData.mobile_number || !/^\+?[1-9]\d{9}$/.test(newUserData.mobile_number.replace(/\D/g, "")) || newUserData.mobile_number.includes(" ")) {
-      insertError.push({field: "phone_no",message: "Invalid phone number."});
+      insertError.push({ field: "phone_no", message: "Invalid phone number." });
     }
     if (insertError.length > 0) {
-      return res.status(200).send({ HasError: true,errors: insertError })}
+      return res.status(200).send({ HasError: true, errors: insertError })
+    }
     newUserData.device_id = newUserData.device_id || "";
     newUserData.fcm_token = newUserData.fcm_token || "";
-    var existingUser = await Users.findOne({where: { mobile_number: newUserData.mobile_number }});
+    var existingUser = await Users.findOne({ where: { mobile_number: newUserData.mobile_number } });
     var method_name = await Service.getCallingMethodName();
     var apiEndpointInput = JSON.stringify(newUserData);
-    apiTrack = await Service.trackApi(existingUser ? existingUser.id : null,method_name,apiEndpointInput,newUserData.device_id,newUserData.device_info,req.ip);
+    apiTrack = await Service.trackApi(existingUser ? existingUser.id : null, method_name, apiEndpointInput, newUserData.device_id, newUserData.device_info, req.ip);
     var otp;
     var currentTimestamp = Date.now();
-      var currentDate = new Date(currentTimestamp);
-      var formattedDate = `${currentDate.getFullYear()}-${String(currentDate.getMonth() + 1).padStart(2, '0')}-${String(currentDate.getDate()).padStart(2, '0')} ${String(currentDate.getHours()).padStart(2, '0')}:${String(currentDate.getMinutes()).padStart(2, '0')}:${String(currentDate.getSeconds()).padStart(2, '0')}`;
+    var currentDate = new Date(currentTimestamp);
+    var formattedDate = `${currentDate.getFullYear()}-${String(currentDate.getMonth() + 1).padStart(2, '0')}-${String(currentDate.getDate()).padStart(2, '0')} ${String(currentDate.getHours()).padStart(2, '0')}:${String(currentDate.getMinutes()).padStart(2, '0')}:${String(currentDate.getSeconds()).padStart(2, '0')}`;
     if (existingUser) {
       if (otpCache[existingUser.mobile_number] && Date.now() - otpCache[existingUser.mobile_number].timestamp < OTP_EXPIRY_TIME) {
         otp = otpCache[existingUser.mobile_number].value;
-        var updateExistingUserOTP = await Users.update({ otp, otp_timestamp: Date.now(), updated_at: formattedDate},{ where: { mobile_number: existingUser.mobile_number }});
+        var updateExistingUserOTP = await Users.update({ otp, otp_timestamp: Date.now(), updated_at: formattedDate }, { where: { mobile_number: existingUser.mobile_number } });
       } else {
         otp = Service.generateOTP();
-        otpCache[existingUser.mobile_number] = {value: otp,timestamp: Date.now()};
-        var storeNewOTPForExistingUser = await Users.update({ otp, otp_timestamp: Date.now(), updated_at: formattedDate },{ where: { mobile_number: existingUser.mobile_number } });
+        otpCache[existingUser.mobile_number] = { value: otp, timestamp: Date.now() };
+        var storeNewOTPForExistingUser = await Users.update({ otp, otp_timestamp: Date.now(), updated_at: formattedDate }, { where: { mobile_number: existingUser.mobile_number } });
       }
-      return res.status(200).send({result: {otp,isPresent: true},HasError: false,Message: "OTP sent successfully."});
+      return res.status(200).send({ result: { otp, isPresent: true }, HasError: false, Message: "OTP sent successfully." });
     } else {
       otp = Service.generateOTP();
       newUserData.reg_on = formattedDate;
       newUserData.created_at = formattedDate;
       newUserData.updated_at = formattedDate;
-      otpCache[newUserData.mobile_number] = {value: otp,timestamp: Date.now()};
-      var newUser = await Service.insertNewUserWithOTP(newUserData,otp, formattedDate)
+      otpCache[newUserData.mobile_number] = { value: otp, timestamp: Date.now() };
+      var newUser = await Service.insertNewUserWithOTP(newUserData, otp, formattedDate)
       if (newUser) {
-        return res.status(200).send({result: {otp,isPresent: false},HasError: false,Message:"OTP sent successfully."});
+        return res.status(200).send({ result: { otp, isPresent: false }, HasError: false, Message: "OTP sent successfully." });
       } else {
-        return res.status(500).send({HasError: false,Message: "Error sending OTP."});
+        return res.status(500).send({ HasError: false, Message: "Error sending OTP." });
       }
     }
   } catch (error) {
     console.error("Error creating user:", error);
-    return res.status(500).send({HasError: false,error: "An error occurred while inserting the mobile number."});
+    return res.status(500).send({ HasError: false, error: "An error occurred while inserting the mobile number." });
   }
 }
 
@@ -74,17 +75,17 @@ exports.verifyOTP = async (req, res) => {
     var mobile_number = req.body.mobile_number
     otp = req.body.otp
     if (verifiedOTPs.has(otp)) {
-      return res.status(400).send({HasError: true,StatusCode: 400,Message: "OTP has already been verified for this account."});
+      return res.status(400).send({ HasError: true, StatusCode: 400, Message: "OTP has already been verified for this account." });
     }
     var insertError = [];
     if (!mobile_number || !/^\+?[1-9]\d{9}$/.test(mobile_number.replace(/\D/g, "")) || mobile_number.includes(" ")) {
-      insertError.push({field: "phone_no",message: "Invalid phone number."});
+      insertError.push({ field: "phone_no", message: "Invalid phone number." });
     }
     if (insertError.length > 0) {
       return res.status(400).send({ HasError: true, errors: insertError });
     }
     if (!mobile_number || !otp) {
-      return res.status(400).send({HasError: true,Message: "Invalid parameter."});
+      return res.status(400).send({ HasError: true, Message: "Invalid parameter." });
     } else {
       var user = await Users.findOne({ where: { mobile_number } });
       if (user) {
@@ -93,13 +94,18 @@ exports.verifyOTP = async (req, res) => {
           if (Date.now() - timestamp > OTP_EXPIRY_TIME) {
             return res.status(400).send({HasError: true,Message: "OTP has expired. Please request a new OTP."})
           } else {
-            const data1 = req.body
+            var data1 = req.body
+            if (data1.first_name == '' && data1.last_name == '') {
+              delete data1['first_name'];
+              delete data1['last_name'];
+            }
             delete data1['mobile_number'];
             // delete data1['otp'];
             verifiedOTPs.add(otp);
             otp = Service.generateOTP();
             otpCache[mobile_number] = { value: otp, timestamp: Date.now() };
             var token = generateAccessToken(mobile_number, otp)
+
             const result = await Service.updateProfile(user.id, data1)
             var data = result[1][0].toJSON()
             var formattedUser = {
@@ -132,18 +138,18 @@ exports.verifyOTP = async (req, res) => {
               id_proof: data.id_proof ? data.id_proof : "",
               gift_coin: data.gift_coin ? data.gift_coin : "0.00",
             };
-            return res.status(200).send({userInfo: formattedUser,HasError: false,StatusCode: 200,Message: "OTP verified successfully!"});
+            return res.status(200).send({ userInfo: formattedUser, HasError: false, StatusCode: 200, Message: "OTP verified successfully!" });
           }
         } else {
-          return res.status(400).send({HasError: true,Message: "Invalid OTP. Please enter the correct OTP."})
+          return res.status(400).send({ HasError: true, Message: "Invalid OTP. Please enter the correct OTP." })
         }
       } else {
-        return res.status(400).send({HasError: true,Message: "User with the provided mobile number not found."});
+        return res.status(400).send({ HasError: true, Message: "User with the provided mobile number not found." });
       }
     }
   } catch (error) {
     console.error("Error verifying OTP:", error);
-    return res.status(500).send({HasError: true,Message: "An error occurred while verifying the OTP."});
+    return res.status(500).send({ HasError: true, Message: "An error occurred while verifying the OTP." });
   }
 }
 
@@ -153,37 +159,37 @@ exports.apiTrackList = async (req, res) => {
   try {
     var whereConditions = {};
     if (req.query.method) {
-      whereConditions.method_name = {[Op.like]: `%${req.query.method}%`};
+      whereConditions.method_name = { [Op.like]: `%${req.query.method}%` };
     }
     if (req.query.start_date && req.query.end_date) {
       var startDate = new Date(req.query.start_date);
       var endDate = new Date(req.query.end_date);
       if (startDate > endDate) {
-        return res.status(400).send({result: null,HasError: true,Message: "End date cannot be smaller than the start date."});
+        return res.status(400).send({ result: null, HasError: true, Message: "End date cannot be smaller than the start date." });
       }
-      whereConditions.add_date = {[Op.between]: [req.query.start_date, req.query.end_date]}
+      whereConditions.add_date = { [Op.between]: [req.query.start_date, req.query.end_date] }
       var currentDateTime = new Date();
       if (endDate > currentDateTime) {
-        return res.status(400).send({result: null,HasError: true,Message: "End date cannot exceed the current date."});
+        return res.status(400).send({ result: null, HasError: true, Message: "End date cannot exceed the current date." });
       }
     } else if (req.query.start_date) {
       var formattedStartDate = `${req.query.start_date} 00:00:00`;
-      whereConditions.add_date = {[Op.between]: [formattedStartDate, `${req.query.start_date} 23:59:59`]}
+      whereConditions.add_date = { [Op.between]: [formattedStartDate, `${req.query.start_date} 23:59:59`] }
     }
     var searchTerm = req.query.searchTerm;
     var limit = req.query.limit ? parseInt(req.query.limit) : null;
     var offset = req.query.offset ? parseInt(req.query.offset) : null;
-    var filters = {where: whereConditions,order: [["id", "ASC"]],limit: limit,offset: offset}
+    var filters = { where: whereConditions, order: [["id", "ASC"]], limit: limit, offset: offset }
     var method_name = await Service.getCallingMethodName();
     var apiEndpointInput = JSON.stringify(req.query);
-    apiTrack = await Service.trackApi(req.query.user_id,method_name,apiEndpointInput,req.query.device_id,req.query.device_info,req.ip);
-    var users = await Service.searchCustomer(filters,Service.getCustomerDetails,searchTerm);
+    apiTrack = await Service.trackApi(req.query.user_id, method_name, apiEndpointInput, req.query.device_id, req.query.device_info, req.ip);
+    var users = await Service.searchCustomer(filters, Service.getCustomerDetails, searchTerm);
     if (!users) {
-      users = []; 
+      users = [];
     }
-    return res.status(200).send({result: users,HasError: false,Message: "Customer search successful."});
+    return res.status(200).send({ result: users, HasError: false, Message: "Customer search successful." });
   } catch (error) {
-    return res.status(500).send({result: null,HasError: true,Message: "An error occurred while retrieving customers.",error: error.message});
+    return res.status(500).send({ result: null, HasError: true, Message: "An error occurred while retrieving customers.", error: error.message });
   }
 };
 
