@@ -28,6 +28,7 @@ var Users = sequelize.define(
     },
     email_id: {
       type: DataTypes.STRING,
+      unique: true
     },
     mob_verify_status: {
       type: DataTypes.INTEGER,
