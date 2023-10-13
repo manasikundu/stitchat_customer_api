@@ -131,7 +131,9 @@ exports.boutiqueSlot = async (req, res) => {
                 }),
             };
         });
-        var maskedNumber = Service.maskMobileNumber(boutiqueDetail.contact_number)
+        // var maskedNumber = Service.maskMobileNumber(boutiqueDetail.contact_number)
+        var maskedNumber = boutiqueDetail.contact_number !== null ? Service.maskMobileNumber(boutiqueDetail.contact_number) : null; 
+
         var boutiqueLogo = "";
         var boutiqueLogo = boutiqueDetail.boutique_logo
               ? await s3.getSignedUrl("getObject", {
