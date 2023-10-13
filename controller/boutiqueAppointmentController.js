@@ -132,7 +132,7 @@ exports.boutiqueSlot = async (req, res) => {
             };
         });
         // var maskedNumber = Service.maskMobileNumber(boutiqueDetail.contact_number)
-        var maskedNumber = boutiqueDetail.contact_number !== null ? Service.maskMobileNumber(boutiqueDetail.contact_number) : null; 
+        var maskedNumber = boutiqueDetail.contact_number !== null ? Service.maskMobileNumber(boutiqueDetail.contact_number) : ''; 
 
         var boutiqueLogo = "";
         var boutiqueLogo = boutiqueDetail.boutique_logo
@@ -146,14 +146,14 @@ exports.boutiqueSlot = async (req, res) => {
               Key: `boutique/default-img.jpg`,
               Expires: expirationTime})  
         var slotJson = {}
-        slotJson.boutique_id = boutique_id;
-        slotJson.boutique_name = boutiqueDetail.boutique_name
-        slotJson.address = boutiqueDetail.address
+        slotJson.boutique_id = boutique_id  
+        slotJson.boutique_name = boutiqueDetail.boutique_name ? boutiqueDetail.boutique_name : ''
+        slotJson.address = boutiqueDetail.address ? boutiqueDetail.address : ''
         slotJson.image= boutiqueLogo
-        slotJson.contact_number = boutiqueDetail.contact_number
+        slotJson.contact_number = boutiqueDetail.contact_number ? boutiqueDetail.contact_number : ''
         slotJson.masked_contact_number = maskedNumber
-        slotJson.timeslot = weekSchedules
-        slotJson.item = itemArray
+        slotJson.timeslot = weekSchedules ? weekSchedules : []
+        slotJson.item = itemArray ? itemArray : []
         
         return res.status(200).send({HasError: false, Message: "Boutique slot fetched successfully.", boutiqueDetails: slotJson});        
         } catch (error) { 
