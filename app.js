@@ -9,6 +9,7 @@ const designersRouter = require("./router/FDRouter");
 const orderRouter = require("./router/orderRouter")
 const ratingRouter = require("./router/ratingRouter")
 const boutiqueAppointmentRouter = require("./router/boutiqueAppointmentRouter")
+const tailorRouter = require("./router/tailorRouter")
 
 
 const bodyParser = require("body-parser");
@@ -33,6 +34,7 @@ app.use("", designersRouter);
 app.use("", orderRouter)
 app.use("", ratingRouter)
 app.use("", boutiqueAppointmentRouter)
+app.use("", tailorRouter)
 
 const port=8000
 app.listen(port,() => {

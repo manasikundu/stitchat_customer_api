@@ -153,6 +153,50 @@ exports.verifyOTP = async (req, res) => {
   }
 }
 
+// verifyToken
+const secretKey = "tensorflow"
+exports.verifyToken = (req, res, next) => {
+  try {
+    var b_token = req.headers.authorization;
+    if (!b_token) {
+      return res.status(401).send({
+        HasError: true,
+        StatusCode: 401,
+        message: "Token not provided",
+      });
+    } else {
+      var token = b_token.replace(/^Bearer\s+/, "");
+      // Verify token
+      var decoded = jwt.verify(token, secretKey);
+
+      // Check if the decoded mobile_number matches the request mobile_number
+      if (decoded.mobile_number !== req.body.mobile_number) {
+        return res.status(401).send({
+          HasError: true,
+          StatusCode: 401,
+          message: "Invalid token for this user",
+        });
+      } else {
+        // Token is valid
+        req.user = decoded; 
+        return res.status(200).send({
+          HasError: false,
+          StatusCode: 200,
+          message: "Token verified!",
+          user: req.user,
+        });
+      }
+    }
+
+  } catch (error) {
+    console.log(error);
+    return res.status(401).send({
+      HasError: true,
+      StatusCode: 401,
+      message: "Failed to authenticate token!",
+    });
+  }
+}
 
 // Seach api track api track
 exports.apiTrackList = async (req, res) => {
