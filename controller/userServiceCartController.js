@@ -21,7 +21,7 @@ exports.createServiceCart = async (req, res) => {
     } else {
         const userId = await Users.findOne({where: {id: user_id}})
         if (!userId) {
-            return res.status(200).send({ HasError: true, Message: "Invalid user id." })
+            return res.status(200).send({ HasError: true, Message: "User id does not exist." })
         } else {
             var currentDate = new Date();
             var formattedDate = currentDate.toISOString().slice(0, 19).replace("T", " ")
