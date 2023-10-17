@@ -9,7 +9,6 @@ exports.createServiceCart = async (req, res) => {
     const sub_category_id = req.body.sub_category_id
     const alternation_type = req.body.alternation_type;
     const amount = req.body.amount;
-
     if (!user_id || !category_id || !sub_category_id || !alternation_type || !amount) {
       return res.status(400).send({ HasError: true, Message: "Invalid parameter." });
     } else {
@@ -27,9 +26,7 @@ exports.createServiceCart = async (req, res) => {
         created_at: formattedDate,
         updated_at: formattedDate
       }
-
       const newService = await cartService.createServiceCart(data)
-      console.log(newService)
       var dataJson = {}
       dataJson.id = newService.id
       dataJson.user_id = newService.user_id
