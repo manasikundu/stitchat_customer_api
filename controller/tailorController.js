@@ -39,7 +39,7 @@ exports.serviceType = async (req, res) => {
                     })
                     return res.status(200).send({ message: "Item wise service retrieved successfully.", HasError: false,result:result })
                 }else{
-                    return res.status(200).send({message: "Service not found.",HasError: true,result: result}) 
+                    return res.status(200).send({message: "Service not found.",HasError: false,result: result}) 
                 }
             }else{
                 return res.status(400).send({ message: "This item doesn't exist.Please enter a valid item id.", HasError: false })
