@@ -10,9 +10,9 @@ exports.createServiceCart = async (req, res) => {
     const user_id = req.body.user_id
     const category_id = req.body.category_id
     const sub_category_id = req.body.sub_category_id
-    const alternation_type = req.body.alternation_type
+    const alternataion_type = req.body.alternation_type
     const amount = req.body.amount;
-    if (!user_id || !category_id || !sub_category_id || !alternation_type || !amount) {
+    if (!user_id || !category_id || !sub_category_id || !alternataion_type || !amount) {
       return res.status(400).send({ HasError: true, Message: "Invalid parameter." })
     } else {
         const categoryId = await categoryItem.findOne({ where: { id: category_id } });
@@ -30,7 +30,7 @@ exports.createServiceCart = async (req, res) => {
                 category_id,
                 sub_category_id,
                 order_id: null,
-                alternation_type,
+                alternataion_type,
                 amount,
                 service_date_time: null,
                 status: 0,
