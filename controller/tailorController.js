@@ -22,8 +22,8 @@ exports.serviceType = async (req, res) => {
             if(item){
                 item=item.toJSON()
                 var serviceDetails = await tailorService.serviceDetails(item_id)
+                var result = {ALTERED: [],REPAIRED: []}
                 if(serviceDetails.length>0){
-                    var result = {ALTERED: [],REPAIRED: []}
                     serviceDetails.forEach(service => {
                         var service_type_name = service.service_type === 1 ? 'ALTER' : 'REPAIR'
                         var dataJson = {}
@@ -39,7 +39,7 @@ exports.serviceType = async (req, res) => {
                     })
                     return res.status(200).send({ message: "Item wise service retrieved successfully.", HasError: false,result:result })
                 }else{
-                    return res.status(500).send({message: "Service not found.",HasError: true,result: {}}) 
+                    return res.status(200).send({message: "Service not found.",HasError: true,result: result}) 
                 }
             }else{
                 return res.status(400).send({ message: "This item doesn't exist.Please enter a valid item id.", HasError: false })
