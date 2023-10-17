@@ -17,7 +17,7 @@ exports.createServiceCart = async (req, res) => {
     } else {
         const categoryId = await categoryItem.findOne({ where: { id: category_id } });
         if (!categoryId) {
-          return res.status(200).send({ HasError: true, Message: "Invalid category id." })
+          return res.status(200).send({ HasError: true, Message: "category id does not exist." })
     } else {
         const userId = await Users.findOne({where: {id: user_id}})
         if (!userId) {
