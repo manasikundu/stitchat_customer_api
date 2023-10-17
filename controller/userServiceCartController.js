@@ -58,6 +58,12 @@ exports.createServiceCart = async (req, res) => {
           dataJson.service_date_time = newService.service_date_time
           dataJson.status = newService.status
           dataJson.created_at = moment(newService.created_at).format('YYYY-MM-DD HH:mm:ss')
+          dataJson.filter_choice = newService.filter_choice
+          dataJson.filter_type_description = newService.filter_type_description
+          dataJson.tailor_note = newService.tailor_note
+          dataJson.item_description = newService.item_description
+          dataJson.repair_location = newService.repair_location
+
           return res.status(200).send({ HasError: false, Message: "Service cart data inserted successfully.", result: dataJson });
         }
       }
