@@ -38,6 +38,22 @@ var UserServiceCart = sequelize.define(
       type: DataTypes.SMALLINT,
       defaultValue: 0,
     },
+    filter_choice: {
+      type: DataTypes.SMALLINT,
+      defaultValue: 0,
+    },
+    filter_type_description: {
+      type: DataTypes.TEXT,
+    },
+    tailor_note: {
+      type: DataTypes.TEXT
+    },
+    item_description: {
+      type: DataTypes.TEXT,
+    },
+    repair_location: {
+      type: DataTypes.TEXT,
+    },
     created_at: {
       type: DataTypes.DATE,
     },

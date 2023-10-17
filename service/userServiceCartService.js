@@ -9,3 +9,8 @@ exports.createServiceCart = async (cartData) => {
       return error;
     }
 }
+
+exports.deleteCart = async (id) => {
+  const result = await UserServiceCart.destroy({ where: { id: id } })
+  return result
+}
