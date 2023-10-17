@@ -355,7 +355,7 @@ exports.contactInfo = async (req, res) => {
 
 exports.contactUs = async (req, res) => {
   try {
-    req.body.add_date=new Date().toLocaleDateString()
+    req.body.add_date=new Date().toLocaleDateString('en-GB')
     const result = await Service.contactUs(req.body)
     
     return res.status(200).send({
