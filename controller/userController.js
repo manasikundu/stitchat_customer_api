@@ -405,8 +405,16 @@ exports.profilePicUpload = async (req, res) => {
     var user_id = req.body.user_id
     var buf = Buffer.from(req.body.profile_image.replace(/^data:image\/\w+;base64,/, ""), 'base64')
     if (req.body.profile_image) {
-      var logo = user_id + path.extname(req.body.profile_image)
+      var extname
+      if(req.body.extname){
+        extname=req.body.extname
+      }else{
+        extname='.png'
+      }
+
+      var logo = user_id + extname
       var logoPath = "employee/" + logo;
+      console.log(logoPath)
       var data = { 'profile_photo': logoPath }
       const params = {
         Bucket: process.env.AWS_BUCKET,
@@ -424,6 +432,7 @@ exports.profilePicUpload = async (req, res) => {
         }
       });
       const result = await Service.updateProfile(user_id, data)
+      console.log(result)
       if (result[0] != 0) {
         var photo = s3.getSignedUrl("getObject", {
           Bucket: process.env.AWS_BUCKET,

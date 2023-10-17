@@ -13,7 +13,7 @@ exports.getItemForTailor = async () => {
 
 exports.serviceType = async () => {
     try {
-        var query = `select * from sarter_tailor_sub_category`
+        var query = `select * from sarter__tailor_sub_category`
         var result = await db.query(query)
         return result[0]
     } catch (error) {
@@ -26,7 +26,7 @@ exports.serviceTypeItem = async (item_id) => {
     try {
         // var query = `select * from sarter_tailor_sub_category where id in(select sub_category_id from sarter_tailor_mapping where category_id =${item_id})`
         var query = `SELECT stsc.*, stm.category_id
-        FROM sarter_tailor_sub_category stsc, sarter_tailor_mapping stm
+        FROM sarter__tailor_sub_category stsc, sarter__tailor_mapping stm
         WHERE stsc.id = stm.sub_category_id
         AND stm.category_id = ${item_id}`
         var result = await db.query(query)
