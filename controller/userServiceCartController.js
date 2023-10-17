@@ -13,11 +13,11 @@ exports.createServiceCart = async (req, res) => {
     const alternataion_type = req.body.alternation_type
     const amount = req.body.amount;
     if (!user_id || !category_id || !sub_category_id || !alternataion_type || !amount) {
-      return res.status(400).send({ HasError: true, Message: "Invalid parameter." })
+        return res.status(400).send({ HasError: true, Message: "Invalid parameter." })
     } else {
         const categoryId = await categoryItem.findOne({ where: { id: category_id } });
         if (!categoryId) {
-          return res.status(200).send({ HasError: true, Message: "category id does not exist." })
+            return res.status(200).send({ HasError: true, Message: "category id does not exist." })
     } else {
         const userId = await Users.findOne({where: {id: user_id}})
         if (!userId) {
