@@ -27,7 +27,7 @@ exports.createVideoInquire = async (req, res) => {
             if (existingEmail) {
                 return res.status(200).send({ HasError: true, Message: "Email is already in use." })
             } else {
-                const data = {name, email, guest_email, item_id, service_type, note, date_time: date_time}
+                const data = {name, email, guest_email, item_id, service_type, note, date_time}
                 const newService = await videoInquireService.createVideoInquire(data)
                 var dataJson = {}
                 dataJson.id = newService.id
@@ -35,7 +35,7 @@ exports.createVideoInquire = async (req, res) => {
                 dataJson.total_amount = newService.email
                 dataJson.address_details = newService.item_id
                 dataJson.address_id = newService.service_type
-                dataJson.status = newService.note
+                dataJson.note = newService.note
                 dataJson.date_time = moment(newService.date_time).format('YYYY-MM-DD HH:mm:ss')
     
                 return res.status(200).send({ HasError: false, Message: "Video Inquiry data inserted successfully.", result: dataJson });
