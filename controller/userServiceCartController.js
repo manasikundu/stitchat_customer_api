@@ -74,8 +74,8 @@ exports.getCart = async (req, res) => {
     if (user_id) {
       const user = await Users.findOne({ where: { id: user_id } })
       if (user) {
-        var data = cartService.getCartByUserId(user_id)
-        if (data) {
+        var data = await cartService.getCartByUserId(user_id)
+        if (data.length != 0) {
           return res.status(200).send({ message: "Successfully fetched data", HasError: false, result: data });
         }
       } else {
