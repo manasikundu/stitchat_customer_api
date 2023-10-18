@@ -79,7 +79,7 @@ exports.getCart = async (req, res) => {
           const sub_total=data.reduce((total,num)=>total + parseFloat(num.amount),0)
           const delivery_fee=50
           const total=parseFloat(sub_total)+parseFloat(delivery_fee)
-          return res.status(200).send({ message: "Successfully fetched data", HasError: false, result: {data:data,sub_total:sub_total,delivery_fee:`${delivery_fee}`,total:`${total}` } });
+          return res.status(200).send({ message: "Successfully fetched data", HasError: false, result: {data:data,sub_total:sub_total,delivery_fee:delivery_fee,total:total } });
         }
       } else {
         return res.status(200).send({ message: "This user doesn't exist", HasError: false });
