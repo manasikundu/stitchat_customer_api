@@ -20,7 +20,7 @@ var SarterVideoInquire = sequelize.define(
       type: DataTypes.TEXT,
     },
     item_id: {
-      type: DataTypes.INTEGER,
+      type: DataTypes.STRING,
     },
     service_type: {
       type: DataTypes.SMALLINT,
