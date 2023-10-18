@@ -36,7 +36,7 @@ exports.createServiceOrder = async (req, res) => {
                 dataJson.status = newService.status
                 dataJson.created_at = moment(newService.created_at).format('YYYY-MM-DD HH:mm:ss')
     
-                return res.status(200).send({ HasError: false, Message: "Service cart data inserted successfully.", result: dataJson });
+                return res.status(200).send({ HasError: false, Message: "Service order data inserted successfully.", result: dataJson });
             }
         }
     }
