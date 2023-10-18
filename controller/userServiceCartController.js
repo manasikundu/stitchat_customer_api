@@ -3,6 +3,7 @@ const cartService = require('../service/userServiceCartService')
 const moment = require('moment')
 const categoryItem = require("../model/categoryItemModel")
 const Users = require("../model/userModel")
+const tailorService = require("../service/tailorService")
 
 
 exports.createServiceCart = async (req, res) => {
@@ -76,10 +77,35 @@ exports.getCart = async (req, res) => {
       if (user) {
         var data = await cartService.getCartByUserId(user_id)
         if (data.length != 0) {
-          const sub_total=data.reduce((total,num)=>total + parseFloat(num.amount),0)
-          const delivery_fee=50
-          const total=parseFloat(sub_total)+parseFloat(delivery_fee)
-          return res.status(200).send({ message: "Successfully fetched data", HasError: false, result: {data:data,sub_total:sub_total,delivery_fee:delivery_fee,total:total } });
+          var final_data=[]
+          for(var i in data){
+            var final_data_json={}
+            final_data_json.id=data[i].id
+            final_data_json.user_id=data[i].user_id
+            final_data_json.item_id=data[i].item_id
+            var item = await tailorService.getItemDetails(data[i].item_id)
+            final_data_json.item_name=item.name
+            final_data_json.service_id=data[i].service_id
+            final_data_json.order_id=data[i].order_id
+            final_data_json.type=data[i].type
+            final_data_json.amount=data[i].amount
+            final_data_json.service_date_time=data[i].service_date_time
+            final_data_json.status=data[i].status
+            final_data_json.fit_type=data[i].fit_type?data[i].fit_type:0
+            final_data_json.fit_description=data[i].fit_description?data[i].fit_description:''
+            final_data_json.tailor_note=data[i].tailor_note
+            final_data_json.item_description=data[i].item_description
+            final_data_json.repair_location=data[i].repair_location?data[i].repair_location:''
+            final_data_json.repair_description=data[i].repair_description?data[i].repair_description:''
+            final_data_json.created_at=data[i].created_at
+            final_data_json.updated_at=data[i].updated_at
+            final_data.push(final_data_json)
+          }
+      
+          const sub_total = data.reduce((total, num) => total + parseFloat(num.amount), 0)
+          const delivery_fee = 50
+          const total = parseFloat(sub_total) + parseFloat(delivery_fee)
+          return res.status(200).send({ message: "Successfully fetched data", HasError: false, result: { data: final_data, sub_total: sub_total, delivery_fee: delivery_fee, total: total } });
         }
       } else {
         return res.status(200).send({ message: "This user doesn't exist", HasError: false });
