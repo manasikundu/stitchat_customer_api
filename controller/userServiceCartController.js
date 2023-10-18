@@ -21,8 +21,8 @@ exports.createServiceCart = async (req, res) => {
     if (!user_id || !item_id || !service_id || !type || !amount) {
       return res.status(400).send({ HasError: true, Message: "Invalid parameter." })
     } else {
-      const item_id = await categoryItem.findOne({ where: { id: item_id } });
-      if (!item_id) {
+      const item = await categoryItem.findOne({ where: { id: item_id } });
+      if (!item) {
         return res.status(200).send({ HasError: true, Message: "Item id does not exist." })
       } else {
         const userId = await Users.findOne({ where: { id: user_id } })
