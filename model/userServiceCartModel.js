@@ -1,4 +1,4 @@
-const  DataTypes = require("sequelize");
+const DataTypes = require("sequelize");
 const sequelize = require("../dbConnection");
 
 // Define the model for sarter__users table
@@ -14,18 +14,18 @@ var UserServiceCart = sequelize.define(
       type: DataTypes.INTEGER,
       defaultValue: 0,
     },
-    category_id: {
+    item_id: {
       type: DataTypes.INTEGER,
     },
-    sub_category_id: {
+    service_id: {
       type: DataTypes.INTEGER,
     },
     order_id: {
       type: DataTypes.INTEGER,
       defaultValue: 0,
     },
-    alternataion_type: {
-        type: DataTypes.STRING,
+    type: {
+      type: DataTypes.SMALLINT,
     },
     amount: {
       type: DataTypes.NUMERIC,
@@ -38,11 +38,11 @@ var UserServiceCart = sequelize.define(
       type: DataTypes.SMALLINT,
       defaultValue: 0,
     },
-    filter_choice: {
+    fit_type: {
       type: DataTypes.SMALLINT,
       defaultValue: 0,
     },
-    filter_type_description: {
+    fit_description: {
       type: DataTypes.TEXT,
     },
     tailor_note: {
@@ -52,6 +52,9 @@ var UserServiceCart = sequelize.define(
       type: DataTypes.TEXT,
     },
     repair_location: {
+      type: DataTypes.TEXT,
+    },
+    repair_description: {
       type: DataTypes.TEXT,
     },
     created_at: {
@@ -65,7 +68,7 @@ var UserServiceCart = sequelize.define(
     sequelize,
     modelName: "sarter__users_service_cart",
     tableName: "sarter__users_service_cart",
-    timestamps: false, 
+    timestamps: false,
   }
 );
 
