@@ -11,13 +11,13 @@ exports.createServiceCart = async (req, res) => {
     const item_id = req.body.item_id
     const service_id = req.body.service_id
     const type = req.body.type
-    const fit_type= req.body.fit_type
-    const fit_description=req.body.fit_description
-    const tailor_note=req.body.tailor_note
-    const item_description=req.body.item_description
-    const repair_location=req.body.repair_location
+    const fit_type = req.body.fit_type
+    const fit_description = req.body.fit_description
+    const tailor_note = req.body.tailor_note
+    const item_description = req.body.item_description
+    const repair_location = req.body.repair_location
     const amount = req.body.amount;
-    const repair_description=req.body.repair_description
+    const repair_description = req.body.repair_description
     if (!user_id || !item_id || !service_id || !type || !amount) {
       return res.status(400).send({ HasError: true, Message: "Invalid parameter." })
     } else {
@@ -32,22 +32,8 @@ exports.createServiceCart = async (req, res) => {
           var currentDate = new Date();
           var formattedDate = currentDate.toISOString().slice(0, 19).replace("T", " ")
           const data = {
-            user_id,
-            item_id,
-            service_id,
-            order_id: null,
-            type,
-            amount,
-            service_date_time: null,
-            status: 0,
-            created_at: formattedDate,
-            updated_at: formattedDate,
-            fit_type,
-            fit_description,
-            tailor_note,
-            item_description,
-            repair_location,
-            repair_description
+            user_id, item_id, service_id, order_id: null, type, amount, service_date_time: null, status: 0, created_at: formattedDate, updated_at: formattedDate,
+            fit_type, fit_description, tailor_note, item_description, repair_location, repair_description
           }
           const newService = await cartService.createServiceCart(data)
           var dataJson = {}
@@ -56,6 +42,11 @@ exports.createServiceCart = async (req, res) => {
           dataJson.item_id = newService.item_id
           dataJson.service_id = newService.service_id
           dataJson.type = newService.type
+          if (newService.type == 1) {
+            dataJson.type_name = "ALTER"
+          } else if (newService.type == 2) {
+            dataJson.type_name = "REPAIR"
+          }
           dataJson.amount = newService.amount
           // dataJson.service_date_time = newService.service_date_time
           dataJson.status = newService.status
@@ -77,20 +68,20 @@ exports.createServiceCart = async (req, res) => {
   }
 }
 
-exports.getCart=async(req,res)=>{
+exports.getCart = async (req, res) => {
   try {
-    const user_id=req.query.user_id
-    if(user_id){
+    const user_id = req.query.user_id
+    if (user_id) {
       const user = await Users.findOne({ where: { id: user_id } })
-      if(user){
-        var data=cartService.getCartByUserId(user_id)
-        if(data){
-          return res.status(200).send({ message: "Successfully fetched data", HasError: false,result:data });
+      if (user) {
+        var data = cartService.getCartByUserId(user_id)
+        if (data) {
+          return res.status(200).send({ message: "Successfully fetched data", HasError: false, result: data });
         }
-      }else{
+      } else {
         return res.status(200).send({ message: "This user doesn't exist", HasError: false });
       }
-    }else{
+    } else {
       return res.status(400).send({ message: "Please enter a userId", HasError: true });
     }
   } catch (error) {
