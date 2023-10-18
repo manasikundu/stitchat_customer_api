@@ -106,3 +106,26 @@ exports.removeCart = async (req, res) => {
     return res.status(500).send({ message: "Some thing went wrong.", HasError: true, error: error.message })
   }
 }
+exports.updateCart = async (req, res) => {
+  try {
+    const id = req.body.cart_id
+    const data = req.body
+    delete data['id'];
+    const result = await cartService.updateCart(id, data)
+    if (result[0] != 0) {
+      return res.status(200).send({
+        message: "Successfully Updated.",
+        HasError: false
+      })
+    } else {
+      return res.status(500).send({
+        message: "failed to update",
+        HasError: true
+      })
+    }
+
+  } catch (error) {
+    console.log(error)
+    res.status(500).send({ message: "Something went wrong.", HasError: true })
+  }
+}
