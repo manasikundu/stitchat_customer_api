@@ -12,6 +12,7 @@ const boutiqueAppointmentRouter = require("./router/boutiqueAppointmentRouter")
 const tailorRouter = require("./router/tailorRouter")
 const UserServiceCart = require("./router/userServiceCartRouter")
 const userServiceOrder = require("./router/userServiceOrderRouter")
+const videoInquire = require("./router/videoEnquireRouter")
 
 const bodyParser = require("body-parser");
 app.use(cors());
@@ -38,6 +39,7 @@ app.use("", boutiqueAppointmentRouter)
 app.use("", tailorRouter)
 app.use("", UserServiceCart)
 app.use("", userServiceOrder)
+app.use("", videoInquire)
 
 const port=8000
 app.listen(port,() => {
