@@ -86,6 +86,8 @@ exports.getCart = async (req, res) => {
             var item = await tailorService.getItemDetails(data[i].item_id)
             final_data_json.item_name = item.name
             final_data_json.service_id = data[i].service_id
+            var service=await tailorService.getServiceDetails(data[i].service_id)
+            final_data_json.service_name = service.name
             final_data_json.order_id = data[i].order_id
             final_data_json.type = data[i].type
             final_data_json.amount = data[i].amount
@@ -120,36 +122,34 @@ exports.getCart = async (req, res) => {
 
 exports.removeCart = async (req, res) => {
   try {
-    const id = req.body.cart_id
-    const user_id = req.body.user_id
-    const userId = await Users.findOne({ where: { id: user_id } })
-    if (!userId) {
-      return res.status(200).send({ HasError: true, Message: "User id does not exist." })
-    } else {
-      if (id) {
-      var data = await cartService.getCartById(id)
-      console.log(data)
-      if (data) {
-        if (data.user_id !== userId) {
-          return res.status(400).send({ message: "The provided cart_id does not belong to the specified user.", HasError: true })
-        }
-        if (data) {
-          const result = await cartService.deleteCart(id)
-          if (result != 0) {
-            return res.status(200).send({message: "This item from cart removed sucessfully."})
+    var id = req.body.cart_id
+    var user_id = req.body.user_id
+    if (id && user_id) {
+      const user = await Users.findOne({ where: { id: user_id } })
+      if (user) {
+        var cartData = await cartService.getCartById(id)
+        if (cartData) {
+          if (cartData.user_id == user_id) {
+            const result = await cartService.deleteCart(id, user_id)
+            if (result != 0) {
+              return res.status(200).send({ message: "This item from cart removed sucessfully." })
+            } else {
+              return res.status(500).send({ message: "failed to remove" })
+            }
           } else {
-           return res.status(500).send({message: "failed to remove"})
-          }
-          } else {
-            return res.status(200).send({ message: "This id doesn't exist.", HasError: true })
+            return res.status(400).send({ message: "The provided cart_id does not belong to the specified user.", HasError: true })
           }
         } else {
-          return res.status(400).send({ message: "Enter a Id to delete", HasError: true })
+          return res.status(200).send({ message: "This cart Id doesn't exist.", HasError: true })
         }
+      } else {
+        return res.status(200).send({ HasError: true, Message: "User id does not exist." })
       }
+    } else {
+      return res.status(400).send({ message: "Please enter Id to delete", HasError: true })
     }
-    } catch (error) {
-      return res.status(500).send({ message: "Some thing went wrong.", HasError: true, error: error.message })
+  } catch (error) {
+    return res.status(500).send({ message: "Some thing went wrong.", HasError: true, error: error.message })
   }
 }
 
