@@ -30,7 +30,10 @@ var SarterVideoInquire = sequelize.define(
     },
     date_time: {
       type: DataTypes.DATE,
-    }
+    },
+    enquiry_id: {
+      type: DataTypes.STRING,
+    },
   },
   {
     sequelize,

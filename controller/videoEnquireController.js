@@ -17,14 +17,16 @@ exports.createVideoInquire = async (req, res) => {
         const date_time = req.body.date_time
         const data = {name, email, guest_email, item_id, service_type, note, date_time}
         const newService = await videoInquireService.createVideoInquire(data)
+        var enquiry_id =  "STIVI3526" + newService.id.toString().padStart(3, '0')
         var dataJson = {}
         dataJson.id = newService.id
-        dataJson.user_id = newService.name
-        dataJson.total_amount = newService.email
-        dataJson.address_details = newService.item_id
-        dataJson.address_id = newService.service_type
+        dataJson.name = newService.name
+        dataJson.email = newService.email
+        dataJson.item_id = newService.item_id
+        dataJson.service_type = newService.service_type
         dataJson.note = newService.note
         dataJson.date_time = moment(newService.date_time).format('YYYY-MM-DD HH:mm:ss')
+        dataJson.enquiry_id = enquiry_id
 
         return res.status(200).send({ HasError: false, Message: "Video Inquiry data inserted successfully.", result: dataJson });
 
