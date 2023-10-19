@@ -1,8 +1,14 @@
 const tailorService = require("../service/tailorService")
+const Service = require('../service/userService')
+
 
 exports.itemListForTailor = async (req, res) => {
     try {
         var items = await tailorService.getItemForTailor()
+        var method_name = await Service.getCallingMethodName()
+        var apiEndpointInput = JSON.stringify(req.body)
+        var apiTrack = await Service.trackApi(req.query.user_id,method_name,apiEndpointInput,req.query.device_id,req.query.device_info,req.ip)
+    
         if (items.length > 0) {
             var itemList = items.map(item => ({ item_id: item.id, item_name: item.name }))
             return res.status(200).send({ message: "Item List retrieved successfully.", HasError: false, result: itemList })
@@ -17,6 +23,10 @@ exports.itemListForTailor = async (req, res) => {
 exports.serviceType = async (req, res) => {
     try {
         var item_id = req.query.item_id
+        var method_name = await Service.getCallingMethodName()
+        var apiEndpointInput = JSON.stringify(req.body)
+        var apiTrack = await Service.trackApi(req.query.user_id,method_name,apiEndpointInput,req.query.device_id,req.query.device_info,req.ip)
+    
         if (item_id) {
             var item = await tailorService.getItemDetails(item_id)
             if (item) {

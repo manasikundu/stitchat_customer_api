@@ -3,6 +3,7 @@ const moment = require('moment')
 const Users = require("../model/userModel")
 const VideoInquire = require("../model/videoEnquireModel")
 const categoryItem = require("../model/categoryItemModel")
+const Service = require('../service/userService')
 
 
 
@@ -17,7 +18,10 @@ exports.createVideoInquire = async (req, res) => {
         const date_time = req.body.date_time
         const currentDate = new Date()
         const inputDate = new Date(date_time)
-
+        var method_name = await Service.getCallingMethodName()
+        var apiEndpointInput = JSON.stringify(req.body)
+        var apiTrack = await Service.trackApi(req.query.user_id,method_name,apiEndpointInput,req.query.device_id,req.query.device_info,req.ip)
+        
         if (inputDate < currentDate) {
             return res.status(400).send({ message: "Invalid date_time.", HasError: true })
         } else {

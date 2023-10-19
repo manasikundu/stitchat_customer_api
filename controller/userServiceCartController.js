@@ -4,6 +4,8 @@ const moment = require('moment')
 const categoryItem = require("../model/categoryItemModel")
 const Users = require("../model/userModel")
 const tailorService = require("../service/tailorService")
+const Service = require('../service/userService')
+
 
 
 exports.createServiceCart = async (req, res) => {
@@ -19,6 +21,10 @@ exports.createServiceCart = async (req, res) => {
     const repair_location = req.body.repair_location
     const amount = req.body.amount;
     const repair_description = req.body.repair_description
+    var method_name = await Service.getCallingMethodName()
+    var apiEndpointInput = JSON.stringify(req.body)
+    var apiTrack = await Service.trackApi(req.query.user_id,method_name,apiEndpointInput,req.query.device_id,req.query.device_info,req.ip)
+        
     if (!user_id || !item_id || !service_id || !type || !amount) {
       return res.status(400).send({ HasError: true, Message: "Invalid parameter." })
     } else {
@@ -72,6 +78,10 @@ exports.createServiceCart = async (req, res) => {
 exports.getCart = async (req, res) => {
   try {
     const user_id = req.query.user_id
+    var method_name = await Service.getCallingMethodName()
+    var apiEndpointInput = JSON.stringify(req.body)
+    var apiTrack = await Service.trackApi(req.query.user_id,method_name,apiEndpointInput,req.query.device_id,req.query.device_info,req.ip)
+        
     if (user_id) {
       const user = await Users.findOne({ where: { id: user_id } })
       if (user) {
@@ -126,6 +136,10 @@ exports.removeCart = async (req, res) => {
   try {
     var id = req.body.cart_id
     var user_id = req.body.user_id
+    var method_name = await Service.getCallingMethodName()
+    var apiEndpointInput = JSON.stringify(req.body)
+    var apiTrack = await Service.trackApi(req.query.user_id,method_name,apiEndpointInput,req.query.device_id,req.query.device_info,req.ip)
+        
     if (id && user_id) {
       const user = await Users.findOne({ where: { id: user_id } })
       if (user) {
@@ -158,6 +172,10 @@ exports.removeCart = async (req, res) => {
 exports.updateCart = async (req, res) => {
   try {
     const requestData = req.body;
+    var method_name = await Service.getCallingMethodName()
+    var apiEndpointInput = JSON.stringify(req.body)
+    var apiTrack = await Service.trackApi(req.query.user_id,method_name,apiEndpointInput,req.query.device_id,req.query.device_info,req.ip)
+        
     const results = await Promise.all(
       requestData.map(async (updateData) => {
         const id = updateData.cart_id;
