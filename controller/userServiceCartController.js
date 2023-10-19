@@ -77,31 +77,31 @@ exports.getCart = async (req, res) => {
       if (user) {
         var data = await cartService.getCartByUserId(user_id)
         if (data.length != 0) {
-          var final_data=[]
-          for(var i in data){
-            var final_data_json={}
-            final_data_json.id=data[i].id
-            final_data_json.user_id=data[i].user_id
-            final_data_json.item_id=data[i].item_id
+          var final_data = []
+          for (var i in data) {
+            var final_data_json = {}
+            final_data_json.id = data[i].id
+            final_data_json.user_id = data[i].user_id
+            final_data_json.item_id = data[i].item_id
             var item = await tailorService.getItemDetails(data[i].item_id)
-            final_data_json.item_name=item.name
-            final_data_json.service_id=data[i].service_id
-            final_data_json.order_id=data[i].order_id
-            final_data_json.type=data[i].type
-            final_data_json.amount=data[i].amount
-            final_data_json.service_date_time=data[i].service_date_time
-            final_data_json.status=data[i].status
-            final_data_json.fit_type=data[i].fit_type?data[i].fit_type:0
-            final_data_json.fit_description=data[i].fit_description?data[i].fit_description:''
-            final_data_json.tailor_note=data[i].tailor_note
-            final_data_json.item_description=data[i].item_description
-            final_data_json.repair_location=data[i].repair_location?data[i].repair_location:''
-            final_data_json.repair_description=data[i].repair_description?data[i].repair_description:''
-            final_data_json.created_at=data[i].created_at
-            final_data_json.updated_at=data[i].updated_at
+            final_data_json.item_name = item.name
+            final_data_json.service_id = data[i].service_id
+            final_data_json.order_id = data[i].order_id
+            final_data_json.type = data[i].type
+            final_data_json.amount = data[i].amount
+            final_data_json.service_date_time = data[i].service_date_time
+            final_data_json.status = data[i].status
+            final_data_json.fit_type = data[i].fit_type ? data[i].fit_type : 0
+            final_data_json.fit_description = data[i].fit_description ? data[i].fit_description : ''
+            final_data_json.tailor_note = data[i].tailor_note
+            final_data_json.item_description = data[i].item_description
+            final_data_json.repair_location = data[i].repair_location ? data[i].repair_location : ''
+            final_data_json.repair_description = data[i].repair_description ? data[i].repair_description : ''
+            final_data_json.created_at = data[i].created_at
+            final_data_json.updated_at = data[i].updated_at
             final_data.push(final_data_json)
           }
-      
+
           const sub_total = data.reduce((total, num) => total + parseFloat(num.amount), 0)
           const delivery_fee = 50
           const total = parseFloat(sub_total) + parseFloat(delivery_fee)
@@ -120,16 +120,25 @@ exports.getCart = async (req, res) => {
 
 exports.removeCart = async (req, res) => {
   try {
-    const id = req.body.id
-    const result = await cartService.deleteCart(id)
-    if (result == 0) {
-      return res.status(200).send({
-        message: "Successfully Proceed data",
-      })
+    const id = req.body.cart_id
+    if (id) {
+      var data = await cartService.getCartById(id)
+      if (data) {
+        const result = await cartService.deleteCart(id)
+        if (result != 0) {
+          return res.status(200).send({
+            message: "This item from cart removed sucessfully.",
+          })
+        } else {
+          return res.status(500).send({
+            message: "failed to remove",
+          })
+        }
+      } else {
+        return res.status(200).send({ message: "This id doesn't exist.", HasError: true })
+      }
     } else {
-      return res.status(500).send({
-        message: "failed to remove",
-      })
+      return res.status(400).send({ message: "Enter a Id to delete", HasError: true })
     }
   } catch (error) {
     return res.status(500).send({ message: "Some thing went wrong.", HasError: true, error: error.message })
