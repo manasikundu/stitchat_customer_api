@@ -4,7 +4,6 @@ const Users = require("../model/userModel")
 const UsersAddress = require("../model/userAddressModel")
 const Service = require('../service/userService')
 
-
 exports.createServiceOrder = async (req, res) => {
     try {
         const serviceOrdersData = req.body
@@ -69,5 +68,35 @@ exports.createServiceOrder = async (req, res) => {
       return res.status(500).send({ message: "Some error occurred.", HasError: true, error: error.message })
     }
 }
-  
-  
+
+exports.orderHistory = async (req, res) => {
+    try {
+        const user_id = req.body.user_id
+        const order_id = req.body.order_id
+        var method_name = await Service.getCallingMethodName()
+        var apiEndpointInput = JSON.stringify(req.body)
+        var apiTrack = await Service.trackApi(user_id,method_name,apiEndpointInput,req.query.device_id,req.query.device_info,req.ip)
+        const orderHistory = await cartServiceOrder.getCartHistory(user_id, order_id)
+        if (orderHistory.length === 0) {
+            return res.status(200).send({ message: "No matching orders found", HasError: false, result: [] })
+        } else {
+            const final_data = []
+            for (var item of orderHistory) {
+                const orderData = {}
+                orderData.order_id = item.id || 0
+                orderData.user_id = item.user_id || 0
+                orderData.total_amount = item.total_amount || 0
+                orderData.address_details = item.address_details || ''
+                orderData.address_id = item.address_id || 0
+                orderData.status = item.status || 0
+                orderData.created_at = moment(item.created_at).format('YYYY-MM-DD HH:mm:ss') || ''
+                final_data.push(orderData);
+            }
+            return res.status(200).send({ message: "Successfully fetched order history", HasError: false, result: final_data })
+        }
+    } catch (error) {
+        console.log(error)
+        return res.status(500).send({ message: "Some error occurred.", HasError: true, error: error.message })
+    }
+}
+
