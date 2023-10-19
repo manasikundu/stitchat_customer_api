@@ -121,27 +121,35 @@ exports.getCart = async (req, res) => {
 exports.removeCart = async (req, res) => {
   try {
     const id = req.body.cart_id
-    if (id) {
-      var data = await cartService.getCartById(id)
-      if (data) {
-        const result = await cartService.deleteCart(id)
-        if (result != 0) {
-          return res.status(200).send({
-            message: "This item from cart removed sucessfully.",
-          })
-        } else {
-          return res.status(500).send({
-            message: "failed to remove",
-          })
-        }
-      } else {
-        return res.status(200).send({ message: "This id doesn't exist.", HasError: true })
-      }
+    const user_id = req.body.user_id
+    const userId = await Users.findOne({ where: { id: user_id } })
+    if (!userId) {
+      return res.status(200).send({ HasError: true, Message: "User id does not exist." })
     } else {
-      return res.status(400).send({ message: "Enter a Id to delete", HasError: true })
+      if (id) {
+      var data = await cartService.getCartById(id)
+      console.log(data)
+      if (data) {
+        if (data.user_id !== userId) {
+          return res.status(400).send({ message: "The provided cart_id does not belong to the specified user.", HasError: true })
+        }
+        if (data) {
+          const result = await cartService.deleteCart(id)
+          if (result != 0) {
+            return res.status(200).send({message: "This item from cart removed sucessfully."})
+          } else {
+           return res.status(500).send({message: "failed to remove"})
+          }
+          } else {
+            return res.status(200).send({ message: "This id doesn't exist.", HasError: true })
+          }
+        } else {
+          return res.status(400).send({ message: "Enter a Id to delete", HasError: true })
+        }
+      }
     }
-  } catch (error) {
-    return res.status(500).send({ message: "Some thing went wrong.", HasError: true, error: error.message })
+    } catch (error) {
+      return res.status(500).send({ message: "Some thing went wrong.", HasError: true, error: error.message })
   }
 }
 

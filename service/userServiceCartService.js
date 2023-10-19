@@ -14,8 +14,8 @@ exports.getCartByUserId = async (user_id) => {
   return result
 }
 
-exports.deleteCart = async (id) => {
-  const result = await UserServiceCart.destroy({ where: { id: id } })
+exports.deleteCart = async (id, user_id) => {
+  const result = await UserServiceCart.destroy({ where: { id: id, user_id: user_id } })
   return result
 }
 exports.updateCart = async (id, data) => {

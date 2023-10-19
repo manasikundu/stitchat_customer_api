@@ -15,15 +15,15 @@ exports.createVideoInquire = async (req, res) => {
         const service_type = req.body.service_type
         const note = req.body.note
         const date_time = req.body.date_time
-        const currentDate = new Date();
-        const inputDate = new Date(date_time);
+        const currentDate = new Date()
+        const inputDate = new Date(date_time)
 
         if (inputDate < currentDate) {
-            return res.status(400).send({ message: "Invalid date_time.", HasError: true });
+            return res.status(400).send({ message: "Invalid date_time.", HasError: true })
         } else {
-            const data = { name, email, guest_email, item_id, service_type, note, date_time };
-            const newService = await videoInquireService.createVideoInquire(data);
-            var enquiry_id = "STIVI3526" + newService.id.toString().padStart(3, '0');
+            const data = { name, email, guest_email, item_id, service_type, note, date_time }
+            const newService = await videoInquireService.createVideoInquire(data)
+            var enquiry_id = "STIVI3526" + newService.id.toString().padStart(3, '0')
             var dataJson = {}
             dataJson.id = newService.id ? newService.id : 0
             dataJson.name = newService.name ? newService.name : ''
