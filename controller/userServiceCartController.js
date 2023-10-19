@@ -90,10 +90,12 @@ exports.getCart = async (req, res) => {
             final_data_json.service_name = service.name
             final_data_json.order_id = data[i].order_id
             final_data_json.type = data[i].type
+            final_data_json.type_name = data[i].type === 1 ? "Alter" : (data[i].type === 2 ? "Repair" : '');
             final_data_json.amount = data[i].amount
             final_data_json.service_date_time = data[i].service_date_time
             final_data_json.status = data[i].status
             final_data_json.fit_type = data[i].fit_type ? data[i].fit_type : 0
+            final_data_json.fit_choice = data[i].fit_type === 1 ? "Major" : (data[i].fit_type === 2 ? "Match" : (data[i].fit_type === 3 ? "Pin" : ''));
             final_data_json.fit_description = data[i].fit_description ? data[i].fit_description : ''
             final_data_json.tailor_note = data[i].tailor_note
             final_data_json.item_description = data[i].item_description
