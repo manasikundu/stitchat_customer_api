@@ -134,9 +134,9 @@ exports.removeCart = async (req, res) => {
           if (cartData.user_id == user_id) {
             const result = await cartService.deleteCart(id, user_id)
             if (result != 0) {
-              return res.status(200).send({ message: "This item from cart removed sucessfully." })
+              return res.status(200).send({ message: "This item from cart removed sucessfully." ,HasError: false})
             } else {
-              return res.status(500).send({ message: "failed to remove" })
+              return res.status(500).send({ message: "failed to remove",HasError: true })
             }
           } else {
             return res.status(400).send({ message: "The provided cart_id does not belong to the specified user.", HasError: true })
