@@ -10,7 +10,7 @@ exports.createServiceCart = async (cartData) => {
     }
 }
 exports.getCartByUserId = async (user_id) => {
-  const result = await UserServiceCart.findAll({ where: { user_id: user_id } })
+  const result = await UserServiceCart.findAll({ where: { user_id: user_id },order: [['id', 'ASC']] })
   return result
 }
 
