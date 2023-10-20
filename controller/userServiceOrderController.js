@@ -17,11 +17,14 @@ exports.createServiceOrder = async (req, res) => {
             var hasError = false
             const processOrder = async (orderData) => {
                 const user_id = orderData.user_id
-                const total_amount = orderData.total_amount
-                const address_details = orderData.address_details
+                const name = orderData.name
+                const email = orderData.email
+                const mobile_number = orderData.mobile_number
                 const address_id = orderData.address_id
+                // const status = orderData.status
+
   
-            if (!user_id || !total_amount || !address_details || !address_id) {
+            if (!user_id || !name || !email || mobile_number || !address_id) {
                 results.push({ HasError: true, Message: "Invalid parameter." })
                 hasError = true
             } else {
@@ -85,8 +88,9 @@ exports.orderHistory = async (req, res) => {
                 const orderData = {}
                 orderData.order_id = item.id || 0
                 orderData.user_id = item.user_id || 0
-                orderData.total_amount = item.total_amount || 0
-                orderData.address_details = item.address_details || ''
+                orderData.name = item.name || 0
+                orderData.email = item.email || ''
+                orderData.mobile_number = item.mobile_number || ''
                 orderData.address_id = item.address_id || 0
                 orderData.status = item.status || 0
                 orderData.created_at = moment(item.created_at).format('YYYY-MM-DD HH:mm:ss') || ''

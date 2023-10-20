@@ -1,31 +1,34 @@
-const DataTypes = require("sequelize");
+const { DataTypes } = require("sequelize");
 const sequelize = require("../dbConnection");
 
-var UserServiceOrder = sequelize.define(
+const UserServiceOrder = sequelize.define(
   "sarter__users_service_order",
   {
     id: {
       type: DataTypes.INTEGER,
       primaryKey: true,
       autoIncrement: true,
+      allowNull: false,
     },
     user_id: {
       type: DataTypes.INTEGER,
       defaultValue: 0,
     },
-    total_amount: {
-      type: DataTypes.DECIMAL(10, 2),
-      defaultValue: 0,
+    name: {
+      type: DataTypes.STRING,
     },
-    address_details: {
-      type: DataTypes.TEXT,
+    email: {
+      type: DataTypes.STRING,
+    },
+    mobile_number: {
+      type: DataTypes.STRING,
     },
     address_id: {
       type: DataTypes.INTEGER,
+      allowNull: false,
     },
     status: {
       type: DataTypes.SMALLINT,
-      defaultValue: 0,
     },
     created_at: {
       type: DataTypes.DATE,
@@ -40,6 +43,6 @@ var UserServiceOrder = sequelize.define(
     tableName: "sarter__users_service_order",
     timestamps: false,
   }
-)
+);
 
 module.exports = UserServiceOrder;
