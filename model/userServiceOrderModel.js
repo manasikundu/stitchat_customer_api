@@ -36,6 +36,9 @@ const UserServiceOrder = sequelize.define(
     updated_at: {
       type: DataTypes.DATE,
     },
+    order_id: {
+      type: DataTypes.STRING,
+    },
   },
   {
     sequelize,

@@ -1,34 +1,33 @@
-const UserServiceOrder = require("../model/userServiceOrderModel")
+const Order = require("../model/userServiceOrderModel")
 
 
-exports.createServiceCart = async (cartData) => {
-    try {
-        var serviceCartOrder = await UserServiceOrder.create(cartData)
-        return serviceCartOrder
-    } catch (error) {
-        console.log(error)
-        return error
-    }
+exports.createOrder = async (data) => {
+  var result = await Order.create(data)
+  return result
+}
+exports.updateOrder = async (id,data) => {
+  var result = await Order.update(data, { where: { id: id } ,returning:true})
+  return result
 }
 
 exports.getCartHistory = async (user_id, order_id) => {
   try {
     if (!user_id && !order_id) {
-      const orders = await UserServiceOrder.findAll()
+      const orders = await Order.findAll()
       return orders
     } else if (user_id && !order_id) {
-      const orders = await UserServiceOrder.findAll({where: { user_id: user_id }})
+      const orders = await Order.findAll({ where: { user_id: user_id } })
       return orders
     } else if (!user_id && order_id) {
-      const orders = await UserServiceOrder.findAll({where: { id:order_id }})
+      const orders = await Order.findAll({ where: { id: order_id } })
       return orders
     } else {
-      const orders = await UserServiceOrder.findAll({where: { user_id: user_id, id: order_id }})
+      const orders = await Order.findAll({ where: { user_id: user_id, id: order_id } })
       return orders
     }
-    } catch (error) {
-      console.log(error)
-      return error 
-    }
+  } catch (error) {
+    console.log(error)
+    return error
+  }
 }
 

@@ -22,6 +22,10 @@ exports.updateCart = async (id, data) => {
   const result = await UserServiceCart.update(data, { where: { id: id } ,returning:true})
   return result
 }
+exports.updateCartByUserId = async (user_id, data) => {
+  const result = await UserServiceCart.update(data, { where: { user_id: user_id } ,returning:true})
+  return result
+}
 exports.getCartById = async (id) => {
   const result = await UserServiceCart.findOne({ where: { id: id } })
   return result

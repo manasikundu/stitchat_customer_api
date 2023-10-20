@@ -21,7 +21,7 @@ var UserServiceCart = sequelize.define(
       type: DataTypes.INTEGER,
     },
     order_id: {
-      type: DataTypes.INTEGER,
+      type: DataTypes.STRING,
       defaultValue: 0,
     },
     type: {
