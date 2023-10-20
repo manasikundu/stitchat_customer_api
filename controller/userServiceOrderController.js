@@ -27,11 +27,16 @@ exports.createOrder = async (req, res) => {
                     const day = today.getDate();
                     const orderId = "STIAR" + day + month + year + newOrder.id
                     const updateOrderId = await OrderService.updateOrder(newOrder.id, { order_id: orderId })
-                    const updateOrderIdInCart = await cartService.updateCartByUserId(newOrder.user_id, { order_id: orderId })
-                    if (updateOrderIdInCart != 0) {
-                        return res.status(200).send({ message: "Order Placed Sucessfully", HasError: false })
-                    } else {
-                        return res.status(500).send({ message: "failed to update in cart.", HasError: true })
+                    var cart = await cartService.getCart(user_id)
+                    if(cart.length!=0){
+                        const updateOrderIdInCart = await cartService.updateCartByUserId(newOrder.user_id, { order_id: orderId })
+                        if (updateOrderIdInCart != 0) {
+                            return res.status(200).send({ message: "Order Placed Sucessfully", HasError: false })
+                        } else {
+                            return res.status(500).send({ message: "failed to update in cart.", HasError: true })
+                        }
+                    }else{
+                        return res.status(200).send({ message: "Please add item in cart to place order", HasError: false })
                     }
                 } else {
                     return res.status(500).send({ message: "Failed to create order", HasError: true });

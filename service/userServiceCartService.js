@@ -13,7 +13,10 @@ exports.getCartByUserId = async (user_id) => {
   const result = await UserServiceCart.findAll({ where: { user_id: user_id },order: [['id', 'ASC']] })
   return result
 }
-
+exports.getCart = async (user_id) => {
+  const result = await UserServiceCart.findAll({ where: { user_id: user_id ,order_id:null},order: [['id', 'ASC']] })
+  return result
+}
 exports.deleteCart = async (id, user_id) => {
   const result = await UserServiceCart.destroy({ where: { id: id, user_id: user_id } })
   return result
