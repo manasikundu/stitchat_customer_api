@@ -96,7 +96,7 @@ exports.getCart = async (req, res) => {
             var item = await tailorService.getItemDetails(data[i].item_id)
             final_data_json.item_name = item.name
             final_data_json.service_id = data[i].service_id
-            var service=await tailorService.getServiceDetails(data[i].service_id)
+            var service = await tailorService.getServiceDetails(data[i].service_id)
             final_data_json.service_name = service.name
             final_data_json.order_id = data[i].order_id
             final_data_json.type = data[i].type
@@ -148,9 +148,9 @@ exports.removeCart = async (req, res) => {
           if (cartData.user_id == user_id) {
             const result = await cartService.deleteCart(id, user_id)
             if (result != 0) {
-              return res.status(200).send({ message: "This item from cart removed sucessfully." ,HasError: false})
+              return res.status(200).send({ message: "This item from cart removed sucessfully.", HasError: false })
             } else {
-              return res.status(500).send({ message: "failed to remove",HasError: true })
+              return res.status(500).send({ message: "failed to remove", HasError: true })
             }
           } else {
             return res.status(400).send({ message: "The provided cart_id does not belong to the specified user.", HasError: true })
@@ -171,33 +171,57 @@ exports.removeCart = async (req, res) => {
 
 exports.updateCart = async (req, res) => {
   try {
-    const requestData = req.body;
-    var method_name = await Service.getCallingMethodName()
-    var apiEndpointInput = JSON.stringify(req.body)
-    var apiTrack = await Service.trackApi(req.query.user_id,method_name,apiEndpointInput,req.query.device_id,req.query.device_info,req.ip)
-        
-    const results = await Promise.all(
-      requestData.map(async (updateData) => {
-        const id = updateData.cart_id;
-        const data = { ...updateData };
-        delete data['cart_id'];
-        const result = await cartService.updateCart(id, data);
-        return result[0] !== 0;
-      })
-    );
-
-    const successCount = results.filter((result) => result).length;
-    if (successCount === requestData.length) {
-      return res.status(200).send({
-        message: "All Carts Successfully Updated.",
-        HasError: false,
-      });
+    var id = req.body.cart_id
+    var user_id = req.body.user_id
+    if (id && user_id) {
+      const user = await Users.findOne({ where: { id: user_id } })
+      if (user) {
+        var cartData = await cartService.getCartById(id)
+        if (cartData) {
+          if (cartData.user_id == user_id) {
+            const data = req.body;
+            delete data['id'];
+            const result = await cartService.updateCart(id, data)
+            if (result != 0) {
+              return res.status(200).send({ message: "Cart updated sucessfully", HasError: false })
+            } else {
+              return res.status(500).send({ message: "failed to update", HasError: true })
+            }
+          } else {
+            return res.status(400).send({ message: "The provided cart_id does not belong to the specified user.", HasError: true })
+          }
+        } else {
+          return res.status(200).send({ message: "This cart Id doesn't exist.", HasError: true })
+        }
+      } else {
+        return res.status(200).send({ HasError: true, Message: "User id does not exist." })
+      }
     } else {
-      return res.status(500).send({
-        message: "Some Carts failed to update.",
-        HasError: true,
-      });
+      return res.status(400).send({ message: "Please enter Id to update", HasError: true })
     }
+    // const requestData = req.body;
+    // const results = await Promise.all(
+    //   requestData.map(async (updateData) => {
+    //     const id = updateData.cart_id;
+    //     const data = { ...updateData };
+    //     delete data['cart_id'];
+    //     const result = await cartService.updateCart(id, data);
+    //     return result[0] !== 0;
+    //   })
+    // );
+
+    // const successCount = results.filter((result) => result).length;
+    // if (successCount === requestData.length) {
+    //   return res.status(200).send({
+    //     message: "All Carts Successfully Updated.",
+    //     HasError: false,
+    //   });
+    // } else {
+    //   return res.status(500).send({
+    //     message: "Some Carts failed to update.",
+    //     HasError: true,
+    //   });
+    // }
   } catch (error) {
     console.log(error);
     res.status(500).send({ message: "Something went wrong.", HasError: true });
