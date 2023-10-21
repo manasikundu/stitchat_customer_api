@@ -85,7 +85,7 @@ exports.getCart = async (req, res) => {
     if (user_id) {
       const user = await Users.findOne({ where: { id: user_id } })
       if (user) {
-        var data = await cartService.getCartByUserId(user_id)
+        var data = await cartService.getCart(user_id)
         if (data.length != 0) {
           var final_data = []
           for (var i in data) {
@@ -120,15 +120,17 @@ exports.getCart = async (req, res) => {
           const delivery_fee = 50
           const total = parseFloat(sub_total) + parseFloat(delivery_fee)
           return res.status(200).send({ message: "Successfully fetched data", HasError: false, result: { data: final_data, sub_total: sub_total, delivery_fee: delivery_fee, total: total } });
+        } else {
+          return res.status(200).send({ message: "No data available", HasError: false, result: { data: [] } })
         }
       } else {
-        return res.status(200).send({ message: "This user doesn't exist", HasError: false });
+        return res.status(200).send({ message: "This user doesn't exist", HasError: false })
       }
     } else {
-      return res.status(400).send({ message: "Please enter a userId", HasError: true });
+      return res.status(400).send({ message: "Please enter a userId", HasError: true })
     }
   } catch (error) {
-    return res.status(500).send({ message: "Some error occurred.", HasError: true, error: error.message });
+    return res.status(500).send({ message: "Some error occurred.", HasError: true, error: error.message })
   }
 }
 
@@ -140,7 +142,7 @@ exports.removeCart = async (req, res) => {
     var apiEndpointInput = JSON.stringify(req.body)
     var apiTrack = await Service.trackApi(req.query.user_id,method_name,apiEndpointInput,req.query.device_id,req.query.device_info,req.ip)
         
-    if (id && user_id) {
+    if (id && user_id)  {
       const user = await Users.findOne({ where: { id: user_id } })
       if (user) {
         var cartData = await cartService.getCartById(id)
