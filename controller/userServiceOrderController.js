@@ -16,13 +16,14 @@ exports.createOrder = async (req, res) => {
         var currentDate = new Date();
         var formattedDate = currentDate.toISOString().slice(0, 19).replace("T", " ")
         const coupon_id = req.body.coupon_id || 0
-        const coupon_code = req.body.coupon_code || 0
+        const coupon_code = req.body.coupon_code || ''
         const delivery_price = req.body.delivery_price || 0
         const sum_amount = req.body.sum_amount || 0
         const discount_price = req.body.discount_price || 0
         const extra_charge = req.body.extra_charge || 0
-        const total_price = req.body.total_price || 0
-        const data = { user_id, name, email, mobile_number, address_id, status, created_at: formattedDate, updated_at: formattedDate, coupon_id, coupon_code, delivery_price, sum_amount, discount_price, extra_charge, total_price }
+        const calculatedTotalPrice = delivery_price + sum_amount + extra_charge - discount_price
+        // const total_price = req.body.total_price || 0
+        const data = { user_id, name, email, mobile_number, address_id, status, created_at: formattedDate, updated_at: formattedDate, coupon_id, coupon_code, delivery_price, sum_amount, discount_price, extra_charge, total_price: calculatedTotalPrice }
         if (req.body.user_id) {
             const user = await Users.findOne({ where: { id: user_id } })
             if (user) {
@@ -65,24 +66,32 @@ exports.createOrder = async (req, res) => {
 exports.orderHistory = async (req, res) => {
     try {
         const user_id = req.body.user_id
-        const order_id = req.body.order_id
+        const id = req.body.id
         var method_name = await Service.getCallingMethodName()
         var apiEndpointInput = JSON.stringify(req.body)
         var apiTrack = await Service.trackApi(user_id, method_name, apiEndpointInput, req.query.device_id, req.query.device_info, req.ip)
-        const orderHistory = await OrderService.getCartHistory(user_id, order_id)
+        const orderHistory = await OrderService.getCartHistory(user_id, id)
         if (orderHistory.length === 0) {
             return res.status(200).send({ message: "No matching orders found", HasError: false, result: [] })
         } else {
             const final_data = []
             for (var item of orderHistory) {
                 const orderData = {}
-                orderData.order_id = item.id || 0
+                orderData.id = item.id || 0
                 orderData.user_id = item.user_id || 0
                 orderData.name = item.name || 0
                 orderData.email = item.email || ''
                 orderData.mobile_number = item.mobile_number || ''
                 orderData.address_id = item.address_id || 0
                 orderData.status = item.status || 0
+                orderData.order_id = item.order_id || 0
+                orderData.coupon_id = item.coupon_id || 0
+                orderData.coupon_code = item.coupon_code || ''
+                orderData.delivery_price = item.delivery_price || 0
+                orderData.sum_amount = item.sum_amount || 0
+                orderData.discount_price = item.discount_price || 0
+                orderData.extra_charge = item.extra_charge || 0
+                orderData.total_price = item.total_price || 0
                 orderData.created_at = moment(item.created_at).format('YYYY-MM-DD HH:mm:ss') || ''
                 final_data.push(orderData);
             }
