@@ -36,33 +36,33 @@ const UserServiceOrder = sequelize.define(
     updated_at: {
       type: DataTypes.DATE,
     },
-    // order_id: {
-    //   type: DataTypes.STRING,
-    // },
-    // order_id: {
-    //   type: DataTypes.STRING,
-    // },
-    // coupon_id: {
-    //   type: DataTypes.INTEGER,
-    // },
-    // coupon_code: {
-    //   type: DataTypes.STRING,
-    // },
-    // delivery_price: {
-    //   type: DataTypes.DECIMAL(10, 2),
-    // },
-    // sum_amount: {
-    //   type: DataTypes.DECIMAL(10, 2),
-    // },
-    // discount_price: {
-    //   type: DataTypes.DECIMAL(10, 2),
-    // },
-    // extra_charge: {
-    //   type: DataTypes.DECIMAL(10, 2),
-    // },
-    // total_price: {
-    //   type: DataTypes.DECIMAL(10, 2),
-    // },
+    order_id: {
+      type: DataTypes.STRING,
+    },
+    order_id: {
+      type: DataTypes.STRING,
+    },
+    coupon_id: {
+      type: DataTypes.INTEGER,
+    },
+    coupon_code: {
+      type: DataTypes.STRING,
+    },
+    delivery_price: {
+      type: DataTypes.DECIMAL(10, 2),
+    },
+    sum_amount: {
+      type: DataTypes.DECIMAL(10, 2),
+    },
+    discount_price: {
+      type: DataTypes.DECIMAL(10, 2),
+    },
+    extra_charge: {
+      type: DataTypes.DECIMAL(10, 2),
+    },
+    total_price: {
+      type: DataTypes.DECIMAL(10, 2),
+    },
   },
   {
     sequelize,
