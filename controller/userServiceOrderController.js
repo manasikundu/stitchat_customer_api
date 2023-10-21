@@ -42,7 +42,7 @@ exports.createOrder = async (req, res) => {
                             // const orderDetails = await OrderService.orderDetails(newOrder.id)
                             return res.status(200).send({ message: "Order Placed Sucessfully", HasError: false ,result: newOrder})
                         } else {
-                            return res.status(500).send({ message: "failed to update in cart.", HasError: true })
+                            return res.status(500).send({ message: "failed to update in cart.", HasError: true, result: {} })
                         }
                     } else {
                         return res.status(200).send({ message: "Please add item in cart to place order", HasError: false })
