@@ -2,14 +2,17 @@ const Order = require("../model/userServiceOrderModel")
 
 
 exports.createOrder = async (data) => {
-  var result = await Order.create(data)
+  var result = await Order.create(data,{ returning: true })
   return result
 }
 exports.updateOrder = async (id,data) => {
   var result = await Order.update(data, { where: { id: id } ,returning:true})
   return result
 }
-
+exports.orderDetails = async (id) => {
+  var result = await Order.findOne({ where: { id: id } })
+  return result
+}
 exports.getCartHistory = async (user_id, order_id) => {
   try {
     if (!user_id && !order_id) {
