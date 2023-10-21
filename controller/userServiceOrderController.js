@@ -15,8 +15,8 @@ exports.createOrder = async (req, res) => {
         const status = 0
         var currentDate = new Date();
         var formattedDate = currentDate.toISOString().slice(0, 19).replace("T", " ")
-        const coupon_id = req.body.copon_id || 0
-        const coupon_code = req.body.copon_code || 0
+        const coupon_id = req.body.coupon_id || 0
+        const coupon_code = req.body.coupon_code || 0
         const delivery_price = req.body.delivery_price || 0
         const sum_amount = req.body.sum_amount || 0
         const discount_price = req.body.discount_price || 0
