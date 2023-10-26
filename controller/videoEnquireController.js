@@ -26,16 +26,21 @@ exports.createVideoInquire = async (req, res) => {
             return res.status(400).send({ message: "Invalid date_time.", HasError: true })
         } else {
             const data = { name, email, guest_email, item_id, service_type, note, date_time }
-            const newService = await videoInquireService.createVideoInquire(data)
+            // const parsedDateTime = moment(date_time, ['Y-M-D H:m:s', 'D-M-YY H:m:s', 'M/D/Y H:m:s', 'Y/M/D H:m:s'], true);
+            const formattedDate = moment(date_time).format('YYYY-MM-DD HH:mm:ss')
+
+            const newService = await videoInquireService.createVideoInquire({ ...data, date_time: formattedDate })
+            // const newService = await videoInquireService.createVideoInquire(data)
             var enquiry_id = "STIVI3526" + newService.id.toString().padStart(3, '0')
+            newService.enquiry_id = enquiry_id
             var dataJson = {}
             dataJson.id = newService.id ? newService.id : 0
             dataJson.name = newService.name ? newService.name : ''
             dataJson.email = newService.email ? newService.email : ''
             dataJson.item_id = newService.item_id ? newService.item_id : ''
             dataJson.service_type = newService.service_type ? newService.service_type : ''
-            dataJson.note = newService.note ? newService : ''
-            dataJson.date_time = moment(newService.date_time).format('YYYY-MM-DD HH:mm:ss') ? moment(newService.date_time).format('YYYY-MM-DD HH:mm:ss') : ''
+            dataJson.note = newService.note ? newService.note : ''
+            dataJson.date_time = formattedDate ? formattedDate : ''
             dataJson.enquiry_id = enquiry_id ?newService.enquiry_id : ''
 
             return res.status(200).send({ HasError: false, Message: "Video Inquiry data inserted successfully.", result: dataJson });
