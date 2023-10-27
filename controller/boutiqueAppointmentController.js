@@ -112,8 +112,8 @@ exports.boutiqueSlot = async (req, res) => {
             return {
                 day: weekDay,
                 dayName: dayName,
-                start_time: formatTime(startTime),
-                end_time: formatTime(endTime),
+                start_time: startTime,
+                end_time: endTime,
                 slot_time: resultTime,
                 availibility: availabilityText
             };
