@@ -22,7 +22,7 @@ exports.createCoupon = async (req, res) => {
         var method_name = await Service.getCallingMethodName()
         var apiEndpointInput = JSON.stringify(req.body)
         var apiTrack = await Service.trackApi(req.query.user_id,method_name,apiEndpointInput,req.query.device_id,req.query.device_info,req.ip)
-        if (!coupon_code || !coupon_name || !coupon_type || !minimum_order_amount || !start_date || !end_date || status) {
+        if (!coupon_code || !coupon_name || !coupon_type || !minimum_order_amount || !start_date || !end_date ) {
             return res.status(500).send({HasError: true, message: "Invalid parameter." })
         } else {
             const data = { coupon_code, coupon_name, description, coupon_type, minimum_order_amount, discount_amount, start_date, end_date, location, max_users, user_count, status }
