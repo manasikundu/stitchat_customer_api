@@ -70,7 +70,12 @@ exports.orderList = async (req, res) => {
                 orderData.discount_price = item.discount_price || 0
                 orderData.extra_charge = item.extra_charge || 0
                 orderData.total_payable_amount = item.total_price || 0
-                orderData.created_at = moment(item.created_at).format('YYYY-MM-DD HH:mm:ss') || ''
+                orderData.order_datetime = moment(item.created_at).format('YYYY-MM-DD HH:mm:ss') || ''
+                orderData.boutique_name = ''
+                orderData.boutique_address = ''
+                orderData.boutique_city = ''
+                orderData.boutique_area = ''
+                orderData.boutique_landmark = ''
                 final_data.push(orderData);
             }
     var boutiqueOrders = await orderService.boutiqueOrder(user_id);
