@@ -83,7 +83,7 @@ exports.bookBoutiqueAppointment = async (req, res) => {
       return res.status(500).json({
         HasError: true,
         Message: 'Failed to book appointment'
-      });
+      })
     }
 }
 
