@@ -5,7 +5,7 @@ const orderService = require("../service/orderService");
 const OrderService = require('../service/userServiceOrderService')
 const Boutique = require("../model/userBoutiqueInfoModel");
 const Users = require("../model/userModel");
-const { Op } = require("sequelize");
+const { Op, or } = require("sequelize");
 const moment = require("moment");
 const jwt = require("jsonwebtoken");
 const { generateAccessToken, auth } = require("../jwt");
@@ -42,6 +42,37 @@ exports.orderList = async (req, res) => {
     var apiEndpointInput = JSON.stringify(req.body);
     var apiTrack = await Service.trackApi(req.query.user_id,method_name,apiEndpointInput,req.query.device_id,req.query.device_info,req.ip);
     const cartHistory = await OrderService.getHistory(user_id);
+    const final_data = []
+            for (var item of cartHistory) {
+                const orderData = {}
+                orderData.id = item.id || 0
+                orderData.boutique_id = 0
+                orderData.customer_id = item.user_id || 0
+                orderData.total_quantity = 0
+                orderData.name = item.name || 0
+                orderData.email = item.email || ''
+                orderData.mobile_number = item.mobile_number || ''
+                orderData.address_id = item.address_id || 0
+                orderData.status = item.status || 0
+                orderData.booking_code = item.order_id || 0
+                orderData.coupon_id = item.coupon_id || 0
+                orderData.coupon_code = item.coupon_code || ''
+                orderData.coupon_name = ''
+                orderData.coupon_description = ''
+                orderData.coupon_discount_amount = 0
+                // coupon name
+                // coupon_code
+                // description
+                // discount amout
+                // coupon id (id)
+                orderData.delivery_price = item.delivery_price || 0
+                orderData.sum_amount = item.sum_amount || 0
+                orderData.discount_price = item.discount_price || 0
+                orderData.extra_charge = item.extra_charge || 0
+                orderData.total_payable_amount = item.total_price || 0
+                orderData.created_at = moment(item.created_at).format('YYYY-MM-DD HH:mm:ss') || ''
+                final_data.push(orderData);
+            }
     var boutiqueOrders = await orderService.boutiqueOrder(user_id);
     var orderList = [];
     for (var i in boutiqueOrders) {
@@ -70,42 +101,6 @@ exports.orderList = async (req, res) => {
       orderListArray.boutique_area = boutiqueAddress?boutiqueAddress.area : ''
       orderListArray.boutique_landmark = boutiqueAddress?boutiqueAddress.landmark : ''
       orderList.push(orderListArray);
-
-
-      // console.log( boutiqueOrders[order].order_status_id)
-      // var boutiqueAddress = await orderService.BoutiqueAddress(boutiqueOrders[order].id);
-      // // console.log(boutiqueAddress)
-      // if(boutiqueAddress){
-      //   boutiqueAddress=boutiqueAddress.toJSON()
-      // }
-      // var orderStatusName = await orderService.orderStatus(order.id);
-      // // console.log(orderStatusName)
-      // var orderDelivery = await orderService.orderDelivery();
-      // var orderStatus = orderStatusName.find(
-      //   (status) => status.id === order.order_status_id
-      // );
-      // var delivery = orderDelivery.find(
-      //   (delivery_date) => delivery_date.order_id === order.id
-      // );
-      // var orderListArray = {
-      //   id: order.id,
-      //   booking_code: order.booking_code,
-      //   boutique_id: order.boutique_id,
-      //   customer_id: order.customer_id,
-      //   total_quantity: order.total_quantity,
-      //   subtotal_amount: order.subtotal_amount,
-      //   total_payable_amount: order.total_payable_amount,
-      //   order_status: order.order_status_id,
-      //   order_status_name: orderStatus.order_status_name,
-      //   order_datetime: order.created_at,
-      //   delivery_date: delivery.delivery_date,
-      //   boutique_name: boutiqueAddress?boutiqueAddress.boutique_name:'',
-      //   boutique_address: boutiqueAddress?boutiqueAddress.address:'',
-      //   boutique_country_state: boutiqueAddress?boutiqueAddress.coutry_state:'',
-      //   boutique_city: boutiqueAddress?boutiqueAddress.city:'',
-      //   boutique_area: boutiqueAddress?boutiqueAddress.area:"",
-      //   boutique_landmark: boutiqueAddress?boutiqueAddress.landmark:"",
-      // };
     }
     orderList.sort((a, b) => b.id - a.id);
 
@@ -117,9 +112,8 @@ exports.orderList = async (req, res) => {
       return res.status(200).send({
         result: {
           orderList,
+          cart_history: final_data,
         },
-        cart_history: cartHistory,
-
         HasError: false,
         Message: "Order list retrieved successfully.",
       });
@@ -127,9 +121,8 @@ exports.orderList = async (req, res) => {
       return res.status(200).send({
         result: {
           orderList,
+          cart_history: final_data,
         },
-        cart_history: cartHistory,
-
         HasError: false,
         Message: "No data found.",
       });
