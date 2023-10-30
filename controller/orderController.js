@@ -41,43 +41,7 @@ exports.orderList = async (req, res) => {
     var method_name = await Service.getCallingMethodName();
     var apiEndpointInput = JSON.stringify(req.body);
     var apiTrack = await Service.trackApi(req.query.user_id,method_name,apiEndpointInput,req.query.device_id,req.query.device_info,req.ip);
-    const cartHistory = await OrderService.getHistory(user_id);
-    const final_data = []
-            for (var item of cartHistory) {
-                const orderData = {}
-                orderData.id = item.id || 0
-                orderData.boutique_id = 0
-                orderData.customer_id = item.user_id || 0
-                orderData.total_quantity = 0
-                orderData.name = item.name || 0
-                orderData.email = item.email || ''
-                orderData.mobile_number = item.mobile_number || ''
-                orderData.address_id = item.address_id || 0
-                orderData.status = item.status || 0
-                orderData.booking_code = item.order_id || 0
-                orderData.coupon_id = item.coupon_id || 0
-                orderData.coupon_code = item.coupon_code || ''
-                orderData.coupon_name = ''
-                orderData.coupon_description = ''
-                orderData.coupon_discount_amount = 0
-                // coupon name
-                // coupon_code
-                // description
-                // discount amout
-                // coupon id (id)
-                orderData.delivery_price = item.delivery_price || 0
-                orderData.sum_amount = item.sum_amount || 0
-                orderData.discount_price = item.discount_price || 0
-                orderData.extra_charge = item.extra_charge || 0
-                orderData.total_payable_amount = item.total_price || 0
-                orderData.order_datetime = moment(item.created_at).format('YYYY-MM-DD HH:mm:ss') || ''
-                orderData.boutique_name = ''
-                orderData.boutique_address = ''
-                orderData.boutique_city = ''
-                orderData.boutique_area = ''
-                orderData.boutique_landmark = ''
-                final_data.push(orderData);
-            }
+    
     var boutiqueOrders = await orderService.boutiqueOrder(user_id);
     var orderList = [];
     for (var i in boutiqueOrders) {
@@ -101,13 +65,53 @@ exports.orderList = async (req, res) => {
       }
       orderListArray.boutique_name = boutiqueAddress?boutiqueAddress.boutique_name : ''
       orderListArray.boutique_address = boutiqueAddress?boutiqueAddress.address : ''
-      orderListArray.boutique_country_state = boutiqueAddress?boutiqueAddress.country_state : ''
+      orderListArray.boutique_country_state = boutiqueAddress?boutiqueAddress.coutry_state : ''
       orderListArray.boutique_city = boutiqueAddress?boutiqueAddress.city : ''
       orderListArray.boutique_area = boutiqueAddress?boutiqueAddress.area : ''
       orderListArray.boutique_landmark = boutiqueAddress?boutiqueAddress.landmark : ''
       orderList.push(orderListArray);
     }
     orderList.sort((a, b) => b.id - a.id);
+    var cartHistory = await OrderService.getHistory(user_id);
+    console.log(cartHistory)
+    const final_data = []
+    for (var item of cartHistory) {
+      const orderData = {}
+      orderData.id = item.id || 0
+      orderData.boutique_id = item.boutique_id || 0
+      orderData.customer_id = item.user_id || 0
+      orderData.total_quantity = 0
+      orderData.name = item.name || 0
+      orderData.email = item.email || ''
+      orderData.mobile_number = item.mobile_number || ''
+      orderData.address_id = item.address_id || 0
+      orderData.status = item.status || 0
+      orderData.booking_code = item.order_id || 0
+      orderData.coupon_id = item.coupon_id || 0
+      orderData.coupon_code = item.coupon_code || ''
+      orderData.coupon_name = ''
+      orderData.coupon_description = ''
+      orderData.coupon_discount_amount = 0
+      orderData.delivery_price = item.delivery_price || 0
+      orderData.sum_amount = item.sum_amount || 0
+      orderData.discount_price = item.discount_price || 0
+      orderData.extra_charge = item.extra_charge || 0
+      orderData.total_payable_amount = item.total_price || 0
+      orderData.order_datetime = moment(item.created_at).format('YYYY-MM-DD HH:mm:ss') || ''
+      var boutiqueAddressHistory = await orderService.BoutiqueAddress(cartHistory[i].boutique_id);
+      if (boutiqueAddressHistory) {
+        boutiqueAddressHistory = boutiqueAddressHistory.toJSON()
+      }
+      orderData.boutique_name = boutiqueAddressHistory?boutiqueAddressHistory.boutique_name : ''
+      orderData.boutique_address = boutiqueAddressHistory?boutiqueAddressHistory.address : ''
+      orderData.boutique_country_state = boutiqueAddressHistory?boutiqueAddressHistory.coutry_state : ''
+      orderData.boutique_city = boutiqueAddressHistory?boutiqueAddressHistory.city : ''
+      orderData.boutique_area = boutiqueAddressHistory?boutiqueAddressHistory.area : ''
+      orderData.boutique_landmark = boutiqueAddressHistory?boutiqueAddressHistory.landmark : ''
+      final_data.push(orderData);
+      }
+    final_data.sort((a, b) => b.id - a.id);
+
 
     // // Generate access token using the provided secretKey
     // var secretKey = "tensorflow";

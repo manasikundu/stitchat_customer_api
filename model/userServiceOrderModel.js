@@ -63,6 +63,18 @@ const UserServiceOrder = sequelize.define(
     total_price: {
       type: DataTypes.DECIMAL(10, 2),
     },
+    coupon_amount:  {
+      type: DataTypes.INTEGER
+    },
+    quantity: {
+      type: DataTypes.INTEGER,
+    },
+    boutique_id: {
+      type: DataTypes.INTEGER,
+    },
+    delivery_date: {
+      type: DataTypes.DATE,
+    },
   },
   {
     sequelize,
