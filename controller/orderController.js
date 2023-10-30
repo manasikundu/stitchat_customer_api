@@ -2,6 +2,7 @@ const crypto = require("crypto");
 const FCM = require("fcm-node");
 const Service = require("../service/userService");
 const orderService = require("../service/orderService");
+const OrderService = require('../service/userServiceOrderService')
 const Boutique = require("../model/userBoutiqueInfoModel");
 const Users = require("../model/userModel");
 const { Op } = require("sequelize");
@@ -40,6 +41,7 @@ exports.orderList = async (req, res) => {
     var method_name = await Service.getCallingMethodName();
     var apiEndpointInput = JSON.stringify(req.body);
     var apiTrack = await Service.trackApi(req.query.user_id,method_name,apiEndpointInput,req.query.device_id,req.query.device_info,req.ip);
+    const cartHistory = await OrderService.getHistory(user_id);
     var boutiqueOrders = await orderService.boutiqueOrder(user_id);
     var orderList = [];
     for (var i in boutiqueOrders) {
@@ -116,6 +118,8 @@ exports.orderList = async (req, res) => {
         result: {
           orderList,
         },
+        cart_history: cartHistory,
+
         HasError: false,
         Message: "Order list retrieved successfully.",
       });
@@ -124,6 +128,8 @@ exports.orderList = async (req, res) => {
         result: {
           orderList,
         },
+        cart_history: cartHistory,
+
         HasError: false,
         Message: "No data found.",
       });

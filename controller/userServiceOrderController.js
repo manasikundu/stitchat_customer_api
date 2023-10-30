@@ -87,6 +87,14 @@ exports.orderHistory = async (req, res) => {
                 orderData.order_id = item.order_id || 0
                 orderData.coupon_id = item.coupon_id || 0
                 orderData.coupon_code = item.coupon_code || ''
+                orderData.coupon_name = ''
+                orderData.coupon_description = ''
+                orderData.coupon_discount_amount = 0
+                // coupon name
+                // coupon_code
+                // description
+                // discount amout
+                // coupon id (id)
                 orderData.delivery_price = item.delivery_price || 0
                 orderData.sum_amount = item.sum_amount || 0
                 orderData.discount_price = item.discount_price || 0
