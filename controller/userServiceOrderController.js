@@ -12,7 +12,7 @@ exports.createOrder = async (req, res) => {
         const email = req.body.email
         const mobile_number = req.body.mobile_number
         const address_id = req.body.address_id
-        const status = 0
+        const status = 2
         var currentDate = new Date();
         var formattedDate = currentDate.toISOString().slice(0, 19).replace("T", " ")
         const coupon_id = req.body.coupon_id || 0

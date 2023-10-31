@@ -34,3 +34,13 @@ exports.getCartById = async (id) => {
   return result
 }
 
+exports.getOrderHistoryItem = async (order_id) => {
+  try {
+    const orderItem = await UserServiceCart.findAll({ where: { id: order_id } })
+    return orderItem
+  } catch (error) {
+    console.log(error)
+    return error
+  }
+}
+
