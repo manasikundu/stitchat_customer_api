@@ -12,8 +12,6 @@ exports.createOrder = async (req, res) => {
         const email = req.body.email
         const mobile_number = req.body.mobile_number
         const address_id = req.body.address_id
-        const coupon_amount = req.body.coupon_amount
-        const quantity = req.body.quantity
         const status = 0
         var currentDate = new Date();
         var formattedDate = currentDate.toISOString().slice(0, 19).replace("T", " ")
@@ -23,9 +21,11 @@ exports.createOrder = async (req, res) => {
         const sum_amount = req.body.sum_amount || 0
         const discount_price = req.body.discount_price || 0
         const extra_charge = req.body.extra_charge || 0
+        const calculatedTotalPrice = delivery_price + sum_amount + extra_charge - discount_price
+        const coupon_amount = req.body.coupon_amount
+        const quantity = req.body.quantity
         const boutique_id = req.body.boutique_id || 0
         const delivery_date = req.body.delivery_date || 0
-        const calculatedTotalPrice = delivery_price + sum_amount + extra_charge - discount_price
         // const total_price = req.body.total_price || 0
         const data = { user_id, name, email, mobile_number, address_id, coupon_amount, quantity, status, created_at: formattedDate, updated_at: formattedDate, coupon_id, coupon_code, delivery_price, sum_amount, discount_price, extra_charge, total_price: calculatedTotalPrice, boutique_id, delivery_date }
         if (req.body.user_id) {
