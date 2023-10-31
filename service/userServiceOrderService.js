@@ -47,7 +47,6 @@ exports.getHistory = async (user_id) => {
 exports.getOrderHistory = async (order_id) => {
   try {
     const orders = await Order.findOne({ where: { id: order_id } })
-    console.log(orders)
     return orders
   } catch (error) {
     console.log(error)
