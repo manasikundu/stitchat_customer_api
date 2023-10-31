@@ -72,15 +72,14 @@ exports.bookBoutiqueAppointment = async (req, res) => {
           Message: 'Thank you for booking the slot.'
         });
       } else {
-        return res.status(400).send({
-          HasError: true,
-          StatusCode: 400,
+        return res.status(200).send({
+          HasError: false,
           Message: 'Selected slot is not available.'
         });
       }
     } catch (error) {
       console.log(error);
-      return res.status(500).json({
+      return res.status(500).send({
         HasError: true,
         Message: 'Failed to book appointment'
       })
