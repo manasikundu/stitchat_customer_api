@@ -44,6 +44,7 @@ exports.orderList = async (req, res) => {
     
     var boutiqueOrders = await orderService.boutiqueOrder(user_id)
     var orderList = []
+    var type = 1
     for (var i in boutiqueOrders) {
       var orderListArray = {}
       orderListArray.id = boutiqueOrders[i].id ? boutiqueOrders[i].id : 0
@@ -52,6 +53,13 @@ exports.orderList = async (req, res) => {
       orderListArray.customer_id = boutiqueOrders[i].customer_id ? boutiqueOrders[i].customer_id : 0
       orderListArray.total_quantity = boutiqueOrders[i].total_quantity ? boutiqueOrders[i].total_quantity : 0
       orderListArray.subtotal_amount = boutiqueOrders[i].subtotal_amount ? boutiqueOrders[i].subtotal_amount : 0
+      orderListArray.coupon_id = 0
+      orderListArray.coupon_code = ''
+      orderListArray.coupon_name = ''
+      orderListArray.coupon_description = ''
+      orderListArray.coupon_discount_amount = 0
+      orderListArray.order_type = 1
+      orderListArray.order_type_name = 'Boutique Order'
       orderListArray.total_payable_amount = boutiqueOrders[i].total_payable_amount ? boutiqueOrders[i].total_payable_amount : 0
       orderListArray.order_status = boutiqueOrders[i].order_status_id ? boutiqueOrders[i].order_status_id : 0
       var orderStatusName = await orderService.orderStatusName(boutiqueOrders[i].order_status_id)
@@ -90,10 +98,13 @@ exports.orderList = async (req, res) => {
       orderData.coupon_description = item.coupon_description || ''
       orderData.coupon_discount_amount = 0
       orderData.delivery_price = item.delivery_price || 0
-      orderData.sum_amount = item.sum_amount || 0
+      orderData.subtotal_amount = item.sum_amount || 0
       orderData.discount_price = item.discount_price || 0
       orderData.extra_charge = item.extra_charge || 0
       orderData.total_payable_amount = item.total_price || 0
+      orderData.order_type = 2
+      orderData.order_type_name = 'Alteration or Repair'
+      orderData.delivery_date = item.delivery_date || ''
       orderData.order_datetime = moment(item.created_at).format('YYYY-MM-DD HH:mm:ss') || ''
       var boutiqueAddressHistory = await orderService.BoutiqueAddress(orderData.boutique_id)
       if (boutiqueAddressHistory) {
