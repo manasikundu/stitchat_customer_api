@@ -35,15 +35,15 @@ exports.orderList = async (req, res) => {
         HasError: true,
         StatusCode: 400,
         message: "Invalid parameter.",
-      });
+      })
     }
 
-    var method_name = await Service.getCallingMethodName();
-    var apiEndpointInput = JSON.stringify(req.body);
-    var apiTrack = await Service.trackApi(req.query.user_id,method_name,apiEndpointInput,req.query.device_id,req.query.device_info,req.ip);
+    var method_name = await Service.getCallingMethodName()
+    var apiEndpointInput = JSON.stringify(req.body)
+    var apiTrack = await Service.trackApi(req.query.user_id,method_name,apiEndpointInput,req.query.device_id,req.query.device_info,req.ip)
     
-    var boutiqueOrders = await orderService.boutiqueOrder(user_id);
-    var orderList = [];
+    var boutiqueOrders = await orderService.boutiqueOrder(user_id)
+    var orderList = []
     for (var i in boutiqueOrders) {
       var orderListArray = {}
       orderListArray.id = boutiqueOrders[i].id ? boutiqueOrders[i].id : 0
@@ -59,7 +59,7 @@ exports.orderList = async (req, res) => {
       orderListArray.order_datetime = boutiqueOrders[i].created_at ? boutiqueOrders[i].created_at : ''
       var orderDelivery = await orderService.deliveryDate(boutiqueOrders[i].id);
       orderListArray.delivery_date = orderDelivery ? orderDelivery[0][0].delivery_date : ''
-      var boutiqueAddress = await orderService.BoutiqueAddress(boutiqueOrders[i].boutique_id);
+      var boutiqueAddress = await orderService.BoutiqueAddress(boutiqueOrders[i].boutique_id)
       if (boutiqueAddress) {
         boutiqueAddress = boutiqueAddress.toJSON()
       }
@@ -69,28 +69,25 @@ exports.orderList = async (req, res) => {
       orderListArray.boutique_city = boutiqueAddress?boutiqueAddress.city : ''
       orderListArray.boutique_area = boutiqueAddress?boutiqueAddress.area : ''
       orderListArray.boutique_landmark = boutiqueAddress?boutiqueAddress.landmark : ''
-      orderList.push(orderListArray);
+      orderList.push(orderListArray)
     }
-    orderList.sort((a, b) => b.id - a.id);
-    var cartHistory = await OrderService.getHistory(user_id);
-    console.log(cartHistory)
-    const final_data = []
+
+    var cartHistory = await OrderService.getHistory(user_id)
     for (var item of cartHistory) {
       const orderData = {}
       orderData.id = item.id || 0
-      orderData.boutique_id = item.boutique_id || 0
+      orderData.boutique_id = item.boutique_id || 1
       orderData.customer_id = item.user_id || 0
-      orderData.total_quantity = 0
-      orderData.name = item.name || 0
-      orderData.email = item.email || ''
-      orderData.mobile_number = item.mobile_number || ''
+      orderData.total_quantity = 1
       orderData.address_id = item.address_id || 0
-      orderData.status = item.status || 0
+      orderData.order_status = item.status || 2
+      var orderStatusNameHistory = await orderService.orderStatusName(orderData.order_status)
+      orderData.order_status_name = orderStatusNameHistory ? orderStatusNameHistory[0][0].status : ''
       orderData.booking_code = item.order_id || 0
       orderData.coupon_id = item.coupon_id || 0
       orderData.coupon_code = item.coupon_code || ''
-      orderData.coupon_name = ''
-      orderData.coupon_description = ''
+      orderData.coupon_name = item.coupon_name || ''
+      orderData.coupon_description = item.coupon_description || ''
       orderData.coupon_discount_amount = 0
       orderData.delivery_price = item.delivery_price || 0
       orderData.sum_amount = item.sum_amount || 0
@@ -98,21 +95,20 @@ exports.orderList = async (req, res) => {
       orderData.extra_charge = item.extra_charge || 0
       orderData.total_payable_amount = item.total_price || 0
       orderData.order_datetime = moment(item.created_at).format('YYYY-MM-DD HH:mm:ss') || ''
-      var boutiqueAddressHistory = await orderService.BoutiqueAddress(cartHistory[i].boutique_id);
+      var boutiqueAddressHistory = await orderService.BoutiqueAddress(orderData.boutique_id)
       if (boutiqueAddressHistory) {
         boutiqueAddressHistory = boutiqueAddressHistory.toJSON()
+        orderData.boutique_name = boutiqueAddressHistory.boutique_name || ''
+        orderData.boutique_address = boutiqueAddressHistory.address || ''
+        orderData.boutique_country_state = boutiqueAddressHistory.coutry_state || ''
+        orderData.boutique_city = boutiqueAddressHistory.city || ''
+        orderData.boutique_area = boutiqueAddressHistory.area || ''
+        orderData.boutique_landmark = boutiqueAddressHistory.landmark || ''
       }
-      orderData.boutique_name = boutiqueAddressHistory?boutiqueAddressHistory.boutique_name : ''
-      orderData.boutique_address = boutiqueAddressHistory?boutiqueAddressHistory.address : ''
-      orderData.boutique_country_state = boutiqueAddressHistory?boutiqueAddressHistory.coutry_state : ''
-      orderData.boutique_city = boutiqueAddressHistory?boutiqueAddressHistory.city : ''
-      orderData.boutique_area = boutiqueAddressHistory?boutiqueAddressHistory.area : ''
-      orderData.boutique_landmark = boutiqueAddressHistory?boutiqueAddressHistory.landmark : ''
-      final_data.push(orderData);
-      }
-    final_data.sort((a, b) => b.id - a.id);
-
-
+      orderList.push(orderData)
+    }
+    orderList.sort((a, b) => b.id - a.id)
+    
     // // Generate access token using the provided secretKey
     // var secretKey = "tensorflow";
     // var token = generateAccessToken(mobile_number, secretKey);
@@ -121,7 +117,6 @@ exports.orderList = async (req, res) => {
       return res.status(200).send({
         result: {
           orderList,
-          cart_history: final_data,
         },
         HasError: false,
         Message: "Order list retrieved successfully.",
@@ -130,7 +125,6 @@ exports.orderList = async (req, res) => {
       return res.status(200).send({
         result: {
           orderList,
-          cart_history: final_data,
         },
         HasError: false,
         Message: "No data found.",
@@ -144,9 +138,9 @@ exports.orderList = async (req, res) => {
       },
       HasError: true,
       Message: "Some error occured.",
-    });
+    })
   }
-};
+}
 
 // order details
 exports.orderDetails = async (req, res) => {
