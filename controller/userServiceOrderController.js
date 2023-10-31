@@ -25,7 +25,7 @@ exports.createOrder = async (req, res) => {
         const coupon_amount = req.body.coupon_amount
         const quantity = req.body.quantity
         const boutique_id = req.body.boutique_id || 0
-        const delivery_date = req.body.delivery_date || 0
+        const delivery_date = req.body.delivery_date || ''
         // const total_price = req.body.total_price || 0
         const data = { user_id, name, email, mobile_number, address_id, coupon_amount, quantity, status, created_at: formattedDate, updated_at: formattedDate, coupon_id, coupon_code, delivery_price, sum_amount, discount_price, extra_charge, total_price: calculatedTotalPrice, boutique_id, delivery_date }
         if (req.body.user_id) {
