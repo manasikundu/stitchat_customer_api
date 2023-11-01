@@ -309,9 +309,9 @@ exports.contactInfo = async (req, res) => {
 
 exports.contactUs = async (req, res) => {
   try {
-    req.body.add_date=new Date().toLocaleDateString()
+    req.body.add_date = new Date().toLocaleDateString()
     const result = await Service.contactUs(req.body)
-    
+
     return res.status(200).send({
       message: "Successfully Proceed data.",
       HasError: false,
@@ -360,10 +360,10 @@ exports.profilePicUpload = async (req, res) => {
     var buf = Buffer.from(req.body.profile_image.replace(/^data:image\/\w+;base64,/, ""), 'base64')
     if (req.body.profile_image) {
       var extname
-      if(req.body.extname){
-        extname=req.body.extname
-      }else{
-        extname='.png'
+      if (req.body.extname) {
+        extname = req.body.extname
+      } else {
+        extname = '.png'
       }
 
       var logo = user_id + extname

@@ -38,7 +38,7 @@ var Coupon = sequelize.define("sarter__master_coupon",{
     location: {
         type: DataTypes.TEXT, 
     },
-    valid_users: {
+    valid_user: {
         type: DataTypes.INTEGER, 
         defaultValue: 0,
     },
@@ -52,6 +52,9 @@ var Coupon = sequelize.define("sarter__master_coupon",{
     updated_at: {
         type: DataTypes.DATE, 
     },
+    max_discount:{
+        type:DataTypes.INTEGER
+    }
   },
   {
     sequelize,

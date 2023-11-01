@@ -2,7 +2,8 @@ const couponService = require('../service/couponService')
 const moment = require('moment')
 const Users = require("../model/userModel")
 const Service = require('../service/userService')
-
+const orderService = require('../service/userServiceOrderService')
+const cartService = require('../service/userServiceCartService')
 
 
 exports.createCoupon = async (req, res) => {
@@ -54,8 +55,48 @@ exports.createCoupon = async (req, res) => {
 
 exports.applyCoupon = async (req, res) => {
     try {
-        
+        const coupon_code = req.body.coupon_code
+        const user_id = req.body.user_id
+        var currentDate = new Date();
+
+        var result = await couponService.getCouponDetails(coupon_code)
+        var orderDetails = await orderService.orderDetailsByCoupon(user_id, coupon_code)
+        if (result) {
+            console.log(typeof (orderDetails))
+            if (!orderDetails) {
+                couponDetails = result.toJSON()
+                const startDate = new Date(couponDetails.start_date);
+                const endDate = new Date(couponDetails.end_date);
+                if (currentDate >= startDate && currentDate <= endDate) {
+                    if (couponDetails.valid_user == null || couponDetails.valid_user == user_id) {
+                        var cartDetails = await cartService.getCart(user_id)
+                        const sub_total = cartDetails.reduce((total, num) => total + parseFloat(num.amount), 0)
+                        console.log(sub_total)
+                        if (sub_total >= couponDetails.minimum_order_amount) {
+                            var total
+                            total = sub_total - couponDetails.discount_amount
+                            // if (couponDetails.coupon_type == 1) {//1-percentage,2-flat
+                            //     total
+                            // }
+                            couponDetails.total_amount=total
+                            return res.status(200).send({ HasError: false, Message: "Coupon apply successfully", result: couponDetails })
+                        } else {
+                            return res.status(200).send({ HasError: false, Message: `Need to add item worth ${couponDetails.minimum_order_amount} to apply this coupon.`, result: {} })
+                        }
+                    } else {
+                        return res.status(200).send({ HasError: false, Message: "You are not eligible for this coupon.", result: {} })
+                    }
+                } else {
+                    return res.status(200).send({ HasError: false, Message: "This coupon has been expired.", result: {} })
+                }
+            } else {
+                return res.status(200).send({ HasError: false, Message: "You have already applied this coupon.", result: {} })
+            }
+        } else {
+            return res.status(200).send({ HasError: false, Message: "This coupon doesn't exist.", result: {} })
+        }
     } catch (error) {
-        
+        console.error(error)
+        return res.status(500).send({ message: "Some error occurred.", HasError: true, error: error.message })
     }
 }

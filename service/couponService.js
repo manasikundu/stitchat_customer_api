@@ -10,3 +10,7 @@ exports.createCoupon = async (data) => {
         return error
     }
 }
+exports.getCouponDetails = async (coupon_code) => {
+    const result = await Coupon.findOne({ where: { coupon_code: coupon_code } })
+    return result
+}

@@ -57,3 +57,7 @@ exports.getOrderHistory = async (order_id) => {
 
 
 
+exports.orderDetailsByCoupon = async (user_id,coupon_code) => {
+  var result = await Order.findOne({ where: { user_id: user_id, coupon_code:coupon_code} })
+  return result
+}
