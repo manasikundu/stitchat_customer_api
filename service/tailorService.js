@@ -30,3 +30,10 @@ exports.getServiceDetails = async (id) => {
     const result = await Tailor.findOne({ where: { id: id } })
     return result
 }
+
+exports.getServiceName = async (id) => {
+    const result = await Tailor.findOne({ where: { id: id } })
+    return result
+}
+
+

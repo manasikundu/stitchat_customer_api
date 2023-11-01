@@ -128,6 +128,28 @@ exports.categoryType=async(order_id)=>{
   return result[0]
 }
 
+exports.categoryTypeAlter=async(order_id)=>{
+  var query = `SELECT *
+  FROM public.sarter__boutique_service_dic
+  WHERE service_id = (
+      SELECT service_id
+      FROM public.sarter__users_service_order
+      WHERE id = ${order_id})`
+  var result = await db.query(query)
+  return result[0]
+}
+
+exports.getItemName=async(id)=>{
+  var query = `SELECT
+  name 
+FROM
+  public.sarter__category_item_dic
+WHERE
+  id = ${id}`
+  var result = await db.query(query)
+  return result[0]
+}
+
 // cancel order
 exports.orderCancel = async (order_id) => {
   try {

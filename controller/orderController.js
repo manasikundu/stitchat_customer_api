@@ -6,6 +6,7 @@ const OrderService = require('../service/userServiceOrderService')
 const orderServiceItem = require('../service/userServiceCartService')
 const Boutique = require("../model/userBoutiqueInfoModel");
 const Users = require("../model/userModel");
+const tailorService = require("../service/tailorService")
 const { Op, or } = require("sequelize");
 const moment = require("moment");
 const jwt = require("jsonwebtoken");
@@ -210,6 +211,10 @@ exports.orderDetails = async (req, res) => {
           customer_mobile_number: order.mobile_number,
           customer_masked_mobile_number: maskedNumber,
           customer_email_id: order.email_id,
+          coupon_id : 0,
+          coupon_code: '',
+          coupon_name: '',
+          coupon_description: '',
           total_quantity: order.total_quantity,
           subtotal_amount: order.subtotal_amount,
           discount_amount: order.discount_amount,
@@ -227,15 +232,15 @@ exports.orderDetails = async (req, res) => {
         };
 
         const items = await orderService.getItemsByOrderId(order_id);
-        const category = await orderService.categoryType(order_id);
+        var category = await orderService.categoryType(order_id);
         const itemList = [];
 
         for (var item of items) {
-          const categoryType = await orderService.getCategoryByItemId(item.category_item_dic_id);
+          var categoryType = await orderService.getCategoryByItemId(item.category_item_dic_id)
 
           if (categoryType.length > 0) {
-            const category_id = categoryType[0].id;
-            const category_name = categoryType[0].name;
+            var category_id = categoryType[0].id;
+            var category_name = categoryType[0].name;
             const itemImages = await orderService.getItemImagesByItemId(item.category_item_dic_id);
             const item_image = s3.getSignedUrl('getObject', {
               Bucket: process.env.AWS_BUCKET,
@@ -269,6 +274,15 @@ exports.orderDetails = async (req, res) => {
               name: cat_name,
               category_id: category_id,
               gender: category[0].category_type,
+              service_id: 0,
+              service_name: '',
+              gender: category[0].category_type,
+              type: '',
+              type_name: '',
+              service_date_time: '',
+              fit_type: '',
+              fit_description: '',
+              tailor_note: '',
               quantity: boutiqueOrders[0].total_quantity,
               unit_price: item.unit_price,
               delivery_date: deliveryDate.delivery_date,
@@ -276,7 +290,10 @@ exports.orderDetails = async (req, res) => {
               material_received: item.material_received,
               status_id: order.order_status_id,
               status: orderStatus.order_status_name,
-              fabric_type: item.fabric_type,
+              item_description: item.item_description,
+              repair_location: '',
+              repair_description: '',
+              fabric_type: '',
               material_image: material_image,
               item_image: item_image,
             });
@@ -305,7 +322,7 @@ exports.orderDetails = async (req, res) => {
         }));
 
         if (Object.keys(orderDetails).length !== 0) {
-          return res.status(200).json({
+          return res.status(200).send({
             result: {
               ...orderDetails,
               items: itemArray,
@@ -315,7 +332,7 @@ exports.orderDetails = async (req, res) => {
             Message: 'Order details retrieved successfully.',
           });
         } else {
-          return res.status(200).json({
+          return res.status(200).send({
             result: {
               orderDetails,
             },
@@ -342,11 +359,15 @@ exports.orderDetails = async (req, res) => {
       orderHistory.customer_mobile_number = cartOrderHistory.mobile_number;
       orderHistory.customer_masked_mobile_number = maskedNumberHist;
       orderHistory.customer_email_id = cartOrderHistory.email;
-      orderHistory.total_quantity = cartOrderHistory.quantity || 2;
+      orderHistory.total_quantity = cartOrderHistory.quantity || 1;
+      orderHistory.coupon_id = cartOrderHistory.coupon_id || 0
+      orderHistory.coupon_code = cartOrderHistory.coupon_code || ''
+      orderHistory.coupon_name = cartOrderHistory.coupon_name || ''
+      orderHistory.coupon_description = cartOrderHistory.coupon_description || ''
       orderHistory.subtotal_amount = cartOrderHistory.sum_amount;
-      orderHistory.discount_amount = cartOrderHistory.discount_amount;
+      orderHistory.discount_amount = cartOrderHistory.discount_price;
       orderHistory.coupon_applied_amount = cartOrderHistory.coupon_amount;
-      orderHistory.tax_applied_amount = '';
+      orderHistory.tax_applied_amount = 0;
       orderHistory.total_payable_amount = cartOrderHistory.total_amount;
       orderHistory.reward_point = 0;
       orderHistory.order_status = cartOrderHistory.status || 2;
@@ -359,19 +380,55 @@ exports.orderDetails = async (req, res) => {
       orderHistory.order_type = 2;
       orderHistory.order_type_name = 'Alteration or Repair';
 
-      const orderItems = await orderServiceItem.getOrderHistoryItem(order_id);
-      const itemList = [];
+      var orderItems = await orderServiceItem.getOrderHistoryItem(order_id);
+      var category = await orderService.categoryTypeAlter(order_id);
+      var order = await OrderService.getOrderHistory(order_id)
 
-      for (const item of orderItems) {  
+      var itemList = [];
+
+      for (var item of orderItems) {  
+        var categoryType = await orderService.getCategoryByItemId(item.item_id)
+        var tailorServiceName = await tailorService.getServiceName(item.service_id)
+        var itemName = await orderService.getItemName(item.item_id)
+
+        if (categoryType.length > 0) {
+          const category_id = categoryType[0].id;
+          var category_name = categoryType[0].name;
+            
+          var cat_id;
+          var cat_name;
+
+          if (category[0].category_type === 1) {
+            cat_id = 1;
+            cat_name = 'Men';
+          } else if (category[0].category_type === 2) {
+            cat_id = 2;
+            cat_name = 'Women';
+          } else if (category[0].category_type === 3) {
+            cat_id = 3;
+            cat_name = 'Kids';
+          } else {
+            cat_id = '';
+            cat_name = 'All';
+          }
+  
           itemList.push({
             id: item.id,
-            user_id: item.user_id,
-            item_id: item.item_id,
-            order_id: item.order_id,
+            item_name: itemName[0].name,
+            category_item_dic_id: item.item_id,
+            category_name: category_name,
+            name: cat_name,
+            category_id: category_id,
+            gender: cat_name,
             service_id: item.service_id,
+            service_name: tailorServiceName.name,
+            gender: category[0].category_type,
             type: item.type,
             type_name: item.type === 1 ? "ALTER" : (item.type === 2 ? "REPAIR" : ""),
-            amount: item.amount,
+            unit_price: item.amount,
+            delivery_date: order.delivery_date,
+            deliver_time: '',
+            material_received: 0,
             service_date_time: item.service_date_time,
             fit_type: item.fit_type,
             fit_description: item.fit_description,
@@ -381,6 +438,9 @@ exports.orderDetails = async (req, res) => {
             item_description: item.item_description,
             repair_location: item.repair_location,
             repair_description: item.repair_description,
+            fabric_type: '',
+            material_image: [],
+            item_image: '',
           });
       }
 
@@ -398,6 +458,7 @@ exports.orderDetails = async (req, res) => {
         HasError: false,
         Message: 'Order details retrieved successfully.',
       });
+    }
     } else {
       return res.status(200).send({ HasError: true, message: "Invalid order." });
     }
