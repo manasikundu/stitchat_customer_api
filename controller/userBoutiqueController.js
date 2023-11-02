@@ -141,8 +141,10 @@ exports.getNearestBoutiqueList = async (req, res) => {
         }),
       });
     });
+    sortedAndFilteredBoutiques = sortedAndFilteredBoutiques.filter(boutique => boutique.boutique_name !== null)
+
     sortedAndFilteredBoutiques.forEach((boutique) => {
-      if (boutique.location_lat && boutique.location_lng) {
+      if (boutique.location_lat && boutique.location_lng ) {
         var boutiqueDistance = geolib.getDistance(
           { latitude, longitude },
           { latitude: boutique.location_lat, longitude: boutique.location_lng }
