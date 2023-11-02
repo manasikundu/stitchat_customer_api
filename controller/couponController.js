@@ -22,9 +22,9 @@ exports.createCoupon = async (req, res) => {
         const status = req.body.status
         var method_name = await Service.getCallingMethodName()
         var apiEndpointInput = JSON.stringify(req.body)
-        var apiTrack = await Service.trackApi(req.query.user_id,method_name,apiEndpointInput,req.query.device_id,req.query.device_info,req.ip)
-        if (!coupon_code || !coupon_name || !coupon_type || !minimum_order_amount || !start_date || !end_date ) {
-            return res.status(500).send({HasError: true, message: "Invalid parameter." })
+        var apiTrack = await Service.trackApi(req.query.user_id, method_name, apiEndpointInput, req.query.device_id, req.query.device_info, req.ip)
+        if (!coupon_code || !coupon_name || !coupon_type || !minimum_order_amount || !start_date || !end_date) {
+            return res.status(500).send({ HasError: true, message: "Invalid parameter." })
         } else {
             const data = { coupon_code, coupon_name, description, coupon_type, minimum_order_amount, discount_amount, start_date, end_date, location, max_users, user_count, status }
             const newCoupon = await couponService.createCoupon(data)
@@ -62,24 +62,33 @@ exports.applyCoupon = async (req, res) => {
         var result = await couponService.getCouponDetails(coupon_code)
         var orderDetails = await orderService.orderDetailsByCoupon(user_id, coupon_code)
         if (result) {
-            console.log(typeof (orderDetails))
             if (!orderDetails) {
                 couponDetails = result.toJSON()
                 const startDate = new Date(couponDetails.start_date);
                 const endDate = new Date(couponDetails.end_date);
+                var finalresult = {}
+                finalresult.id = couponDetails.id
+                finalresult.coupon_code = couponDetails.coupon_code
                 if (currentDate >= startDate && currentDate <= endDate) {
                     if (couponDetails.valid_user == null || couponDetails.valid_user == user_id) {
                         var cartDetails = await cartService.getCart(user_id)
-                        const sub_total = cartDetails.reduce((total, num) => total + parseFloat(num.amount), 0)
-                        console.log(sub_total)
-                        if (sub_total >= couponDetails.minimum_order_amount) {
+                        const cart_amount = cartDetails.reduce((total, num) => total + parseFloat(num.amount), 0)
+                        finalresult.cart_amount = cart_amount
+                        if (cart_amount >= couponDetails.minimum_order_amount) {
                             var total
-                            total = sub_total - couponDetails.discount_amount
-                            // if (couponDetails.coupon_type == 1) {//1-percentage,2-flat
-                            //     total
-                            // }
-                            couponDetails.total_amount=total
-                            return res.status(200).send({ HasError: false, Message: "Coupon apply successfully", result: couponDetails })
+                            if (couponDetails.coupon_type == 1) {//1-percentage,2-flat
+                                var discount = (couponDetails.discount_amount * cart_amount) / 100
+                                finalresult.discount_amount = discount
+                                if (discount > couponDetails.max_discount) {
+                                    discount = couponDetails.max_discount
+                                }
+                                total = cart_amount - discount
+                            } else {
+                                finalresult.discount_amount = couponDetails.discount_amount
+                                total = cart_amount - couponDetails.discount_amount
+                            }
+                            finalresult.total_amount = total
+                            return res.status(200).send({ HasError: false, Message: "Coupon apply successfully", result: finalresult })
                         } else {
                             return res.status(200).send({ HasError: false, Message: `Need to add item worth ${couponDetails.minimum_order_amount} to apply this coupon.`, result: {} })
                         }
