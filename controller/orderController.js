@@ -408,7 +408,7 @@ exports.orderDetails = async (req, res) => {
             cat_id = 3;
             cat_name = 'Kids';
           } else {
-            cat_id = '';
+            cat_id = 0;
             cat_name = 'All';
           }
   
@@ -419,7 +419,7 @@ exports.orderDetails = async (req, res) => {
             category_name: category_name || '',
             name: cat_name || '',
             category_id: category_id || 0,
-            gender: cat_name || 0,
+            gender: cat_id || 0,
             service_id: item.service_id || 0,
             service_name: tailorServiceName.name || '',
             // gender: category[0].category_type,
