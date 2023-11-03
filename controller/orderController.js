@@ -184,7 +184,7 @@ exports.orderDetails = async (req, res) => {
       }
       var orderDetails = {};
 
-      for (const order of boutiqueOrders) {
+      for (var order of boutiqueOrders) {
         const boutiqueAddress = await orderService.boutiqueAddress();
         const orderStatusName = await orderService.orderStatus(order.id);
         const orderDelivery = await orderService.orderDelivery();
@@ -367,9 +367,9 @@ exports.orderDetails = async (req, res) => {
       orderHistory.subtotal_amount = cartOrderHistory.sum_amount;
       orderHistory.discount_amount = cartOrderHistory.discount_price;
       orderHistory.coupon_applied_amount = cartOrderHistory.coupon_amount;
-      orderHistory.tax_applied_amount = 0;
-      orderHistory.total_payable_amount = cartOrderHistory.total_amount;
-      orderHistory.reward_point = 0;
+      orderHistory.tax_applied_amount = '';
+      orderHistory.total_payable_amount = cartOrderHistory.total_amount || ''
+      orderHistory.reward_point = '0'
       orderHistory.order_status = cartOrderHistory.status || 2;
       orderHistory.bill_image = '';
 
