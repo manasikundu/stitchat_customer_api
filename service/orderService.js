@@ -1,6 +1,7 @@
 const db = require("../dbConnection");
 const Users = require("../model/userModel");
 const Boutique=require('../model/userBoutiqueInfoModel')
+const BoutiqueOrderTrack = require('../model/boutiqueOrderTrackModel')
 
 // order list
 exports.boutiqueOrder = async (user_id) => {
@@ -172,5 +173,16 @@ exports.itemCancel = async (order_id) => {
     return error;
   }
 }
+
+exports.BoutiqueOrderTrack = async(order_id)=>{
+  const result=await BoutiqueOrderTrack.findAll({where:{order_id:order_id}})
+  return result
+}
+
+exports.orderStatusNameInsert = async(orderData)=>{
+  const result=await BoutiqueOrderTrack.create(orderData)
+  return result
+}
+
 
 

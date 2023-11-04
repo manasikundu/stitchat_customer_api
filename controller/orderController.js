@@ -158,48 +158,32 @@ exports.orderList = async (req, res) => {
 
 exports.orderDetails = async (req, res) => {
   try {
-    const order_id = req.query.order_id;
-    const type = req.query.order_type;
+    const order_id = req.query.order_id
+    const type = req.query.order_type
 
     if (order_id === undefined || !Number.isInteger(parseInt(order_id)) && type === undefined || !Number.isInteger(parseInt(type))) {
-      return res.status(400).send({ HasError: true, message: 'Invalid parameter.' });
+      return res.status(400).send({ HasError: true, message: 'Invalid parameter.' })
     }
 
-    const method_name = await Service.getCallingMethodName();
-    const apiEndpointInput = JSON.stringify(req.body);
-    const apiTrack = await Service.trackApi(
-      req.query.user_id,
-      method_name,
-      apiEndpointInput,
-      req.query.device_id,
-      req.query.device_info,
-      req.ip
-    );
-
+    const method_name = await Service.getCallingMethodName()
+    const apiEndpointInput = JSON.stringify(req.body)
+    const apiTrack = await Service.trackApi(req.query.user_id,method_name,apiEndpointInput,req.query.device_id,req.query.device_info,req.ip)
+    
     if (type == 1) {
       const customerType = await orderService.customerType(order_id);
       const boutiqueOrders = await orderService.boutiqueOrderByOrderId(order_id);
       if (!boutiqueOrders || boutiqueOrders.length === 0) {
         return res.status(400).send({ HasError: true, message: 'Invalid order.' });
       }
-      var orderDetails = {};
-
+      var orderDetails = {}
       for (var order of boutiqueOrders) {
         const boutiqueAddress = await orderService.boutiqueAddress();
         const orderStatusName = await orderService.orderStatus(order.id);
         const orderDelivery = await orderService.orderDelivery();
-        const orderStatus = orderStatusName.find(
-          (status) => status.id === order.order_status_id
-        );
-        const deliveryDate = orderDelivery.find(
-          (delivery_date) => delivery_date.order_id === order.id
-        );
-        const deliveryTime = orderDelivery.find(
-          (deliver_time) => deliver_time.order_id === order.id
-        );
-
+        const orderStatus = orderStatusName.find((status) => status.id === order.order_status_id);
+        const deliveryDate = orderDelivery.find((delivery_date) => delivery_date.order_id === order.id);
+        const deliveryTime = orderDelivery.find((deliver_time) => deliver_time.order_id === order.id);
         const maskedNumber = order.mobile_number ? Service.maskMobileNumber(order.mobile_number) : '';
-
         orderDetails = {
           id: order.id,
           booking_code: order.booking_code,
@@ -230,14 +214,11 @@ exports.orderDetails = async (req, res) => {
           order_type: 1,
           order_type_name: 'Boutique Order',
         };
-
         const items = await orderService.getItemsByOrderId(order_id);
         var category = await orderService.categoryType(order_id);
         const itemList = [];
-
         for (var item of items) {
           var categoryType = await orderService.getCategoryByItemId(item.category_item_dic_id)
-
           if (categoryType.length > 0) {
             var category_id = categoryType[0].id;
             var category_name = categoryType[0].name;
@@ -247,11 +228,9 @@ exports.orderDetails = async (req, res) => {
               Key: `category_item/${itemImages[0].image}`,
               Expires: expirationTime, 
             });
-
             const material_image = item.material_image || [];
             var cat_id;
             var cat_name;
-
             if (category[0].category_type === 1) {
               cat_id = 1;
               cat_name = 'Men';
@@ -265,7 +244,6 @@ exports.orderDetails = async (req, res) => {
               cat_id = '';
               cat_name = 'All';
             }
-
             itemList.push({
               id: item.id || 0,
               item_name: item.name || '',
@@ -299,11 +277,9 @@ exports.orderDetails = async (req, res) => {
             });
           }
         }
-
         const measurement = await orderService.getMeasurement(order_id);
         const meas = [];
-        for (var m of measurement) {
-          
+        for (var m of measurement) { 
           const measurementArray = {
             id: m.id,
             item_id: item.id, 
@@ -312,20 +288,25 @@ exports.orderDetails = async (req, res) => {
             uom: m.uom,
             meas_id: m.measurement_id,
           };
-
           meas.push(measurementArray);
         }
-
-        const itemArray = itemList.map((item) => ({
-          ...item,
-          measurement_info: meas,
-        }));
-
+        const itemArray = itemList.map((item) => ({...item,measurement_info: meas,}))
+        var trackOrder = await orderService.BoutiqueOrderTrack(order_id)
+        var order_track = []
+        for ( var i in trackOrder) {
+          var order_track_json = {}
+          order_track_json.order_status = trackOrder[i].status_activity || 0
+          var orderStatusTrack = await orderService.orderStatusName(trackOrder[i].status_activity)
+          order_track_json.order_status_name = orderStatusTrack ? orderStatusTrack[0][0].status : ''
+          order_track_json.activity_date = trackOrder[i].activity_date || ''
+          order_track.push(order_track_json)
+        }
         if (Object.keys(orderDetails).length !== 0) {
           return res.status(200).send({
             result: {
               ...orderDetails,
               items: itemArray,
+              order_track: order_track,
               order_status_info: [orderStatusConfig], 
             },
             HasError: false,
@@ -347,7 +328,6 @@ exports.orderDetails = async (req, res) => {
         return res.status(400).send({ HasError: true, message: 'Invalid order.' });
       }
       const maskedNumberHist = cartOrderHistory.mobile_number ? Service.maskMobileNumber(cartOrderHistory.mobile_number) : '';
-
       var orderHistory = {};
       orderHistory.id = cartOrderHistory.id || 0;
       orderHistory.booking_code = cartOrderHistory.order_id || '';
@@ -372,32 +352,24 @@ exports.orderDetails = async (req, res) => {
       orderHistory.reward_point = '0'
       orderHistory.order_status = cartOrderHistory.status || 2;
       orderHistory.bill_image = '';
-
       const orderStatusNameHistory = await orderService.orderStatusName(orderHistory.order_status);
       orderHistory.order_status_name = orderStatusNameHistory ? orderStatusNameHistory[0][0].status : ''
-
       orderHistory.add_date = cartOrderHistory.created_at;
       orderHistory.order_type = 2;
       orderHistory.order_type_name = 'Alteration or Repair';
-
       var orderItems = await orderServiceItem.getOrderHistoryItem(order_id);
       var category = await orderService.categoryTypeAlter(order_id);
       var order = await OrderService.getOrderHistory(order_id)
-
       var itemList = [];
-
       for (var item of orderItems) {  
         var categoryType = await orderService.getCategoryByItemId(item.item_id)
         var tailorServiceName = await tailorService.getServiceName(item.service_id)
         var itemName = await orderService.getItemName(item.item_id)
-
         if (categoryType.length > 0) {
           const category_id = categoryType[0].id;
-          var category_name = categoryType[0].name;
-            
+          var category_name = categoryType[0].name;   
           var cat_id;
           var cat_name;
-
           if (category[0].category_type === 1) {
             cat_id = 1;
             cat_name = 'Men';
@@ -410,8 +382,7 @@ exports.orderDetails = async (req, res) => {
           } else {
             cat_id = 0;
             cat_name = 'All';
-          }
-  
+          } 
           itemList.push({
             id: item.id || 0,
             item_name: itemName[0].name || '',
@@ -443,16 +414,12 @@ exports.orderDetails = async (req, res) => {
             item_image: '',
           });
       }
-
-      const itemArray = itemList.map((item) => ({
-        ...item,
-        measurement_info: [],
-      }));
-
+      const itemArray = itemList.map((item) => ({...item,measurement_info: [],}))
       return res.status(200).send({
         result: {
           ...orderHistory,
           items: itemArray,
+          order_track: order_track,
           order_status_info: [orderStatusConfig]
         },
         HasError: false,
@@ -479,14 +446,7 @@ exports.cancelOrder = async (req, res) => {
     var order_id = req.query.order_id;
     var method_name = await Service.getCallingMethodName();
     var apiEndpointInput = JSON.stringify(req.body);
-    var apiTrack = await Service.trackApi(
-      req.query.user_id,
-      method_name,
-      apiEndpointInput,
-      req.query.device_id,
-      req.query.device_info,
-      req.ip
-    );
+    var apiTrack = await Service.trackApi(req.query.user_id,method_name,apiEndpointInput,req.query.device_id,req.query.device_info,req.ip);
     if (order_id == undefined || !Number.isInteger(parseInt(order_id))) {
       return res.status(400).send({
         HasError: true,
@@ -501,6 +461,14 @@ exports.cancelOrder = async (req, res) => {
         Message: "Error canceling the order.",
       });
     } else {
+      // var orderTrackData = {
+      //   order_id: order_id,
+      //   boutique_id: 1,
+      //   status_activity: 8,
+      //   activity_date: moment().format('YYYY-MM-DD HH:mm:ss'),
+      // }      
+      // var orderStatusNameInsert = await orderService.orderStatusNameInsert()
+
       const itemCancelResult = await orderService.itemCancel(order_id);
       if (itemCancelResult.error) {
         return res.status(500).send({
