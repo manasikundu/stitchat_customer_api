@@ -350,7 +350,7 @@ exports.orderDetails = async (req, res) => {
       orderHistory.tax_applied_amount = '';
       orderHistory.total_payable_amount = cartOrderHistory.total_amount || ''
       orderHistory.reward_point = '0'
-      orderHistory.order_status = cartOrderHistory.status || 2;
+      orderHistory.order_status = cartOrderHistory.status || 1
       orderHistory.bill_image = '';
       var orderStatusNameHistory = await orderService.orderStatusName(orderHistory.order_status);
       orderHistory.order_status_name = orderStatusNameHistory ? orderStatusNameHistory[0][0].status : ''
