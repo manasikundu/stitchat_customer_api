@@ -1324,7 +1324,7 @@ exports.deleteAddress = async (req, res) => {
 
 exports.fashionDesignerAppointmentDetails = async (req, res) => {
   try {
-    const { user_id, appointment_id } = req.query;
+    const { user_id, appointment_id } = req.body;
     if (user_id !== undefined && !Number.isInteger(parseInt(user_id))|| appointment_id !== undefined && !Number.isInteger(parseInt(appointment_id))) {
       return res.status(400).send({
         HasError: true,
@@ -1337,7 +1337,7 @@ exports.fashionDesignerAppointmentDetails = async (req, res) => {
     if (btq_id && btq_id[0] && btq_id[0][0] && btq_id[0][0].boutique_id !== undefined) {
       const id = btq_id[0][0].boutique_id;
     } else {
-      return res.status(400).send({
+      return res.status(200).send({
         HasError: true,
         result: {},
         message: "No user found.",
