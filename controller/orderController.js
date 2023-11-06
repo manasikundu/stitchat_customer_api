@@ -18,7 +18,7 @@ dotenv.config();
 
 var expirationTime = 600;
 var orderStatusConfig = [
-  { id: 1, status: "In Draft" },
+  { id: 1, status: "Order placed successfully" },
   { id: 2, status: "Waiting for confirmation" },
   { id: 3, status: "Order accepted by Boutique" },
   { id: 4, status: "In progress" },
@@ -404,8 +404,8 @@ exports.orderDetails = async (req, res) => {
             fit_type: item.fit_type || 0,
             fit_description: item.fit_description ,
             tailor_note: item.tailor_note || '',
-            status_id: item.status || 2,
-            status: item.status ? item.status : '',
+            status_id: 1,
+            status: 'Order placed successfully',
             item_description: item.item_description || '',
             repair_location: item.repair_location || '',
             repair_description: item.repair_description || '',
@@ -420,14 +420,15 @@ exports.orderDetails = async (req, res) => {
       var order_track_history = []
         for ( var i in trackOrderHist) {
           var order_track_hist_json = {}
-          console.log(orderHistory.order_status)
-          order_track_hist_json.order_status = orderHistory.order_status
-          console.log("hhj: ", order_track_hist_json.order_status)
-          var orderStatusTrackHis = await orderService.orderStatusName(order_track_hist_json.order_status)
-          order_track_hist_json.order_status_name = orderStatusTrackHis ? orderStatusTrackHis[0][0].status : ''
+          order_track_hist_json.order_status = 1
+          // var orderStatusTrackHis = await orderService.orderStatusName(order_track_hist_json.order_status)
+          order_track_hist_json.order_status_name = 'Order placed successfully'
+          // order_track_hist_json.order_status_name = orderStatusTrackHis ? orderStatusTrackHis[0][0].status : 'Order placed successfully'
+          console.log(order_track_hist_json.order_status_name)
           order_track_hist_json.activity_date =  ''
           order_track_history.push(order_track_hist_json)
         }
+        console.log(order_track_history)
       return res.status(200).send({
         result: {
           ...orderHistory,
