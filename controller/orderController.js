@@ -420,10 +420,10 @@ exports.orderDetails = async (req, res) => {
       var order_track_history = []
         for ( var i in trackOrderHist) {
           var order_track_hist_json = {}
-          order_track_hist_json.order_status = 1
-          // var orderStatusTrackHis = await orderService.orderStatusName(order_track_hist_json.order_status)
-          order_track_hist_json.order_status_name = 'Order placed successfully'
-          // order_track_hist_json.order_status_name = orderStatusTrackHis ? orderStatusTrackHis[0][0].status : 'Order placed successfully'
+          order_track_hist_json.order_status = order_track_hist_json.order_status || 1
+          var orderStatusTrackHis = await orderService.orderStatusName(order_track_hist_json.order_status)
+          // order_track_hist_json.order_status_name = 'Order placed successfully'
+          order_track_hist_json.order_status_name = orderStatusTrackHis ? orderStatusTrackHis[0][0].status : ''
           order_track_hist_json.activity_date =  ''
           order_track_history.push(order_track_hist_json)
         }
