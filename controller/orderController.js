@@ -424,11 +424,9 @@ exports.orderDetails = async (req, res) => {
           // var orderStatusTrackHis = await orderService.orderStatusName(order_track_hist_json.order_status)
           order_track_hist_json.order_status_name = 'Order placed successfully'
           // order_track_hist_json.order_status_name = orderStatusTrackHis ? orderStatusTrackHis[0][0].status : 'Order placed successfully'
-          console.log(order_track_hist_json.order_status_name)
           order_track_hist_json.activity_date =  ''
           order_track_history.push(order_track_hist_json)
         }
-        console.log(order_track_history)
       return res.status(200).send({
         result: {
           ...orderHistory,
