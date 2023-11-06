@@ -1328,7 +1328,6 @@ exports.fashionDesignerAppointmentDetails = async (req, res) => {
     if (user_id !== undefined && !Number.isInteger(parseInt(user_id))|| appointment_id !== undefined && !Number.isInteger(parseInt(appointment_id))) {
       return res.status(400).send({
         HasError: true,
-        StatusCode: 400,
         message: "Invalid parameter.",
       });
     }
@@ -1338,9 +1337,9 @@ exports.fashionDesignerAppointmentDetails = async (req, res) => {
     if (btq_id && btq_id[0] && btq_id[0][0] && btq_id[0][0].boutique_id !== undefined) {
       const id = btq_id[0][0].boutique_id;
     } else {
-      return res.status(200).send({
+      return res.status(400).send({
         HasError: true,
-        StatusCode: 200,
+        result: {},
         message: "No user found.",
       });
     }
