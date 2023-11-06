@@ -1228,7 +1228,7 @@ exports.bookAppointment = async (req, res) => {
 
 exports.appointmentList = async (req, res) => {
   try {
-    const userId = req.query.user_id;
+    const userId = req.body.user_id;
     const result = await FDService.appointmentList(userId);
     const data = [];
     if (result.length !== 0) {
