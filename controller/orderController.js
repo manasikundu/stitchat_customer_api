@@ -180,7 +180,7 @@ exports.orderDetails = async (req, res) => {
         const boutiqueAddress = await orderService.boutiqueAddress();
         const orderStatusName = await orderService.orderStatus(order.id);
         const orderDelivery = await orderService.orderDelivery();
-        const orderStatus = orderStatusName.find((status) => status.id === order.order_status_id);
+        var orderStatus = orderStatusName.find((status) => status.id === order.order_status_id);
         const deliveryDate = orderDelivery.find((delivery_date) => delivery_date.order_id === order.id);
         const deliveryTime = orderDelivery.find((deliver_time) => deliver_time.order_id === order.id);
         const maskedNumber = order.mobile_number ? Service.maskMobileNumber(order.mobile_number) : '';
@@ -296,7 +296,7 @@ exports.orderDetails = async (req, res) => {
         for ( var i in trackOrder) {
           var order_track_json = {}
           order_track_json.order_status = trackOrder[i].status_activity || 0
-          var orderStatusTrack = await orderService.orderStatusName(trackOrder[i].status_activity)
+          var orderStatusTrack = await orderService.orderStatusName(order_track_json.order_status )
           order_track_json.order_status_name = orderStatusTrack ? orderStatusTrack[0][0].status : ''
           order_track_json.activity_date = trackOrder[i].activity_date || ''
           order_track.push(order_track_json)
@@ -352,7 +352,7 @@ exports.orderDetails = async (req, res) => {
       orderHistory.reward_point = '0'
       orderHistory.order_status = cartOrderHistory.status || 2;
       orderHistory.bill_image = '';
-      const orderStatusNameHistory = await orderService.orderStatusName(orderHistory.order_status);
+      var orderStatusNameHistory = await orderService.orderStatusName(orderHistory.order_status);
       orderHistory.order_status_name = orderStatusNameHistory ? orderStatusNameHistory[0][0].status : ''
       orderHistory.add_date = cartOrderHistory.created_at;
       orderHistory.order_type = 2;
@@ -405,7 +405,7 @@ exports.orderDetails = async (req, res) => {
             fit_description: item.fit_description ,
             tailor_note: item.tailor_note || '',
             status_id: item.status || 2,
-            status: item.status ? item.status.status : '',
+            status: item.status ? item.status : '',
             item_description: item.item_description || '',
             repair_location: item.repair_location || '',
             repair_description: item.repair_description || '',
@@ -415,11 +415,24 @@ exports.orderDetails = async (req, res) => {
           });
       }
       const itemArray = itemList.map((item) => ({...item,measurement_info: [],}))
+      var trackOrderHist = await orderService.BoutiqueOrderTrack(order_id)
+
+      var order_track_history = []
+        for ( var i in trackOrderHist) {
+          var order_track_hist_json = {}
+          console.log(orderHistory.order_status)
+          order_track_hist_json.order_status = orderHistory.order_status
+          console.log("hhj: ", order_track_hist_json.order_status)
+          var orderStatusTrackHis = await orderService.orderStatusName(order_track_hist_json.order_status)
+          order_track_hist_json.order_status_name = orderStatusTrackHis ? orderStatusTrackHis[0][0].status : ''
+          order_track_hist_json.activity_date =  ''
+          order_track_history.push(order_track_hist_json)
+        }
       return res.status(200).send({
         result: {
           ...orderHistory,
           items: itemArray,
-          order_track: order_track,
+          order_track: order_track_history,
           order_status_info: [orderStatusConfig]
         },
         HasError: false,
