@@ -77,7 +77,8 @@ exports.createServiceCart = async (req, res) => {
 
 exports.getCart = async (req, res) => {
   try {
-    const user_id = req.query.user_id
+    const g_token = auth(req)
+    const user_id = g_token.user_id
     var method_name = await Service.getCallingMethodName()
     var apiEndpointInput = JSON.stringify(req.body)
     var apiTrack = await Service.trackApi(req.query.user_id,method_name,apiEndpointInput,req.query.device_id,req.query.device_info,req.ip)

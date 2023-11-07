@@ -1304,7 +1304,8 @@ exports.appointmentList = async (req, res) => {
 
 exports.deleteAddress = async (req, res) => {
   try {
-    const user_id = req.query.user_id;
+    const g_token = auth(req)
+    const user_id = g_token.user_id;
     const address_id = req.query.address_id;
     const result = await FDService.deleteAddress(user_id, address_id);
     if (result != 0) {

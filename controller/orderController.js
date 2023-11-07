@@ -31,14 +31,16 @@ var orderStatusConfig = [
 // Define the controller function for fetching order details
 exports.orderList = async (req, res) => {
   try {
-    var user_id = req.query.user_id;
-    if (user_id == undefined && !Number.isInteger(parseInt(user_id))) {
-      return res.status(400).json({
-        HasError: true,
-        StatusCode: 400,
-        message: "Invalid parameter.",
-      })
-    }
+    const g_token = auth(req)
+    const user_id = g_token.user_id;
+    // var user_id = req.query.user_id;
+    // if (user_id == undefined && !Number.isInteger(parseInt(user_id))) {
+    //   return res.status(400).json({
+    //     HasError: true,
+    //     StatusCode: 400,
+    //     message: "Invalid parameter.",
+    //   })
+    // }
 
     var method_name = await Service.getCallingMethodName()
     var apiEndpointInput = JSON.stringify(req.body)

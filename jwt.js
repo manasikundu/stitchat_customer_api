@@ -3,10 +3,9 @@ const jwt = require("jsonwebtoken");
 const secretKey = 'tensorflow'
 
 var generateAccessToken = (mobile_number, user_id) => {
-    return jwt.sign({ mobile_number: mobile_number, user_id: user_id }, secretKey, {
-        expiresIn: "24h",
-    });
-};
+    return jwt.sign({ mobile_number: mobile_number, user_id: user_id }, secretKey);
+}
+
 var auth = (req) => {
     var token = req.headers?.authorization
     const decoded = jwt.verify(token, secretKey)
