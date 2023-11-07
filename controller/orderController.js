@@ -287,7 +287,7 @@ exports.orderDetails = async (req, res) => {
               repair_location: '',
               repair_description: '',
               fabric_type: '',
-              material_image: [material_image],
+              material_image: material_image,
               item_image: item_image,
             });
           }
