@@ -17,6 +17,7 @@ var expirationTime = 600;
 
 var OTP_EXPIRY_TIME = 3 * 60 * 1000; // 3 minutes in milliseconds
 var otpCache = {}; // In-memory cache to store OTP and its timestamp
+// const secretKey = 'pyspark'
 var verifiedOTPs = new Set();
 
 
@@ -88,6 +89,7 @@ exports.verifyOTP = async (req, res) => {
       return res.status(400).send({ HasError: true, Message: "Invalid parameter." });
     } else {
       var user = await Users.findOne({ where: { mobile_number } });
+      
       if (user) {
         if (user.otp.toString() == otp.toString()) {
           var timestamp = new Date(user.updated_at).getTime();
@@ -104,7 +106,9 @@ exports.verifyOTP = async (req, res) => {
             verifiedOTPs.add(otp);
             otp = Service.generateOTP();
             otpCache[mobile_number] = { value: otp, timestamp: Date.now() };
-            var token = generateAccessToken(mobile_number, otp)
+            // var token = generateAccessToken(mobile_number, otp)
+            var token = generateAccessToken(mobile_number, user.id)
+
             const result = await Service.updateProfile(user.id, data1)
             var data = result[1][0].toJSON()
             var formattedUser = {
@@ -152,6 +156,53 @@ exports.verifyOTP = async (req, res) => {
   }
 }
 
+exports.verifyToken = (req, res, next, secretKey) => {
+  try {
+    var b_token = req.headers.authorization;
+    if (!b_token) {
+      return res.status(401).send({
+        HasError: true,
+        StatusCode: 401,
+        message: "Token not provided",
+      });
+    } else {
+      var token = b_token.replace(/^Bearer\s+/, "");
+      console.log('Received Token:', token);
+      console.log('Secret Key:', secretKey);
+      var decoded = jwt.verify(token, secretKey);
+      console.log('Decoded Token:', decoded)
+      // var decoded = auth(req, secretKey)
+
+      // Check if the decoded mobile_number matches the request mobile_number
+      if (decoded.mobile_number !== req.body.mobile_number) {
+        return res.status(401).send({
+          HasError: true,
+          StatusCode: 401,
+          message: "Invalid token for this user",
+        });
+      } else {
+        // Token is valid
+        req.user = decoded; // Store the user info in the request
+        next()
+        return res.status(200).send({
+          HasError: false,
+          StatusCode: 200,
+          message: "Token verified!",
+          user: req.user,
+        });
+      }
+    }
+
+  } catch (error) {
+    console.log(error);
+    return res.status(401).send({
+      HasError: true,
+      StatusCode: 401,
+      message: "Failed to authenticate token!",
+    });
+  }
+}
+
 // Seach api track api track
 exports.apiTrackList = async (req, res) => {
   try {
@@ -193,6 +244,7 @@ exports.apiTrackList = async (req, res) => {
 
 exports.userProfile = async (req, res) => {
   try {
+    
     const id = req.body.user_id
 
     var result1 = await Service.getUserDetails(id)
@@ -222,7 +274,6 @@ exports.userProfile = async (req, res) => {
           Key: result1.profile_photo,
           Expires: expirationTime,
         });
-        console.log(photo)
         customerInfo.profile_photo = photo
       } else {
         customerInfo.profile_photo = ''

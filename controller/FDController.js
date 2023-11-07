@@ -1041,7 +1041,10 @@ exports.getCityList = async (req, res) => {
 
 exports.getAddressList = async (req, res) => {
   try {
-    const { user_id, id, city, user_name, mobile_number } = req.query;
+    const {id, city, user_name, mobile_number } = req.query;
+    const g_token = auth(req)
+    const user_id = g_token.user_id;
+
     var method_name = await Service.getCallingMethodName();
     var apiEndpointInput = JSON.stringify(req.body);
     apiTrack = await Service.trackApi(
@@ -1228,7 +1231,9 @@ exports.bookAppointment = async (req, res) => {
 
 exports.appointmentList = async (req, res) => {
   try {
-    const userId = req.body.user_id;
+    const g_token = auth(req)
+    const userId = g_token.user_id;
+
     const result = await FDService.appointmentList(userId);
     const data = [];
     if (result.length !== 0) {
@@ -1324,8 +1329,11 @@ exports.deleteAddress = async (req, res) => {
 
 exports.fashionDesignerAppointmentDetails = async (req, res) => {
   try {
-    const { user_id, appointment_id } = req.body;
-    if (user_id !== undefined && !Number.isInteger(parseInt(user_id))|| appointment_id !== undefined && !Number.isInteger(parseInt(appointment_id))) {
+    const appointment_id  = req.query.appointment_id;
+    const g_token = auth(req)
+    const user_id = g_token.user_id;
+
+    if (appointment_id !== undefined && !Number.isInteger(parseInt(appointment_id))) {
       return res.status(400).send({
         HasError: true,
         message: "Invalid parameter.",
@@ -1342,7 +1350,7 @@ exports.fashionDesignerAppointmentDetails = async (req, res) => {
         result: {},
         message: "No user found.",
       });
-    }
+    } 
     // const id = btq_id[0][0].boutique_id;
     
     const exp = await db.query(`select experience from sarter__boutique_basic_info where id=${id}`)

@@ -1,22 +1,24 @@
 const jwt = require("jsonwebtoken");
 
-var generateAccessToken = (mobile_number, secret_key) => {
-    return jwt.sign({ mobile_number: mobile_number }, secret_key, {
+const secretKey = 'tensorflow'
+
+var generateAccessToken = (mobile_number, user_id) => {
+    return jwt.sign({ mobile_number: mobile_number, user_id: user_id}, secretKey, {
         expiresIn: "24h",
     });
 };
-var auth = (req, secret_key) => {
-    var token = req.headers?.authorization?.split(" ")[1];
+var auth = (req) => {
+    var token = req.headers?.authorization
     if (!token) {
-        return apiResponse.apiResponse(
-            res,
-            "A token is required for authentication",
-            {},
-            200,
-            false
-        );
+        return res.status(401).send({
+            HasError: true,
+            StatusCode: 401,
+            message: "Token not provided",
+          })
     } else {
-        return jwt.verify(token, secret_key);
+        const decoded = jwt.verify(token, secretKey)
+        return decoded
+        // return jwt.verify(token, secret_key);
     }
 };
 module.exports = { generateAccessToken, auth };
