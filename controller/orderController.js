@@ -228,7 +228,22 @@ exports.orderDetails = async (req, res) => {
               Key: `category_item/${itemImages[0].image}`,
               Expires: expirationTime, 
             });
-            const material_image = item.material_image || [];
+            const material_image = item.material_image ? (Array.isArray(item.material_image) ? item.material_image.map(image => s3.getSignedUrl('getObject', {
+              Bucket: process.env.AWS_BUCKET,
+              Key: `order-material/${image}`,
+              Expires: expirationTime,
+          })) : [s3.getSignedUrl('getObject', {
+              Bucket: process.env.AWS_BUCKET,
+              Key: `order-material/${item.material_image}`,
+              Expires: expirationTime,
+          })]) : [];
+          
+            // const material_image = s3.getSignedUrl('getObject', {
+            //   Bucket: process.env.AWS_BUCKET,
+            //   Key: `order-material/${item.material_image}`,
+            //   Expires: expirationTime, 
+            // });
+            // const material_image = item.material_image || [];
             var cat_id;
             var cat_name;
             if (category[0].category_type === 1) {
