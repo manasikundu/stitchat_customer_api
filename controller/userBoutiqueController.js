@@ -43,6 +43,8 @@ exports.getAddress = async (req, res) => {
     }
   } catch (error) {
     console.error("Error processing request:", error);
+    const logData = { user_id: "", status: 'false', message: error.message, device_id: '', created_at: Date.now(), updated_at: Date.now(), device_info: '', action: req.url }
+    const log = await logService.createLog(logData)
     return res.status(500).send({HasError: true,message: "An error occurred while processing the request."});
   }
 }
@@ -256,6 +258,8 @@ exports.getNearestBoutiqueList = async (req, res) => {
     }
   } catch (error) {
     console.error("Error processing request:", error);
+    const logData = { user_id: "", status: 'false', message: error.message, device_id: '', created_at: Date.now(), updated_at: Date.now(), device_info: '', action: req.url }
+    const log = await logService.createLog(logData)
     return res.status(500).json({
       HasError: true,
       StatusCode: 500,
@@ -434,6 +438,8 @@ exports.boutiqueDetails = async (req, res) => {
     });
   } catch (error) {
     console.error(error);
+    const logData = { user_id: "", status: 'false', message: error.message, device_id: '', created_at: Date.now(), updated_at: Date.now(), device_info: '', action: req.url }
+    const log = await logService.createLog(logData)
     return res.status(500).send({
       HasError: true,
       message: "An error occurred while processing the request.",

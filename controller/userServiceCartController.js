@@ -24,8 +24,8 @@ exports.createServiceCart = async (req, res) => {
     const repair_description = req.body.repair_description
     var method_name = await Service.getCallingMethodName()
     var apiEndpointInput = JSON.stringify(req.body)
-    var apiTrack = await Service.trackApi(req.query.user_id,method_name,apiEndpointInput,req.query.device_id,req.query.device_info,req.ip)
-        
+    var apiTrack = await Service.trackApi(req.query.user_id, method_name, apiEndpointInput, req.query.device_id, req.query.device_info, req.ip)
+
     if (!user_id || !item_id || !service_id || !type || !amount) {
       return res.status(400).send({ HasError: true, Message: "Invalid parameter." })
     } else {
@@ -72,6 +72,8 @@ exports.createServiceCart = async (req, res) => {
     }
   } catch (error) {
     console.error(error)
+    const logData = { user_id: "", status: 'false', message: error.message, device_id: '', created_at: Date.now(), updated_at: Date.now(), device_info: '', action: req.url }
+    const log = await logService.createLog(logData)
     return res.status(500).send({ message: "Some error occurred.", HasError: true, error: error.message });
   }
 }
@@ -82,8 +84,8 @@ exports.getCart = async (req, res) => {
     const user_id = g_token.user_id
     var method_name = await Service.getCallingMethodName()
     var apiEndpointInput = JSON.stringify(req.body)
-    var apiTrack = await Service.trackApi(req.query.user_id,method_name,apiEndpointInput,req.query.device_id,req.query.device_info,req.ip)
-        
+    var apiTrack = await Service.trackApi(req.query.user_id, method_name, apiEndpointInput, req.query.device_id, req.query.device_info, req.ip)
+
     if (user_id) {
       const user = await Users.findOne({ where: { id: user_id } })
       if (user) {
@@ -132,6 +134,8 @@ exports.getCart = async (req, res) => {
       return res.status(400).send({ message: "Please enter a userId", HasError: true })
     }
   } catch (error) {
+    const logData = { user_id: "", status: 'false', message: error.message, device_id: '', created_at: Date.now(), updated_at: Date.now(), device_info: '', action: req.url }
+    const log = await logService.createLog(logData)
     return res.status(500).send({ message: "Some error occurred.", HasError: true, error: error.message })
   }
 }
@@ -142,9 +146,9 @@ exports.removeCart = async (req, res) => {
     var user_id = req.body.user_id
     var method_name = await Service.getCallingMethodName()
     var apiEndpointInput = JSON.stringify(req.body)
-    var apiTrack = await Service.trackApi(req.query.user_id,method_name,apiEndpointInput,req.query.device_id,req.query.device_info,req.ip)
-        
-    if (id && user_id)  {
+    var apiTrack = await Service.trackApi(req.query.user_id, method_name, apiEndpointInput, req.query.device_id, req.query.device_info, req.ip)
+
+    if (id && user_id) {
       const user = await Users.findOne({ where: { id: user_id } })
       if (user) {
         var cartData = await cartService.getCartById(id)
@@ -169,6 +173,8 @@ exports.removeCart = async (req, res) => {
       return res.status(400).send({ message: "Please enter Id to delete", HasError: true })
     }
   } catch (error) {
+    const logData = { user_id: "", status: 'false', message: error.message, device_id: '', created_at: Date.now(), updated_at: Date.now(), device_info: '', action: req.url }
+    const log = await logService.createLog(logData)
     return res.status(500).send({ message: "Some thing went wrong.", HasError: true, error: error.message })
   }
 }
@@ -228,6 +234,8 @@ exports.updateCart = async (req, res) => {
     // }
   } catch (error) {
     console.log(error);
+    const logData = { user_id: "", status: 'false', message: error.message, device_id: '', created_at: Date.now(), updated_at: Date.now(), device_info: '', action: req.url }
+    const log = await logService.createLog(logData)
     res.status(500).send({ message: "Something went wrong.", HasError: true });
   }
 };

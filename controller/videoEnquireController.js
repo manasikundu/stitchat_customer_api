@@ -4,7 +4,7 @@ const Users = require("../model/userModel")
 const VideoInquire = require("../model/videoEnquireModel")
 const categoryItem = require("../model/categoryItemModel")
 const Service = require('../service/userService')
-
+const logService = require('../service/logService')
 
 
 exports.createVideoInquire = async (req, res) => {
@@ -20,8 +20,8 @@ exports.createVideoInquire = async (req, res) => {
         const inputDate = new Date(date_time)
         var method_name = await Service.getCallingMethodName()
         var apiEndpointInput = JSON.stringify(req.body)
-        var apiTrack = await Service.trackApi(req.query.user_id,method_name,apiEndpointInput,req.query.device_id,req.query.device_info,req.ip)
-        
+        var apiTrack = await Service.trackApi(req.query.user_id, method_name, apiEndpointInput, req.query.device_id, req.query.device_info, req.ip)
+
         if (inputDate < currentDate) {
             return res.status(400).send({ message: "Invalid date_time.", HasError: true })
         } else {
@@ -41,12 +41,14 @@ exports.createVideoInquire = async (req, res) => {
             dataJson.service_type = newService.service_type ? newService.service_type : ''
             dataJson.note = newService.note ? newService.note : ''
             dataJson.date_time = formattedDate ? formattedDate : ''
-            dataJson.enquiry_id = enquiry_id ?newService.enquiry_id : ''
+            dataJson.enquiry_id = enquiry_id ? newService.enquiry_id : ''
 
             return res.status(200).send({ HasError: false, Message: "Video Inquiry data inserted successfully.", result: dataJson });
         }
     } catch (error) {
         console.error(error)
+        const logData = { user_id: "", status: 'false', message: error.message, device_id: '', created_at: Date.now(), updated_at: Date.now(), device_info: '', action: req.url }
+        const log = await logService.createLog(logData)
         return res.status(500).send({ message: "Some error occurred.", HasError: true, error: error.message });
-}
+    }
 }

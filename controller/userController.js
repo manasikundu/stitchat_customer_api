@@ -14,7 +14,7 @@ const fs = require('fs')
 const s3 = require("../config/s3Config");
 const path = require('path');
 var expirationTime = 600;
-
+const logService = require('../service/logService')
 var OTP_EXPIRY_TIME = 3 * 60 * 1000; // 3 minutes in milliseconds
 var otpCache = {}; // In-memory cache to store OTP and its timestamp
 // const secretKey = 'pyspark'
@@ -66,6 +66,9 @@ exports.insertMobileNumber = async (req, res) => {
     }
   } catch (error) {
     console.error("Error creating user:", error);
+    const logData = { user_id: "", status: 'false', message: error.message, device_id: '', created_at: Date.now(), updated_at: Date.now(), device_info: '', action: req.url }
+    const log = await logService.createLog(logData)
+    console.log(log)
     return res.status(500).send({ HasError: false, error: "An error occurred while inserting the mobile number." });
   }
 }
@@ -89,12 +92,12 @@ exports.verifyOTP = async (req, res) => {
       return res.status(400).send({ HasError: true, Message: "Invalid parameter." });
     } else {
       var user = await Users.findOne({ where: { mobile_number } });
-      
+
       if (user) {
         if (user.otp.toString() == otp.toString()) {
           var timestamp = new Date(user.updated_at).getTime();
           if (Date.now() - timestamp > OTP_EXPIRY_TIME) {
-            return res.status(400).send({HasError: true,Message: "OTP has expired. Please request a new OTP."})
+            return res.status(400).send({ HasError: true, Message: "OTP has expired. Please request a new OTP." })
           } else {
             var data1 = req.body
             if (data1.first_name == '' && data1.last_name == '') {
@@ -152,6 +155,8 @@ exports.verifyOTP = async (req, res) => {
     }
   } catch (error) {
     console.error("Error verifying OTP:", error);
+    const logData = { user_id: "", status: 'false', message: error.message, device_id: '', created_at: Date.now(), updated_at: Date.now(), device_info: '', action: req.url }
+    const log = await logService.createLog(logData)
     return res.status(500).send({ HasError: true, Message: "An error occurred while verifying the OTP." });
   }
 }
@@ -195,6 +200,7 @@ exports.verifyToken = (req, res, next, secretKey) => {
 
   } catch (error) {
     console.log(error);
+
     return res.status(401).send({
       HasError: true,
       StatusCode: 401,
@@ -238,13 +244,15 @@ exports.apiTrackList = async (req, res) => {
     }
     return res.status(200).send({ result: users, HasError: false, Message: "Customer search successful." });
   } catch (error) {
+    const logData = { user_id: "", status: 'false', message: error.message, device_id: '', created_at: Date.now(), updated_at: Date.now(), device_info: '', action: req.url }
+    const log = await logService.createLog(logData)
     return res.status(500).send({ result: null, HasError: true, Message: "An error occurred while retrieving customers.", error: error.message });
   }
 };
 
 exports.userProfile = async (req, res) => {
   try {
-    
+
     const id = req.body.user_id
 
     var result1 = await Service.getUserDetails(id)
@@ -302,6 +310,8 @@ exports.userProfile = async (req, res) => {
     }
   } catch (error) {
     console.log(error)
+    const logData = { user_id: "", status: 'false', message: error.message, device_id: '', created_at: Date.now(), updated_at: Date.now(), device_info: '', action: req.url }
+    const log = await logService.createLog(logData)
     res.status(500).send({ message: "Something went wrong.", HasError: true })
   }
 }
@@ -326,6 +336,8 @@ exports.updateProfile = async (req, res) => {
 
   } catch (error) {
     console.log(error)
+    const logData = { user_id: "", status: 'false', message: error.message, device_id: '', created_at: Date.now(), updated_at: Date.now(), device_info: '', action: req.url }
+    const log = await logService.createLog(logData)
     res.status(500).send({ message: "Something went wrong.", HasError: true })
   }
 }
@@ -340,6 +352,8 @@ exports.aboutUs = async (req, res) => {
     })
   } catch (error) {
     console.log(error)
+    const logData = { user_id: "", status: 'false', message: error.message, device_id: '', created_at: Date.now(), updated_at: Date.now(), device_info: '', action: req.url }
+    const log = await logService.createLog(logData)
     res.status(500).send({ message: "Something went wrong.", HasError: true })
   }
 }
@@ -354,6 +368,8 @@ exports.contactInfo = async (req, res) => {
     })
   } catch (error) {
     console.log(error)
+    const logData = { user_id: "", status: 'false', message: error.message, device_id: '', created_at: Date.now(), updated_at: Date.now(), device_info: '', action: req.url }
+    const log = await logService.createLog(logData)
     res.status(500).send({ message: "Something went wrong.", HasError: true })
   }
 }
@@ -370,6 +386,8 @@ exports.contactUs = async (req, res) => {
     })
   } catch (error) {
     console.log(error)
+    const logData = { user_id: "", status: 'false', message: error.message, device_id: '', created_at: Date.now(), updated_at: Date.now(), device_info: '', action: req.url }
+    const log = await logService.createLog(logData)
     res.status(500).send({ message: "Something went wrong.", HasError: true })
   }
 }
@@ -401,6 +419,8 @@ exports.privacyPolicy = async (req, res) => {
     })
   } catch (error) {
     console.log(error)
+    const logData = { user_id: "", status: 'false', message: error.message, device_id: '', created_at: Date.now(), updated_at: Date.now(), device_info: '', action: req.url }
+    const log = await logService.createLog(logData)
     res.status(500).send({ message: "Something went wrong.", HasError: true })
   }
 }
@@ -460,6 +480,8 @@ exports.profilePicUpload = async (req, res) => {
 
   } catch (error) {
     console.log(error)
+    const logData = { user_id: "", status: 'false', message: error.message, device_id: '', created_at: Date.now(), updated_at: Date.now(), device_info: '', action: req.url }
+    const log = await logService.createLog(logData)
     res.status(500).send({ message: "Something went wrong.", HasError: true })
   }
 }

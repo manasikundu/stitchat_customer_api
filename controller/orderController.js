@@ -146,6 +146,8 @@ exports.orderList = async (req, res) => {
     }
   } catch (error) {
     console.error(error);
+    const logData = { user_id: "", status: 'false', message: error.message, device_id: '', created_at: Date.now(), updated_at: Date.now(), device_info: '', action: req.url }
+    const log = await logService.createLog(logData)
     return res.status(500).send({
       result: {
         orderList,
@@ -459,6 +461,8 @@ exports.orderDetails = async (req, res) => {
       return res.status(200).send({ HasError: true, message: "Invalid order." });
     }
   } catch (error) {
+    const logData = { user_id: "", status: 'false', message: error.message, device_id: '', created_at: Date.now(), updated_at: Date.now(), device_info: '', action: req.url }
+    const log = await logService.createLog(logData)
     console.error(error);
     return res.status(500).send({
       result: {
@@ -513,6 +517,8 @@ exports.cancelOrder = async (req, res) => {
     }
   } catch (error) {
     console.error(error);
+    const logData = { user_id: "", status: 'false', message: error.message, device_id: '', created_at: Date.now(), updated_at: Date.now(), device_info: '', action: req.url }
+    const log = await logService.createLog(logData)
     return res.status(500).send({
       result: {
         orderDetails,

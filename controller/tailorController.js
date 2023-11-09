@@ -16,6 +16,8 @@ exports.itemListForTailor = async (req, res) => {
             return res.status(500).send({ message: "Items not found.", HasError: true, result: [] })
         }
     } catch (error) {
+        const logData = { user_id: "", status: 'false', message: error.message, device_id: '', created_at: Date.now(), updated_at: Date.now(), device_info: '', action: req.url }
+        const log = await logService.createLog(logData)
         return res.status(500).send({ message: "Some error occurred.", HasError: true, error: error.message })
     }
 }
@@ -58,6 +60,8 @@ exports.serviceType = async (req, res) => {
             return res.status(400).send({ message: "Please enter a item id.", HasError: false })
         }
     } catch (error) {
+        const logData = { user_id: "", status: 'false', message: error.message, device_id: '', created_at: Date.now(), updated_at: Date.now(), device_info: '', action: req.url }
+        const log = await logService.createLog(logData)
         return res.status(500).send({ message: "Some error occurred.", HasError: true, error: error.message })
     }
 }

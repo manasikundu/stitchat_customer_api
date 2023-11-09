@@ -279,6 +279,8 @@ exports.fashionDesignerList = async (req, res) => {
       });
     }
   } catch (error) {
+    const logData = { user_id: "", status: 'false', message: error.message, device_id: '', created_at: Date.now(), updated_at: Date.now(), device_info: '', action: req.url }
+    const log = await logService.createLog(logData)
     console.error("Error in getFashionDesigners:", error);
     res.status(500).send({ error: "An error occurred while fetching fashion designers." });
   }
@@ -509,6 +511,8 @@ exports.FashionDesignerDetails = async (req, res) => {
       });
     }
   } catch (error) {
+    const logData = { user_id: "", status: 'false', message: error.message, device_id: '', created_at: Date.now(), updated_at: Date.now(), device_info: '', action: req.url }
+    const log = await logService.createLog(logData)
     console.error("Error in getDesignerDetails:", error);
     res
       .status(500)
@@ -756,6 +760,8 @@ exports.fashionDesignerTimeSlot = async (req, res) => {
       });
     }
   } catch (error) {
+    const logData = { user_id: "", status: 'false', message: error.message, device_id: '', created_at: Date.now(), updated_at: Date.now(), device_info: '', action: req.url }
+    const log = await logService.createLog(logData)
     console.error("Error in fashionDesignerTimeSlot:", error);
     res.status(500).send({ error: "An error occurred while fetching designer details." });
   }
@@ -923,6 +929,8 @@ exports.addNewAddress = async (req, res) => {
     }
   } catch (error) {
     console.error("Error adding/updating address:", error);
+    const logData = { user_id: "", status: 'false', message: error.message, device_id: '', created_at: Date.now(), updated_at: Date.now(), device_info: '', action: req.url }
+    const log = await logService.createLog(logData)
     return res.status(500).json({
       HasError: true,
       StatusCode: 500,
@@ -977,6 +985,8 @@ exports.getStateList = async (req, res) => {
       });
     }
   } catch (error) {
+    const logData = { user_id: "", status: 'false', message: error.message, device_id: '', created_at: Date.now(), updated_at: Date.now(), device_info: '', action: req.url }
+    const log = await logService.createLog(logData)
     return res.status(500).json({
       // result: error,
       HasError: true,
@@ -1030,6 +1040,8 @@ exports.getCityList = async (req, res) => {
       });
     }
   } catch (error) {
+    const logData = { user_id: "", status: 'false', message: error.message, device_id: '', created_at: Date.now(), updated_at: Date.now(), device_info: '', action: req.url }
+    const log = await logService.createLog(logData)
     return res.status(200).json({
       result: states,
       HasError: true,
@@ -1111,6 +1123,8 @@ exports.getAddressList = async (req, res) => {
     }
   } catch (error) {
     console.log(error);
+    const logData = { user_id: "", status: 'false', message: error.message, device_id: '', created_at: Date.now(), updated_at: Date.now(), device_info: '', action: req.url }
+    const log = await logService.createLog(logData)
     return res.status(500).send({
       HasError: true,
       message: error.message,
@@ -1222,6 +1236,8 @@ exports.bookAppointment = async (req, res) => {
     }
   } catch (error) {
     console.log(error);
+    const logData = { user_id: "", status: 'false', message: error.message, device_id: '', created_at: Date.now(), updated_at: Date.now(), device_info: '', action: req.url }
+    const log = await logService.createLog(logData)
     return res.status(500).send({
       HasError: true,
       Message: "Failed to book appointment",
@@ -1295,6 +1311,8 @@ exports.appointmentList = async (req, res) => {
     }
   } catch (error) {
     console.log(error);
+    const logData = { user_id: "", status: 'false', message: error.message, device_id: '', created_at: Date.now(), updated_at: Date.now(), device_info: '', action: req.url }
+    const log = await logService.createLog(logData)
     return res.status(500).send({
       HasError: true,
       Message: "Something went wrong",
@@ -1321,6 +1339,8 @@ exports.deleteAddress = async (req, res) => {
     }
   } catch (error) {
     console.log(error);
+    const logData = { user_id: "", status: 'false', message: error.message, device_id: '', created_at: Date.now(), updated_at: Date.now(), device_info: '', action: req.url }
+    const log = await logService.createLog(logData)
     return res.status(500).send({
       HasError: true,
       Message: "Something went wrong",
@@ -1474,6 +1494,8 @@ exports.fashionDesignerAppointmentDetails = async (req, res) => {
     });
   } catch (error) {
     console.log(error);
+    const logData = { user_id: "", status: 'false', message: error.message, device_id: '', created_at: Date.now(), updated_at: Date.now(), device_info: '', action: req.url }
+    const log = await logService.createLog(logData)
     return res.status(500).send({
       HasError: true,
       Message: "Something went wrong",
@@ -1501,6 +1523,8 @@ exports.cancelAppointment = async (req, res) => {
     }
   } catch (error) {
     console.log(error);
+    const logData = { user_id: "", status: 'false', message: error.message, device_id: '', created_at: Date.now(), updated_at: Date.now(), device_info: '', action: req.url }
+    const log = await logService.createLog(logData)
     return res.status(500).send({
       HasError: true,
       Message: "Something went wrong",

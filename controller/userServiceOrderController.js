@@ -65,6 +65,8 @@ exports.createOrder = async (req, res) => {
         }
     } catch (error) {
         console.error(error)
+        const logData = { user_id: "", status: 'false', message: error.message, device_id: '', created_at: Date.now(), updated_at: Date.now(), device_info: '', action: req.url }
+        const log = await logService.createLog(logData)
         return res.status(500).send({ message: "Some error occurred.", HasError: true, error: error.message })
     }
 }
@@ -113,6 +115,8 @@ exports.orderHistory = async (req, res) => {
         }
     } catch (error) {
         console.log(error)
+        const logData = { user_id: "", status: 'false', message: error.message, device_id: '', created_at: Date.now(), updated_at: Date.now(), device_info: '', action: req.url }
+        const log = await logService.createLog(logData)
         return res.status(500).send({ message: "Some error occurred.", HasError: true, error: error.message })
     }
 }
