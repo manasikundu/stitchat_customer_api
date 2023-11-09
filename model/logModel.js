@@ -14,9 +14,7 @@ const SarterLog = sequelize.define(
       defaultValue: '0',
     },
     status: {
-      type: DataTypes.INTEGER,
-      defaultValue: 1,
-      comment: '1 - success case, 2 - error case',
+      type: DataTypes.STRING,
     },
     message: {
       type: DataTypes.STRING(255),
@@ -31,6 +29,12 @@ const SarterLog = sequelize.define(
     },
     updated_at: {
       type: DataTypes.DATE,
+    },
+    device_info: {
+      type: DataTypes.STRING,
+    },
+    action: {
+      type: DataTypes.STRING,
     },
   },
   {
