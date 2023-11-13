@@ -135,7 +135,7 @@ exports.categoryTypeAlter=async(order_id)=>{
   WHERE service_id = (
       SELECT service_id
       FROM public.sarter__users_service_order
-      WHERE id = ${order_id})`
+      WHERE order_id = '${order_id}')`
   var result = await db.query(query)
   return result[0]
 }

@@ -2,12 +2,16 @@ const ratingService = require('../service/ratingService')
 const Service = require('../service/userService')
 const moment = require('moment')
 const Rating = require('../model/ratingModel')
-
+const logService = require('../service/logService')
+const { generateAccessToken, auth } = require("../jwt")
 
 exports.addAndUpdateRating = async (req, res) => {
     try {
         const rate_id = req.query.rate_id;
-        const { user_id, rating_id, rating_flag, rate, comment } = req.body;
+        const {rating_id, rating_flag, rate, comment } = req.body;
+        const g_token = auth(req)
+        const user_id = g_token.user_id;
+
         var method_name = await Service.getCallingMethodName();
         var apiEndpointInput = JSON.stringify(req.body);
         apiTrack = await Service.trackApi(req.query.user_id, method_name, apiEndpointInput, req.query.device_id, req.query.device_info, req.ip);
@@ -50,7 +54,10 @@ exports.addAndUpdateRating = async (req, res) => {
 
 exports.ratingList = async (req, res) => {
     try {
-        const user_id = req.query.user_id
+        // const user_id = req.query.user_id
+        const g_token = auth(req)
+        const user_id = g_token.user_id;
+
         var method_name = await Service.getCallingMethodName();
         var apiEndpointInput = JSON.stringify(req.body);
         apiTrack = await Service.trackApi(req.query.user_id,method_name,apiEndpointInput,req.query.device_id,req.query.device_info,req.ip)

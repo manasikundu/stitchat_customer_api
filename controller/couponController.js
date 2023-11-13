@@ -4,6 +4,7 @@ const Users = require("../model/userModel")
 const Service = require('../service/userService')
 const orderService = require('../service/userServiceOrderService')
 const cartService = require('../service/userServiceCartService')
+const logService = require('../service/logService')
 
 
 exports.createCoupon = async (req, res) => {
@@ -59,7 +60,9 @@ exports.createCoupon = async (req, res) => {
 exports.applyCoupon = async (req, res) => {
     try {
         const coupon_code = req.body.coupon_code
-        const user_id = req.body.user_id
+        // const user_id = req.body.user_id
+        const g_token = auth(req)
+        const user_id = g_token.user_id;
         var currentDate = new Date();
 
         var result = await couponService.getCouponDetails(coupon_code)

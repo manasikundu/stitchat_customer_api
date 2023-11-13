@@ -292,7 +292,9 @@ exports.fashionDesignerList = async (req, res) => {
 // Details of FD
 exports.FashionDesignerDetails = async (req, res) => {
   try {
-    var user_id = req.body.user_id;
+    // var user_id = req.body.user_id;
+    const g_token = auth(req)
+    const user_id = g_token.user_id;
     var mobile_number = req.body.mobile_number;
 
     var method_name = await Service.getCallingMethodName();
@@ -524,7 +526,9 @@ exports.FashionDesignerDetails = async (req, res) => {
 exports.fashionDesignerTimeSlot = async (req, res) => {
   try {
     var user_id = req.body.fashion_designer_id;
-    var customer_id = req.body.user_id;
+    // var customer_id = req.body.user_id;
+    const g_token = auth(req)
+    const customer_id = g_token.user_id;
     const mobile_number = req.body.mobile_number;
     const method_name = await Service.getCallingMethodName();
     const apiEndpointInput = JSON.stringify(req.body);
@@ -781,22 +785,13 @@ exports.addNewAddress = async (req, res) => {
       req.query.device_info,
       req.ip
     );
-    var {
-      first_name,
-      last_name,
-      user_id,
-      street,
-      landmark,
-      state,
-      city,
-      mobile_number,
-      pincode,
-    } = req.body;
+    var {first_name,last_name,street,landmark,state,city,mobile_number,pincode} = req.body;
+    const g_token = auth(req)
+    const user_id = g_token.user_id;
     if (
       (!req.body.addressId && // For insert
         (!first_name ||
           !last_name ||
-          !user_id ||
           !street ||
           !state ||
           !city ||
@@ -882,7 +877,7 @@ exports.addNewAddress = async (req, res) => {
       }
       var result1 = {};
       (result1.user_id = user_id), (result1.address = data);
-      return res.status(200).json({
+      return res.status(200).send({
         result: result1,
         HasError: false,
         StatusCode: 200,
@@ -920,7 +915,7 @@ exports.addNewAddress = async (req, res) => {
       }
       var result1 = {};
       (result1.user_id = user_id), (result1.address = data);
-      return res.status(201).json({
+      return res.status(201).send({
         result: result1,
         HasError: false,
         StatusCode: 201,
@@ -1135,7 +1130,9 @@ exports.getAddressList = async (req, res) => {
 // book appointment
 exports.bookAppointment = async (req, res) => {
   try {
-    var { fashion_designer_id, user_id, appointment_date, start_time, end_time, address_id, total_fees } = req.body
+    var { fashion_designer_id,appointment_date, start_time, end_time, address_id, total_fees } = req.body
+    const g_token = auth(req)
+    const user_id = g_token.user_id;
     var designer = await FDService.getDesignerDetailsByUserId(fashion_designer_id);
     // var user = await Appointment.findOne({where: {customer_id: user_id}});
     var user = await Users.findOne({where: {id: user_id, user_type_id: 3}});

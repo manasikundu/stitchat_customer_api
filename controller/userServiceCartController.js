@@ -6,12 +6,14 @@ const Users = require("../model/userModel")
 const tailorService = require("../service/tailorService")
 const Service = require('../service/userService')
 const { generateAccessToken, auth } = require("../jwt");
-
+const logService = require('../service/logService')
 
 
 exports.createServiceCart = async (req, res) => {
   try {
     const user_id = req.body.user_id
+    // const g_token = auth(req)
+    // const user_id = g_token.user_id;
     const item_id = req.body.item_id
     const service_id = req.body.service_id
     const type = req.body.type
@@ -143,7 +145,9 @@ exports.getCart = async (req, res) => {
 exports.removeCart = async (req, res) => {
   try {
     var id = req.body.cart_id
-    var user_id = req.body.user_id
+    // var user_id = req.body.user_id
+    const g_token = auth(req)
+    const user_id = g_token.user_id;
     var method_name = await Service.getCallingMethodName()
     var apiEndpointInput = JSON.stringify(req.body)
     var apiTrack = await Service.trackApi(req.query.user_id, method_name, apiEndpointInput, req.query.device_id, req.query.device_info, req.ip)
@@ -182,7 +186,9 @@ exports.removeCart = async (req, res) => {
 exports.updateCart = async (req, res) => {
   try {
     var id = req.body.cart_id
-    var user_id = req.body.user_id
+    // var user_id = req.body.user_id
+    const g_token = auth(req)
+    const user_id = g_token.user_id;
     if (id && user_id) {
       const user = await Users.findOne({ where: { id: user_id } })
       if (user) {

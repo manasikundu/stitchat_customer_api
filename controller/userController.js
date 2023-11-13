@@ -253,7 +253,10 @@ exports.apiTrackList = async (req, res) => {
 exports.userProfile = async (req, res) => {
   try {
 
-    const id = req.body.user_id
+    // const id = req.body.user_id
+    const g_token = auth(req)
+    const id = g_token.user_id;
+    
 
     var result1 = await Service.getUserDetails(id)
     if (result1) {
@@ -318,7 +321,9 @@ exports.userProfile = async (req, res) => {
 
 exports.updateProfile = async (req, res) => {
   try {
-    const id = req.body.id
+    // const id = req.body.id
+    const g_token = auth(req)
+    const id = g_token.user_id;
     const data = req.body
     delete data['id'];
     const result = await Service.updateProfile(id, data)

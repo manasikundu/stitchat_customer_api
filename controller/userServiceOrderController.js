@@ -4,10 +4,15 @@ const Users = require("../model/userModel")
 const UsersAddress = require("../model/userAddressModel")
 const Service = require('../service/userService')
 const cartService = require('../service/userServiceCartService')
+const logService = require('../service/logService')
+const { generateAccessToken, auth } = require("../jwt");
+
 
 exports.createOrder = async (req, res) => {
     try {
         const user_id = req.body.user_id
+        // const g_token = auth(req)
+        // const user_id = g_token.user_id;
         const name = req.body.name
         const email = req.body.email
         const mobile_number = req.body.mobile_number
@@ -17,7 +22,7 @@ exports.createOrder = async (req, res) => {
         var formattedDate = currentDate.toISOString().slice(0, 19).replace("T", " ")
         const coupon_id = req.body.coupon_id || 0
         const coupon_code = req.body.coupon_code || ''
-        const delivery_price = req.body.delivery_price || 0
+        const delivery_price = req.body.delivery_price || 50
         const sum_amount = req.body.sum_amount || 0
         const discount_price = req.body.discount_price || 0
         const extra_charge = req.body.extra_charge || 0

@@ -36,7 +36,7 @@ exports.getCartById = async (id) => {
 
 exports.getOrderHistoryItem = async (order_id) => {
   try {
-    const orderItem = await UserServiceCart.findAll({ where: { id: order_id } })
+    const orderItem = await UserServiceCart.findAll({ where: { order_id: order_id } })
     return orderItem
   } catch (error) {
     console.log(error)

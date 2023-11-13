@@ -15,6 +15,7 @@ const db = require("../dbConnection");
 const s3 = require("../config/s3Config");
 const dotenv = require("dotenv");
 dotenv.config();
+const logService = require("../service/logService")
 
 var expirationTime = 600;
 var orderStatusConfig = [
@@ -342,43 +343,49 @@ exports.orderDetails = async (req, res) => {
         }
       }
     } else if (type == 2) {
-      const cartOrderHistory = await OrderService.getOrderHistory(order_id);
+      var alter_order_id = req.query.order_id
+      const cartOrderHistory = await OrderService.getOrderHistory(alter_order_id);
+      // console.log("bnbnv: ", cartOrderHistory)
       if (!cartOrderHistory) {
         return res.status(400).send({ HasError: true, message: 'Invalid order.' });
       }
       const maskedNumberHist = cartOrderHistory.mobile_number ? Service.maskMobileNumber(cartOrderHistory.mobile_number) : '';
-      var orderHistory = {};
-      orderHistory.id = cartOrderHistory.id || 0;
-      orderHistory.booking_code = cartOrderHistory.order_id || '';
-      orderHistory.boutique_id = cartOrderHistory.boutique_id || 1;
-      orderHistory.customer_id = cartOrderHistory.user_id || 0;
-      orderHistory.customer_firstname = cartOrderHistory.name;
-      orderHistory.customer_lastname = '';
-      orderHistory.customer_name = cartOrderHistory.name;
-      orderHistory.customer_mobile_number = cartOrderHistory.mobile_number;
-      orderHistory.customer_masked_mobile_number = maskedNumberHist;
-      orderHistory.customer_email_id = cartOrderHistory.email;
-      orderHistory.total_quantity = cartOrderHistory.quantity || 1;
-      orderHistory.coupon_id = cartOrderHistory.coupon_id || 0
-      orderHistory.coupon_code = cartOrderHistory.coupon_code || ''
-      orderHistory.coupon_name = cartOrderHistory.coupon_name || ''
-      orderHistory.coupon_description = cartOrderHistory.coupon_description || ''
-      orderHistory.subtotal_amount = cartOrderHistory.sum_amount;
-      orderHistory.discount_amount = cartOrderHistory.discount_price;
-      orderHistory.coupon_applied_amount = cartOrderHistory.coupon_amount;
-      orderHistory.tax_applied_amount = '';
-      orderHistory.total_payable_amount = cartOrderHistory.total_amount || ''
-      orderHistory.reward_point = '0'
-      orderHistory.order_status = cartOrderHistory.status || 1
-      orderHistory.bill_image = '';
-      var orderStatusNameHistory = await orderService.orderStatusName(orderHistory.order_status);
-      orderHistory.order_status_name = orderStatusNameHistory ? orderStatusNameHistory[0][0].status : ''
-      orderHistory.add_date = cartOrderHistory.created_at;
-      orderHistory.order_type = 2;
-      orderHistory.order_type_name = 'Alteration or Repair';
-      var orderItems = await orderServiceItem.getOrderHistoryItem(order_id);
-      var category = await orderService.categoryTypeAlter(order_id);
-      var order = await OrderService.getOrderHistory(order_id)
+      for (var i in cartOrderHistory) {
+        var orderHistory = {};
+        orderHistory.id = cartOrderHistory[i].id || 0;
+        orderHistory.booking_code = cartOrderHistory[i].order_id || '';
+        orderHistory.boutique_id = cartOrderHistory[i].boutique_id || 1;
+        orderHistory.customer_id = cartOrderHistory[i].user_id || 0;
+        orderHistory.customer_firstname = cartOrderHistory[i].name;
+        orderHistory.customer_lastname = '';
+        orderHistory.customer_name = cartOrderHistory[i].name;
+        orderHistory.customer_mobile_number = cartOrderHistory[i].mobile_number;
+        orderHistory.customer_masked_mobile_number = maskedNumberHist;
+        orderHistory.customer_email_id = cartOrderHistory[i].email;
+        orderHistory.total_quantity = cartOrderHistory[i].quantity || 1;
+        orderHistory.coupon_id = cartOrderHistory[i].coupon_id || 0
+        orderHistory.coupon_code = cartOrderHistory[i].coupon_code || ''
+        orderHistory.coupon_name = cartOrderHistory[i].coupon_name || ''
+        orderHistory.coupon_description = cartOrderHistory[i].coupon_description || ''
+        orderHistory.subtotal_amount = cartOrderHistory[i].sum_amount;
+        orderHistory.discount_amount = cartOrderHistory[i].discount_price;
+        orderHistory.coupon_applied_amount = cartOrderHistory[i].coupon_amount;
+        orderHistory.tax_applied_amount = '';
+        orderHistory.total_payable_amount = cartOrderHistory[i].total_price 
+        orderHistory.reward_point = '0'
+        orderHistory.order_status = cartOrderHistory[i].status || 1
+        orderHistory.bill_image = '';
+        var orderStatusNameHistory = await orderService.orderStatusName(orderHistory.order_status);
+        orderHistory.order_status_name = orderStatusNameHistory ? orderStatusNameHistory[0][0].status : ''
+        orderHistory.add_date = cartOrderHistory[i].created_at;
+        orderHistory.order_type = 2;
+        orderHistory.order_type_name = 'Alteration or Repair';
+      }
+      
+      var orderItems = await orderServiceItem.getOrderHistoryItem(alter_order_id);
+      var category = await orderService.categoryTypeAlter(alter_order_id);
+      var order = await OrderService.getOrderHistory(alter_order_id)
+      // console.log(orderItems)
       var itemList = [];
       for (var item of orderItems) {  
         var categoryType = await orderService.getCategoryByItemId(item.item_id)
@@ -434,7 +441,7 @@ exports.orderDetails = async (req, res) => {
           });
       }
       const itemArray = itemList.map((item) => ({...item,measurement_info: [],}))
-      var trackOrderHist = await orderService.BoutiqueOrderTrack(order_id)
+      var trackOrderHist = await orderService.BoutiqueOrderTrack(orderHistory.id)
 
       var order_track_history = []
         for ( var i in trackOrderHist) {
