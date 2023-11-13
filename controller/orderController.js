@@ -343,9 +343,7 @@ exports.orderDetails = async (req, res) => {
         }
       }
     } else if (type == 2) {
-      var alter_order_id = req.query.order_id
-      const cartOrderHistory = await OrderService.getOrderHistory(alter_order_id);
-      // console.log("bnbnv: ", cartOrderHistory)
+      const cartOrderHistory = await OrderService.getOrderHistory(order_id);
       if (!cartOrderHistory) {
         return res.status(400).send({ HasError: true, message: 'Invalid order.' });
       }
@@ -382,15 +380,15 @@ exports.orderDetails = async (req, res) => {
         orderHistory.order_type_name = 'Alteration or Repair';
       }
       
-      var orderItems = await orderServiceItem.getOrderHistoryItem(alter_order_id);
-      var category = await orderService.categoryTypeAlter(alter_order_id);
-      var order = await OrderService.getOrderHistory(alter_order_id)
-      // console.log(orderItems)
+      var orderItems = await orderServiceItem.getOrderHistoryItem(orderHistory.booking_code);
+      var category = await orderService.categoryTypeAlter(orderHistory.booking_code);
+      var order = await OrderService.getOrderHistory(order_id)
       var itemList = [];
-      for (var item of orderItems) {  
-        var categoryType = await orderService.getCategoryByItemId(item.item_id)
-        var tailorServiceName = await tailorService.getServiceName(item.service_id)
-        var itemName = await orderService.getItemName(item.item_id)
+      for (var j in orderItems) {  
+        console.log(orderItems[j].id)
+        var categoryType = await orderService.getCategoryByItemId(orderItems[j].item_id)
+        var tailorServiceName = await tailorService.getServiceName(orderItems[j].service_id)
+        var itemName = await orderService.getItemName(orderItems[j].item_id)
         if (categoryType.length > 0) {
           const category_id = categoryType[0].id;
           var category_name = categoryType[0].name;   
@@ -410,31 +408,31 @@ exports.orderDetails = async (req, res) => {
             cat_name = 'All';
           } 
           itemList.push({
-            id: item.id || 0,
+            id: orderItems[j].id || 0,
             item_name: itemName[0].name || '',
-            category_item_dic_id: item.item_id || 0,
+            category_item_dic_id: orderItems[j].item_id || 0,
             category_name: category_name || '',
             name: cat_name || '',
             category_id: category_id || 0,
             gender: cat_id || 0,
-            service_id: item.service_id || 0,
+            service_id: orderItems[j].service_id || 0,
             service_name: tailorServiceName.name || '',
             // gender: category[0].category_type,
-            type: item.type || 0,
-            type_name: item.type === 1 ? "ALTER" : (item.type === 2 ? "REPAIR" : ""),
-            unit_price: item.amount || '',
+            type: orderItems[j].type || 0,
+            type_name: orderItems[j].type === 1 ? "ALTER" : (orderItems[j].type === 2 ? "REPAIR" : ""),
+            unit_price: orderItems[j].amount || '',
             delivery_date: order.delivery_date || '',
             deliver_time: '',
             material_received: 0,
-            service_date_time: item.service_date_time || '',
-            fit_type: item.fit_type || 0,
-            fit_description: item.fit_description ,
-            tailor_note: item.tailor_note || '',
+            service_date_time: orderItems[j].service_date_time || '',
+            fit_type: orderItems[j].fit_type || 0,
+            fit_description: orderItems[j].fit_description ,
+            tailor_note: orderItems[j].tailor_note || '',
             status_id: 1,
             status: 'Order placed successfully',
-            item_description: item.item_description || '',
-            repair_location: item.repair_location || '',
-            repair_description: item.repair_description || '',
+            item_description: orderItems[j].item_description || '',
+            repair_location: orderItems[j].repair_location || '',
+            repair_description: orderItems[j].repair_description || '',
             fabric_type: '',
             material_image: [],
             item_image: '',
