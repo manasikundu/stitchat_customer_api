@@ -1359,16 +1359,18 @@ exports.fashionDesignerAppointmentDetails = async (req, res) => {
     }
     
     var result1 = await FDService.appointmentDetails(appointment_id);
-    const btq_id = await db.query(`select * from sarter__boutique_user_map where user_id=${user_id}`);
-    if (btq_id && btq_id[0] && btq_id[0][0] && btq_id[0][0].boutique_id !== undefined) {
-      const id = btq_id[0][0].boutique_id;
-    } else {
-      return res.status(200).send({
-        HasError: true,
-        result: {},
-        message: "No user found.",
-      });
-    } 
+    // const btq_id = await db.query(`select * from sarter__boutique_user_map where user_id=${user_id}`);
+    const btq_id = await db.query(`SELECT c.*, u.* FROM public.sarter__boutique_customer_map AS c LEFT JOIN public.sarter__boutique_user_map AS u ON c.user_id = u.user_id WHERE c.user_id = ${user_id}`)
+    const id = btq_id[0][0].boutique_id;
+    // if (btq_id && btq_id[0] && btq_id[0][0] && btq_id[0][0].boutique_id !== undefined) {
+    //   const id = btq_id[0][0].boutique_id;
+    // } else {
+    //   return res.status(200).send({
+    //     HasError: true,
+    //     result: {},
+    //     message: "No user found.",
+    //   });
+    // } 
     // const id = btq_id[0][0].boutique_id;
     
     const exp = await db.query(`select experience from sarter__boutique_basic_info where id=${id}`)
