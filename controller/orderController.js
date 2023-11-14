@@ -160,7 +160,6 @@ exports.orderList = async (req, res) => {
 }
 
 // order details
-
 exports.orderDetails = async (req, res) => {
   try {
     const order_id = req.query.order_id
@@ -237,18 +236,11 @@ exports.orderDetails = async (req, res) => {
               Bucket: process.env.AWS_BUCKET,
               Key: `order-material/${image}`,
               Expires: expirationTime,
-          })) : [s3.getSignedUrl('getObject', {
+              })) : [s3.getSignedUrl('getObject', {
               Bucket: process.env.AWS_BUCKET,
               Key: `order-material/${item.material_image}`,
               Expires: expirationTime,
-          })]) : [];
-          
-            // const material_image = s3.getSignedUrl('getObject', {
-            //   Bucket: process.env.AWS_BUCKET,
-            //   Key: `order-material/${item.material_image}`,
-            //   Expires: expirationTime, 
-            // });
-            // const material_image = item.material_image || [];
+              })]) : [];
             var cat_id;
             var cat_name;
             if (category[0].category_type === 1) {
@@ -344,7 +336,7 @@ exports.orderDetails = async (req, res) => {
       }
     } else if (type == 2) {
       const cartOrderHistory = await OrderService.getOrderHistory(order_id);
-      if (!cartOrderHistory) {
+      if (!cartOrderHistory || cartOrderHistory.length === 0) {
         return res.status(400).send({ HasError: true, message: 'Invalid order.' });
       }
       const maskedNumberHist = cartOrderHistory.mobile_number ? Service.maskMobileNumber(cartOrderHistory.mobile_number) : '';
@@ -378,90 +370,85 @@ exports.orderDetails = async (req, res) => {
         orderHistory.add_date = cartOrderHistory[i].created_at;
         orderHistory.order_type = 2;
         orderHistory.order_type_name = 'Alteration or Repair';
-      }
-      
-      var orderItems = await orderServiceItem.getOrderHistoryItem(orderHistory.booking_code);
-      var category = await orderService.categoryTypeAlter(orderHistory.booking_code);
-      var order = await OrderService.getOrderHistory(order_id)
-      var itemList = [];
-      for (var j in orderItems) {  
-        console.log(orderItems[j].id)
-        var categoryType = await orderService.getCategoryByItemId(orderItems[j].item_id)
-        var tailorServiceName = await tailorService.getServiceName(orderItems[j].service_id)
-        var itemName = await orderService.getItemName(orderItems[j].item_id)
-        if (categoryType.length > 0) {
-          const category_id = categoryType[0].id;
-          var category_name = categoryType[0].name;   
-          var cat_id;
-          var cat_name;
-          if (category[0].category_type === 1) {
-            cat_id = 1;
-            cat_name = 'Men';
-          } else if (category[0].category_type === 2) {
-            cat_id = 2;
-            cat_name = 'Women';
-          } else if (category[0].category_type === 3) {
-            cat_id = 3;
-            cat_name = 'Kids';
-          } else {
-            cat_id = 0;
-            cat_name = 'All';
-          } 
-          itemList.push({
-            id: orderItems[j].id || 0,
-            item_name: itemName[0].name || '',
-            category_item_dic_id: orderItems[j].item_id || 0,
-            category_name: category_name || '',
-            name: cat_name || '',
-            category_id: category_id || 0,
-            gender: cat_id || 0,
-            service_id: orderItems[j].service_id || 0,
-            service_name: tailorServiceName.name || '',
-            // gender: category[0].category_type,
-            type: orderItems[j].type || 0,
-            type_name: orderItems[j].type === 1 ? "ALTER" : (orderItems[j].type === 2 ? "REPAIR" : ""),
-            unit_price: orderItems[j].amount || '',
-            delivery_date: order.delivery_date || '',
-            deliver_time: '',
-            material_received: 0,
-            service_date_time: orderItems[j].service_date_time || '',
-            fit_type: orderItems[j].fit_type || 0,
-            fit_description: orderItems[j].fit_description ,
-            tailor_note: orderItems[j].tailor_note || '',
-            status_id: 1,
-            status: 'Order placed successfully',
-            item_description: orderItems[j].item_description || '',
-            repair_location: orderItems[j].repair_location || '',
-            repair_description: orderItems[j].repair_description || '',
-            fabric_type: '',
-            material_image: [],
-            item_image: '',
-          });
-      }
-      const itemArray = itemList.map((item) => ({...item,measurement_info: [],}))
-      var trackOrderHist = await orderService.BoutiqueOrderTrack(orderHistory.id)
 
-      var order_track_history = []
-        for ( var i in trackOrderHist) {
-          var order_track_hist_json = {}
-          order_track_hist_json.order_status = order_track_hist_json.order_status || 1
-          var orderStatusTrackHis = await orderService.orderStatusName(order_track_hist_json.order_status)
-          // order_track_hist_json.order_status_name = 'Order placed successfully'
-          order_track_hist_json.order_status_name = orderStatusTrackHis ? orderStatusTrackHis[0][0].status : ''
-          order_track_hist_json.activity_date =  ''
-          order_track_history.push(order_track_hist_json)
+        var category = await orderService.categoryTypeAlter(orderHistory.booking_code);
+        var order = await OrderService.getOrderHistory(order_id)
+        var itemList = [];
+        var orderItems = await orderServiceItem.getOrderHistoryItem(orderHistory.booking_code)
+      
+        for (var j in orderItems) { 
+          var categoryType = await orderService.getCategoryByItemId(orderItems[j].item_id)
+          var tailorServiceName = await tailorService.getServiceName(orderItems[j].service_id)
+          var itemName = await orderService.getItemName(orderItems[j].item_id)
+          if (categoryType.length > 0) {
+            const category_id = categoryType[0].id;
+            var category_name = categoryType[0].name;   
+            var cat_id;
+            var cat_name;
+            if (category[0].category_type === 1) {
+              cat_id = 1;
+              cat_name = 'Men';
+            } else if (category[0].category_type === 2) {
+              cat_id = 2;
+              cat_name = 'Women';
+            } else if (category[0].category_type === 3) {
+              cat_id = 3;
+              cat_name = 'Kids';
+            } else {
+              cat_id = 0;
+              cat_name = 'All';
+            } 
+            itemList.push({
+              id: orderItems[j].id || 0,
+              item_name: itemName[0].name || '',
+              category_item_dic_id: orderItems[j].item_id || 0,
+              category_name: category_name || '',
+              name: cat_name || '',
+              category_id: category_id || 0,
+              gender: cat_id || 0,
+              service_id: orderItems[j].service_id || 0,
+              service_name: tailorServiceName.name || '',
+              // gender: category[0].category_type,
+              type: orderItems[j].type || 0,
+              type_name: orderItems[j].type === 1 ? "ALTER" : (orderItems[j].type === 2 ? "REPAIR" : ""),
+              unit_price: orderItems[j].amount || '',
+              delivery_date: order.delivery_date || '',
+              deliver_time: '',
+              material_received: 0,
+              service_date_time: orderItems[j].service_date_time || '',
+              fit_type: orderItems[j].fit_type || 0,
+              fit_description: orderItems[j].fit_description ,
+              tailor_note: orderItems[j].tailor_note || '',
+              status_id: 1,
+              status: 'Order placed successfully',
+              item_description: orderItems[j].item_description || '',
+              repair_location: orderItems[j].repair_location || '',
+              repair_description: orderItems[j].repair_description || '',
+              fabric_type: '',
+              material_image: [],
+              item_image: '',
+            });
+          }
         }
-      return res.status(200).send({
-        result: {
-          ...orderHistory,
-          items: itemArray,
-          order_track: order_track_history,
-          order_status_info: [orderStatusConfig]
-        },
-        HasError: false,
-        Message: 'Order details retrieved successfully.',
-      });
-    }
+        const itemArray = itemList.map((item) => ({...item,measurement_info: [],}))
+        var trackOrderHist = await orderService.BoutiqueOrderTrack(orderHistory.id)
+
+        var order_track_history = []
+          for ( var i in trackOrderHist) {
+            var order_track_hist_json = {}
+            order_track_hist_json.order_status = order_track_hist_json.order_status || 1
+            var orderStatusTrackHis = await orderService.orderStatusName(order_track_hist_json.order_status)
+            // order_track_hist_json.order_status_name = 'Order placed successfully'
+            order_track_hist_json.order_status_name = orderStatusTrackHis ? orderStatusTrackHis[0][0].status : ''
+            order_track_hist_json.activity_date =  ''
+            order_track_history.push(order_track_hist_json)
+          }
+        return res.status(200).send({
+          result: {...orderHistory,items: itemArray,order_track: order_track_history,order_status_info: [orderStatusConfig]},
+          HasError: false,
+          Message: 'Order details retrieved successfully.',
+        });
+      }
     } else {
       return res.status(200).send({ HasError: true, message: "Invalid order." });
     }
