@@ -461,7 +461,7 @@ exports.orderDetails = async (req, res) => {
         orderDetails,
       },
       HasError: true,
-      Message: 'Some error occurred.',
+      Message: error.message,
     });
   }
 }
@@ -516,7 +516,7 @@ exports.cancelOrder = async (req, res) => {
         orderDetails,
       },
       HasError: true,
-      Message: "Some error occurred.",
+      Message: error.message,
     });
   }
 };

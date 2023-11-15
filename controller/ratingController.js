@@ -48,7 +48,7 @@ exports.addAndUpdateRating = async (req, res) => {
         console.error(error);
         const logData = { user_id: "", status: 'false', message: error.message, device_id: '', created_at: Date.now(), updated_at: Date.now(), device_info: '', action: req.url }
         const log = await logService.createLog(logData)
-        return res.status(500).send({ HasError: true, Message: "Failed to add/update rating." });
+        return res.status(500).send({ HasError: true, Message: "Failed to add/update rating." ,error: error.message });
     }
 }
 
@@ -71,6 +71,6 @@ exports.ratingList = async (req, res) => {
         console.error(error);
         const logData = { user_id: "", status: 'false', message: error.message, device_id: '', created_at: Date.now(), updated_at: Date.now(), device_info: '', action: req.url }
         const log = await logService.createLog(logData)
-        return res.status(500).send({HasError: true,Message: "Failed to list ratings."})
+        return res.status(500).send({HasError: true,Message: "Failed to list ratings.",error: error.message })
     }
 }

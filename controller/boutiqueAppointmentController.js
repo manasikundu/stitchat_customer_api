@@ -7,6 +7,7 @@ const s3 = require("../config/s3Config");
 const dotenv = require("dotenv");
 dotenv.config();
 var expirationTime = 600;
+const logService = require('../service/logService')
 
 
 var daysOfWeekConfig = [
@@ -83,7 +84,7 @@ exports.bookBoutiqueAppointment = async (req, res) => {
     const log = await logService.createLog(logData)
     return res.status(500).send({
       HasError: true,
-      Message: 'Failed to book appointment'
+      Message: error.message
     })
   }
 }
@@ -162,7 +163,7 @@ exports.boutiqueSlot = async (req, res) => {
     console.log(error)
     const logData = { user_id: "", status: 'false', message: error.message, device_id: '', created_at: Date.now(), updated_at: Date.now(), device_info: '', action: req.url }
     const log = await logService.createLog(logData)
-    return res.status(500).send({ HasError: true, Message: "Some error occured. " });
+    return res.status(500).send({ HasError: true, Message: error.message });
   }
 }
 

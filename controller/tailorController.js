@@ -1,5 +1,6 @@
 const tailorService = require("../service/tailorService")
 const Service = require('../service/userService')
+const logService = require('../service/logService')
 
 
 exports.itemListForTailor = async (req, res) => {

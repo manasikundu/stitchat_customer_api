@@ -15,6 +15,7 @@ const Appointment = require("../model/appointmentModel");
 const { tr } = require("date-fns/locale");
 
 var expirationTime = 600;
+const logService = require('../service/logService')
 
 
 var daysOfWeekConfig = [
@@ -518,7 +519,7 @@ exports.FashionDesignerDetails = async (req, res) => {
     console.error("Error in getDesignerDetails:", error);
     res
       .status(500)
-      .send({ error: "An error occurred while fetching designer details." });
+      .send({ error: error.message  });
   }
 };
 
@@ -767,7 +768,7 @@ exports.fashionDesignerTimeSlot = async (req, res) => {
     const logData = { user_id: "", status: 'false', message: error.message, device_id: '', created_at: Date.now(), updated_at: Date.now(), device_info: '', action: req.url }
     const log = await logService.createLog(logData)
     console.error("Error in fashionDesignerTimeSlot:", error);
-    res.status(500).send({ error: "An error occurred while fetching designer details." });
+    res.status(500).send({ message: "An error occurred while fetching designer details.",error: error.message  });
   }
 };
 
@@ -987,6 +988,7 @@ exports.getStateList = async (req, res) => {
       HasError: true,
       StatusCode: 500,
       message: "Some error occurred. Try once again.",
+      error: error.message 
     });
   }
 };
@@ -1042,6 +1044,7 @@ exports.getCityList = async (req, res) => {
       HasError: true,
       StatusCode: 500,
       message: "Some error occured. Try once again. ",
+      error: error.message 
     });
   }
 };
@@ -1123,6 +1126,7 @@ exports.getAddressList = async (req, res) => {
     return res.status(500).send({
       HasError: true,
       message: error.message,
+      error: error.message 
     });
   }
 };
@@ -1238,6 +1242,7 @@ exports.bookAppointment = async (req, res) => {
     return res.status(500).send({
       HasError: true,
       Message: "Failed to book appointment",
+      error: error.message 
     });
   }
 };
@@ -1313,6 +1318,7 @@ exports.appointmentList = async (req, res) => {
     return res.status(500).send({
       HasError: true,
       Message: "Something went wrong",
+      error: error.message 
     });
   }
 };
@@ -1341,6 +1347,7 @@ exports.deleteAddress = async (req, res) => {
     return res.status(500).send({
       HasError: true,
       Message: "Something went wrong",
+      error: error.message 
     });
   }
 };
@@ -1360,7 +1367,7 @@ exports.fashionDesignerAppointmentDetails = async (req, res) => {
     
     var result1 = await FDService.appointmentDetails(appointment_id);
     // const btq_id = await db.query(`select * from sarter__boutique_user_map where user_id=${user_id}`);
-    const btq_id = await db.query(`SELECT c.*, u.* FROM public.sarter__boutique_basic_info AS c LEFT JOIN public.sarter__boutique_user_map AS u ON c.user_id = u.user_id WHERE c.user_id = ${user_id}`)
+    const btq_id = await db.query(`SELECT c.*, u.* FROM public.sarter__boutique_customer_map AS c LEFT JOIN public.sarter__boutique_user_map AS u ON c.user_id = u.user_id WHERE c.user_id = ${user_id}`)
     const id = btq_id[0][0].boutique_id;
     // if (btq_id && btq_id[0] && btq_id[0][0] && btq_id[0][0].boutique_id !== undefined) {
     //   const id = btq_id[0][0].boutique_id;
@@ -1498,6 +1505,7 @@ exports.fashionDesignerAppointmentDetails = async (req, res) => {
     return res.status(500).send({
       HasError: true,
       Message: "Something went wrong",
+      error: error.message 
     });
   }
 };
@@ -1527,6 +1535,7 @@ exports.cancelAppointment = async (req, res) => {
     return res.status(500).send({
       HasError: true,
       Message: "Something went wrong",
+      error: error.message 
     });
   }
 };

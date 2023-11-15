@@ -68,8 +68,7 @@ exports.insertMobileNumber = async (req, res) => {
     console.error("Error creating user:", error);
     const logData = { user_id: "", status: 'false', message: error.message, device_id: '', created_at: Date.now(), updated_at: Date.now(), device_info: '', action: req.url }
     const log = await logService.createLog(logData)
-    console.log(log)
-    return res.status(500).send({ HasError: false, error: "An error occurred while inserting the mobile number." });
+    return res.status(500).send({ HasError: false, message: "An error occurred while inserting the mobile number." ,error: error.message });
   }
 }
 
@@ -157,57 +156,11 @@ exports.verifyOTP = async (req, res) => {
     console.error("Error verifying OTP:", error);
     const logData = { user_id: "", status: 'false', message: error.message, device_id: '', created_at: Date.now(), updated_at: Date.now(), device_info: '', action: req.url }
     const log = await logService.createLog(logData)
-    return res.status(500).send({ HasError: true, Message: "An error occurred while verifying the OTP." });
+    return res.status(500).send({ HasError: true, Message: "An error occurred while verifying the OTP." ,error: error.message });
   }
 }
 
-exports.verifyToken = (req, res, next, secretKey) => {
-  try {
-    var b_token = req.headers.authorization;
-    if (!b_token) {
-      return res.status(401).send({
-        HasError: true,
-        StatusCode: 401,
-        message: "Token not provided",
-      });
-    } else {
-      var token = b_token.replace(/^Bearer\s+/, "");
-      console.log('Received Token:', token);
-      console.log('Secret Key:', secretKey);
-      var decoded = jwt.verify(token, secretKey);
-      console.log('Decoded Token:', decoded)
-      // var decoded = auth(req, secretKey)
 
-      // Check if the decoded mobile_number matches the request mobile_number
-      if (decoded.mobile_number !== req.body.mobile_number) {
-        return res.status(401).send({
-          HasError: true,
-          StatusCode: 401,
-          message: "Invalid token for this user",
-        });
-      } else {
-        // Token is valid
-        req.user = decoded; // Store the user info in the request
-        next()
-        return res.status(200).send({
-          HasError: false,
-          StatusCode: 200,
-          message: "Token verified!",
-          user: req.user,
-        });
-      }
-    }
-
-  } catch (error) {
-    console.log(error);
-
-    return res.status(401).send({
-      HasError: true,
-      StatusCode: 401,
-      message: "Failed to authenticate token!",
-    });
-  }
-}
 
 // Seach api track api track
 exports.apiTrackList = async (req, res) => {
@@ -315,7 +268,7 @@ exports.userProfile = async (req, res) => {
     console.log(error)
     const logData = { user_id: "", status: 'false', message: error.message, device_id: '', created_at: Date.now(), updated_at: Date.now(), device_info: '', action: req.url }
     const log = await logService.createLog(logData)
-    res.status(500).send({ message: "Something went wrong.", HasError: true })
+    res.status(500).send({ message: "Something went wrong.", HasError: true ,error: error.message })
   }
 }
 
@@ -343,7 +296,7 @@ exports.updateProfile = async (req, res) => {
     console.log(error)
     const logData = { user_id: "", status: 'false', message: error.message, device_id: '', created_at: Date.now(), updated_at: Date.now(), device_info: '', action: req.url }
     const log = await logService.createLog(logData)
-    res.status(500).send({ message: "Something went wrong.", HasError: true })
+    res.status(500).send({ message: "Something went wrong.", HasError: true,error: error.message })
   }
 }
 
@@ -359,7 +312,7 @@ exports.aboutUs = async (req, res) => {
     console.log(error)
     const logData = { user_id: "", status: 'false', message: error.message, device_id: '', created_at: Date.now(), updated_at: Date.now(), device_info: '', action: req.url }
     const log = await logService.createLog(logData)
-    res.status(500).send({ message: "Something went wrong.", HasError: true })
+    res.status(500).send({ message: "Something went wrong.", HasError: true,error: error.message  })
   }
 }
 
@@ -375,7 +328,7 @@ exports.contactInfo = async (req, res) => {
     console.log(error)
     const logData = { user_id: "", status: 'false', message: error.message, device_id: '', created_at: Date.now(), updated_at: Date.now(), device_info: '', action: req.url }
     const log = await logService.createLog(logData)
-    res.status(500).send({ message: "Something went wrong.", HasError: true })
+    res.status(500).send({ message: "Something went wrong.", HasError: true ,error: error.message })
   }
 }
 
@@ -393,7 +346,7 @@ exports.contactUs = async (req, res) => {
     console.log(error)
     const logData = { user_id: "", status: 'false', message: error.message, device_id: '', created_at: Date.now(), updated_at: Date.now(), device_info: '', action: req.url }
     const log = await logService.createLog(logData)
-    res.status(500).send({ message: "Something went wrong.", HasError: true })
+    res.status(500).send({ message: "Something went wrong.", HasError: true ,error: error.message })
   }
 }
 
@@ -426,7 +379,7 @@ exports.privacyPolicy = async (req, res) => {
     console.log(error)
     const logData = { user_id: "", status: 'false', message: error.message, device_id: '', created_at: Date.now(), updated_at: Date.now(), device_info: '', action: req.url }
     const log = await logService.createLog(logData)
-    res.status(500).send({ message: "Something went wrong.", HasError: true })
+    res.status(500).send({ message: "Something went wrong.", HasError: true ,error: error.message })
   }
 }
 
@@ -487,6 +440,6 @@ exports.profilePicUpload = async (req, res) => {
     console.log(error)
     const logData = { user_id: "", status: 'false', message: error.message, device_id: '', created_at: Date.now(), updated_at: Date.now(), device_info: '', action: req.url }
     const log = await logService.createLog(logData)
-    res.status(500).send({ message: "Something went wrong.", HasError: true })
+    res.status(500).send({ message: "Something went wrong.", HasError: true ,error: error.message })
   }
 }

@@ -16,6 +16,7 @@ const s3 = require("../config/s3Config");
 const dotenv = require("dotenv");
 dotenv.config();
 const db = require("../dbConnection");
+const logService = require('../service/logService')
 
 var expirationTime = 600;
 
@@ -45,7 +46,7 @@ exports.getAddress = async (req, res) => {
     console.error("Error processing request:", error);
     const logData = { user_id: "", status: 'false', message: error.message, device_id: '', created_at: Date.now(), updated_at: Date.now(), device_info: '', action: req.url }
     const log = await logService.createLog(logData)
-    return res.status(500).send({HasError: true,message: "An error occurred while processing the request."});
+    return res.status(500).send({HasError: true,message: "An error occurred while processing the request.",error: error.message });
   }
 }
 
@@ -264,6 +265,7 @@ exports.getNearestBoutiqueList = async (req, res) => {
       HasError: true,
       StatusCode: 500,
       message: "An error occurred while processing the request.",
+      error: error.message 
     });
   }
 };
@@ -443,6 +445,7 @@ exports.boutiqueDetails = async (req, res) => {
     return res.status(500).send({
       HasError: true,
       message: "An error occurred while processing the request.",
+      error: error.message 
     });
   }
 }

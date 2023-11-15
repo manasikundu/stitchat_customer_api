@@ -242,6 +242,6 @@ exports.updateCart = async (req, res) => {
     console.log(error);
     const logData = { user_id: "", status: 'false', message: error.message, device_id: '', created_at: Date.now(), updated_at: Date.now(), device_info: '', action: req.url }
     const log = await logService.createLog(logData)
-    res.status(500).send({ message: "Something went wrong.", HasError: true });
+    res.status(500).send({ message: "Something went wrong.", HasError: true ,error: error.message });
   }
 };
