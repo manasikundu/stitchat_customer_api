@@ -45,8 +45,8 @@ exports.orderList = async (req, res) => {
 
     var method_name = await Service.getCallingMethodName()
     var apiEndpointInput = JSON.stringify(req.body)
-    var apiTrack = await Service.trackApi(req.query.user_id,method_name,apiEndpointInput,req.query.device_id,req.query.device_info,req.ip)
-    
+    var apiTrack = await Service.trackApi(req.query.user_id, method_name, apiEndpointInput, req.query.device_id, req.query.device_info, req.ip)
+
     var boutiqueOrders = await orderService.boutiqueOrder(user_id)
     var orderList = []
     for (var i in boutiqueOrders) {
@@ -75,12 +75,12 @@ exports.orderList = async (req, res) => {
       if (boutiqueAddress) {
         boutiqueAddress = boutiqueAddress.toJSON()
       }
-      orderListArray.boutique_name = boutiqueAddress?boutiqueAddress.boutique_name : ''
-      orderListArray.boutique_address = boutiqueAddress?boutiqueAddress.address : ''
-      orderListArray.boutique_country_state = boutiqueAddress?boutiqueAddress.coutry_state : ''
-      orderListArray.boutique_city = boutiqueAddress?boutiqueAddress.city : ''
-      orderListArray.boutique_area = boutiqueAddress?boutiqueAddress.area : ''
-      orderListArray.boutique_landmark = boutiqueAddress?boutiqueAddress.landmark : ''
+      orderListArray.boutique_name = boutiqueAddress ? boutiqueAddress.boutique_name : ''
+      orderListArray.boutique_address = boutiqueAddress ? boutiqueAddress.address : ''
+      orderListArray.boutique_country_state = boutiqueAddress ? boutiqueAddress.coutry_state : ''
+      orderListArray.boutique_city = boutiqueAddress ? boutiqueAddress.city : ''
+      orderListArray.boutique_area = boutiqueAddress ? boutiqueAddress.area : ''
+      orderListArray.boutique_landmark = boutiqueAddress ? boutiqueAddress.landmark : ''
       orderList.push(orderListArray)
     }
 
@@ -123,7 +123,7 @@ exports.orderList = async (req, res) => {
       orderList.push(orderData)
     }
     orderList.sort((a, b) => b.id - a.id)
-    
+
     // // Generate access token using the provided secretKey
     // var secretKey = "tensorflow";
     // var token = generateAccessToken(mobile_number, secretKey);
@@ -154,7 +154,7 @@ exports.orderList = async (req, res) => {
         orderList,
       },
       HasError: true,
-      Message: "Some error occured.",
+      Message: error.message,
     })
   }
 }
@@ -171,8 +171,8 @@ exports.orderDetails = async (req, res) => {
 
     const method_name = await Service.getCallingMethodName()
     const apiEndpointInput = JSON.stringify(req.body)
-    const apiTrack = await Service.trackApi(req.query.user_id,method_name,apiEndpointInput,req.query.device_id,req.query.device_info,req.ip)
-    
+    const apiTrack = await Service.trackApi(req.query.user_id, method_name, apiEndpointInput, req.query.device_id, req.query.device_info, req.ip)
+
     if (type == 1) {
       const customerType = await orderService.customerType(order_id);
       const boutiqueOrders = await orderService.boutiqueOrderByOrderId(order_id);
@@ -199,7 +199,7 @@ exports.orderDetails = async (req, res) => {
           customer_mobile_number: order.mobile_number,
           customer_masked_mobile_number: maskedNumber,
           customer_email_id: order.email_id,
-          coupon_id : 0,
+          coupon_id: 0,
           coupon_code: '',
           coupon_name: '',
           coupon_description: '',
@@ -230,17 +230,17 @@ exports.orderDetails = async (req, res) => {
             const item_image = s3.getSignedUrl('getObject', {
               Bucket: process.env.AWS_BUCKET,
               Key: `category_item/${itemImages[0].image}`,
-              Expires: expirationTime, 
+              Expires: expirationTime,
             });
             const material_image = item.material_image ? (Array.isArray(item.material_image) ? item.material_image.map(image => s3.getSignedUrl('getObject', {
               Bucket: process.env.AWS_BUCKET,
               Key: `order-material/${image}`,
               Expires: expirationTime,
-              })) : [s3.getSignedUrl('getObject', {
+            })) : [s3.getSignedUrl('getObject', {
               Bucket: process.env.AWS_BUCKET,
               Key: `order-material/${item.material_image}`,
               Expires: expirationTime,
-              })]) : [];
+            })]) : [];
             var cat_id;
             var cat_name;
             if (category[0].category_type === 1) {
@@ -291,10 +291,10 @@ exports.orderDetails = async (req, res) => {
         }
         const measurement = await orderService.getMeasurement(order_id);
         const meas = [];
-        for (var m of measurement) { 
+        for (var m of measurement) {
           const measurementArray = {
             id: m.id,
-            item_id: item.id, 
+            item_id: item.id,
             name: m.name,
             value: m.value,
             uom: m.uom,
@@ -302,13 +302,13 @@ exports.orderDetails = async (req, res) => {
           };
           meas.push(measurementArray);
         }
-        const itemArray = itemList.map((item) => ({...item,measurement_info: meas,}))
+        const itemArray = itemList.map((item) => ({ ...item, measurement_info: meas, }))
         var trackOrder = await orderService.BoutiqueOrderTrack(order_id)
         var order_track = []
-        for ( var i in trackOrder) {
+        for (var i in trackOrder) {
           var order_track_json = {}
           order_track_json.order_status = trackOrder[i].status_activity || 0
-          var orderStatusTrack = await orderService.orderStatusName(order_track_json.order_status )
+          var orderStatusTrack = await orderService.orderStatusName(order_track_json.order_status)
           order_track_json.order_status_name = orderStatusTrack ? orderStatusTrack[0][0].status : ''
           order_track_json.activity_date = trackOrder[i].activity_date || ''
           order_track.push(order_track_json)
@@ -319,7 +319,7 @@ exports.orderDetails = async (req, res) => {
               ...orderDetails,
               items: itemArray,
               order_track: order_track,
-              order_status_info: [orderStatusConfig], 
+              order_status_info: [orderStatusConfig],
             },
             HasError: false,
             Message: 'Order details retrieved successfully.',
@@ -361,7 +361,7 @@ exports.orderDetails = async (req, res) => {
         orderHistory.discount_amount = cartOrderHistory[i].discount_price;
         orderHistory.coupon_applied_amount = cartOrderHistory[i].coupon_amount;
         orderHistory.tax_applied_amount = '';
-        orderHistory.total_payable_amount = cartOrderHistory[i].total_price 
+        orderHistory.total_payable_amount = cartOrderHistory[i].total_price
         orderHistory.reward_point = '0'
         orderHistory.order_status = cartOrderHistory[i].status || 1
         orderHistory.bill_image = '';
@@ -375,14 +375,14 @@ exports.orderDetails = async (req, res) => {
         var order = await OrderService.getOrderHistory(order_id)
         var itemList = [];
         var orderItems = await orderServiceItem.getOrderHistoryItem(orderHistory.booking_code)
-      
-        for (var j in orderItems) { 
+
+        for (var j in orderItems) {
           var categoryType = await orderService.getCategoryByItemId(orderItems[j].item_id)
           var tailorServiceName = await tailorService.getServiceName(orderItems[j].service_id)
           var itemName = await orderService.getItemName(orderItems[j].item_id)
           if (categoryType.length > 0) {
             const category_id = categoryType[0].id;
-            var category_name = categoryType[0].name;   
+            var category_name = categoryType[0].name;
             var cat_id;
             var cat_name;
             if (category[0].category_type === 1) {
@@ -397,7 +397,7 @@ exports.orderDetails = async (req, res) => {
             } else {
               cat_id = 0;
               cat_name = 'All';
-            } 
+            }
             itemList.push({
               id: orderItems[j].id || 0,
               item_name: itemName[0].name || '',
@@ -417,7 +417,7 @@ exports.orderDetails = async (req, res) => {
               material_received: 0,
               service_date_time: orderItems[j].service_date_time || '',
               fit_type: orderItems[j].fit_type || 0,
-              fit_description: orderItems[j].fit_description ,
+              fit_description: orderItems[j].fit_description,
               tailor_note: orderItems[j].tailor_note || '',
               status_id: 1,
               status: 'Order placed successfully',
@@ -430,21 +430,21 @@ exports.orderDetails = async (req, res) => {
             });
           }
         }
-        const itemArray = itemList.map((item) => ({...item,measurement_info: [],}))
+        const itemArray = itemList.map((item) => ({ ...item, measurement_info: [], }))
         var trackOrderHist = await orderService.BoutiqueOrderTrack(orderHistory.id)
 
         var order_track_history = []
-          for ( var i in trackOrderHist) {
-            var order_track_hist_json = {}
-            order_track_hist_json.order_status = order_track_hist_json.order_status || 1
-            var orderStatusTrackHis = await orderService.orderStatusName(order_track_hist_json.order_status)
-            // order_track_hist_json.order_status_name = 'Order placed successfully'
-            order_track_hist_json.order_status_name = orderStatusTrackHis ? orderStatusTrackHis[0][0].status : ''
-            order_track_hist_json.activity_date =  ''
-            order_track_history.push(order_track_hist_json)
-          }
+        for (var i in trackOrderHist) {
+          var order_track_hist_json = {}
+          order_track_hist_json.order_status = order_track_hist_json.order_status || 1
+          var orderStatusTrackHis = await orderService.orderStatusName(order_track_hist_json.order_status)
+          // order_track_hist_json.order_status_name = 'Order placed successfully'
+          order_track_hist_json.order_status_name = orderStatusTrackHis ? orderStatusTrackHis[0][0].status : ''
+          order_track_hist_json.activity_date = ''
+          order_track_history.push(order_track_hist_json)
+        }
         return res.status(200).send({
-          result: {...orderHistory,items: itemArray,order_track: order_track_history,order_status_info: [orderStatusConfig]},
+          result: { ...orderHistory, items: itemArray, order_track: order_track_history, order_status_info: [orderStatusConfig] },
           HasError: false,
           Message: 'Order details retrieved successfully.',
         });
@@ -471,7 +471,7 @@ exports.cancelOrder = async (req, res) => {
     var order_id = req.query.order_id;
     var method_name = await Service.getCallingMethodName();
     var apiEndpointInput = JSON.stringify(req.body);
-    var apiTrack = await Service.trackApi(req.query.user_id,method_name,apiEndpointInput,req.query.device_id,req.query.device_info,req.ip);
+    var apiTrack = await Service.trackApi(req.query.user_id, method_name, apiEndpointInput, req.query.device_id, req.query.device_info, req.ip);
     if (order_id == undefined || !Number.isInteger(parseInt(order_id))) {
       return res.status(400).send({
         HasError: true,
