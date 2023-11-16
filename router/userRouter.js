@@ -7,7 +7,7 @@ router.post("/insertMobileNumber", Controller.insertMobileNumber);
 router.post("/verifyOTP", Controller.verifyOTP);
 router.get("/apiTrack", Controller.apiTrackList);
 // router.post("/login", Controller.logIn);
-router.get("/verifyToken", Controller.verifyToken);
+// router.get("/verifyToken", Controller.verifyToken);
 router.post("/userProfile", Controller.userProfile);
 router.post("/updateProfile", Controller.updateProfile);
 router.get("/aboutUs", Controller.aboutUs);
