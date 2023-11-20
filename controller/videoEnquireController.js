@@ -5,7 +5,8 @@ const VideoInquire = require("../model/videoEnquireModel")
 const categoryItem = require("../model/categoryItemModel")
 const Service = require('../service/userService')
 const logService = require('../service/logService')
-
+const FCM = require('fcm-node');
+const config=require("../config/fcm.json")
 
 exports.createVideoInquire = async (req, res) => {
     try {
@@ -43,12 +44,62 @@ exports.createVideoInquire = async (req, res) => {
             dataJson.date_time = formattedDate ? formattedDate : ''
             dataJson.enquiry_id = enquiry_id ? newService.enquiry_id : ''
 
+            // var serverKey = 'AAAAeWjlHHQ:APA91bEmHAGr364Xhn2Tr-gtkPhNCT6aHFzjJnQc1BHThevx06c7WjFLgzDHug7qCiPz77nJQsMIesruMdsaincRc9T8i20weW20GP36reD9UfwfkeqIMFG84pNjXZVbtNOfhLjPQNExt'
+            var serverKey=config.serverKey
+            var fcm = new FCM(serverKey);
+            var notification = {
+                "title": "Video Inquiry",
+                "body": 'Congratulations!! Yor request has been submitted, we will get back to you soon.',
+            }
+         
+            var notification_body = {
+                'notification': notification,
+                'registration_ids': ["dZX3eYL9TmSvR1kWW5ykXT:APA91bGJEeMtlPK9VXHTcqoTGL_If9e5sRX4hgZM2po9m4m67RhiBfWhf9aGCfQ_EdRpZxRKvYUaTOjZUrbalyLw1ApV6rprWVM6wIRsX1xikzVd_wKKDEAKYS7TsdhWnIssFw-4o1Vz"],
+            }
+            fcm.send(notification_body,async function (err, response) {
+                if (err) {
+                    console.log(err)
+                }else{
+                    console.log("Notification sent sucessfully."+response)
+                    console.log(notification_body)
+                }
+            })
             return res.status(200).send({ HasError: false, Message: "Video Inquiry data inserted successfully.", result: dataJson });
         }
     } catch (error) {
         console.error(error)
         const logData = { user_id: "", status: 'false', message: error.message, device_id: '', created_at: Date.now(), updated_at: Date.now(), device_info: '', action: req.url }
         const log = await logService.createLog(logData)
+        return res.status(500).send({ message: "Some error occurred.", HasError: true, error: error.message });
+    }
+}
+
+exports.notification=async(req,res)=>{
+    try {
+        var serverKey=config.serverKey
+        var fcm = new FCM(serverKey);
+        var notification = {
+            "title": "Video Inquiry",
+            "body": 'Congratulations!! Yor request has been submitted, we will get back to you soon.',
+        }
+     
+        var notification_body = {
+            'notification': notification,
+            'registration_ids': ['ehdnkHMwTbOaMi77F68dK0:APA91bHd165YxY8_LNynyY0CO81JH1VE2d-0TM0Z6GOxlxcjUD1VLmCFz_rkOniZgzdMdW6GIVM4voLJRUNjt7HQVS4-bnIZa50armZHgwVYhI1caeuy733_UweVnYQxIKkjnn5weBs9'],
+        }
+        fcm.send(notification_body, function (err, response) {
+            if (err) {
+                console.log('error'+err)
+            }else{
+                console.log("Notification sent sucessfully."+response)
+                console.log(notification_body)
+                return res.status(200).send({ HasError: false, Message: "Notification sent sucessfully", });
+
+            }
+        })
+
+    } catch (error) {
+        console.log(error)
         return res.status(500).send({ message: "Some error occurred.", HasError: true, error: error.message });
     }
 }
