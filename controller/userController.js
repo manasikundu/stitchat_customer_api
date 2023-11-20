@@ -23,6 +23,7 @@ var verifiedOTPs = new Set();
 
 exports.insertMobileNumber = async (req, res) => {
   try {
+    console.log(req.body)
     var newUserData = req.body;
     var insertError = [];
     if (!newUserData.mobile_number || !/^\+?[1-9]\d{9}$/.test(newUserData.mobile_number.replace(/\D/g, "")) || newUserData.mobile_number.includes(" ")) {
@@ -32,7 +33,7 @@ exports.insertMobileNumber = async (req, res) => {
       return res.status(200).send({ HasError: true, errors: insertError })
     }
     newUserData.device_id = newUserData.device_id || "";
-    newUserData.fcm_token = newUserData.fcm_token || "";
+    newUserData.fcm_token = newUserData.fcm_key || "";
     var existingUser = await Users.findOne({ where: { mobile_number: newUserData.mobile_number } });
     var method_name = await Service.getCallingMethodName();
     var apiEndpointInput = JSON.stringify(newUserData);
