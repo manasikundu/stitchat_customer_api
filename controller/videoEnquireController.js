@@ -7,6 +7,12 @@ const Service = require('../service/userService')
 const logService = require('../service/logService')
 const FCM = require('fcm-node');
 const config=require("../config/fcm.json")
+const s3 = require("../config/s3Config");
+const dotenv = require("dotenv");
+dotenv.config();
+
+var expirationTime = 600;
+
 
 exports.createVideoInquire = async (req, res) => {
     try {
@@ -54,11 +60,9 @@ exports.createVideoInquire = async (req, res) => {
             // to:"fb9bOnSyQIKJNSNOWJu_lB:APA91bF7Zqirj_AARtEH63ROdpf-yagGN8_cfo1Rrr4Vdns4FwEMsyhj5fE9qfOh0zorLrvPxldSPGLwCVnEqKQceUO8scA9vNFUnP0YMMQXNvxiRGq3BA4IkImxTC68Vj0yrYfi06N9",
             notification: {
                 "title": "Video Inquiry",
-                "body": {message:'Congratulations!! Yor request has been submitted, we will get back to you soon.'},
+                "body": {message:'Congratulations!! Your request has been submitted, we will get back to you soon.'},
             },
-            data: {
-                image_url: "E://Priya Document//Priya Photo.jpg"
-            }
+            
             }
             fcm.send(notification_body,async function (err, response) {
                 if (err) {
