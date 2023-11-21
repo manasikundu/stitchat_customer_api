@@ -44,17 +44,17 @@ exports.createVideoInquire = async (req, res) => {
             dataJson.date_time = formattedDate ? formattedDate : ''
             dataJson.enquiry_id = enquiry_id ? newService.enquiry_id : ''
 
-            // var serverKey = 'AAAAeWjlHHQ:APA91bEmHAGr364Xhn2Tr-gtkPhNCT6aHFzjJnQc1BHThevx06c7WjFLgzDHug7qCiPz77nJQsMIesruMdsaincRc9T8i20weW20GP36reD9UfwfkeqIMFG84pNjXZVbtNOfhLjPQNExt'
-            var serverKey=config.serverKey
+            var serverKey ="AAAAeWjlHHQ:APA91bEmHAGr364Xhn2Tr-gtkPhNCT6aHFzjJnQc1BHThevx06c7WjFLgzDHug7qCiPz77nJQsMIesruMdaincRc9T8i20weW20GP36reD9UfwfkeqIMFG84pNjXZVbtNOfhLjPQNExt"
+            // var serverKey=config.serverKey
             var fcm = new FCM(serverKey);
-            var notification = {
-                "title": "Video Inquiry",
-                "body": 'Congratulations!! Yor request has been submitted, we will get back to you soon.',
-            }
-         
+           
+            //  var fcm_token="eOQ9dDC0TLWXfO6wp8aczt:APA91bGui3UbhoAgSSFUJZG24v-tt7W5XWYOkhQmOHzYivlRnttZAK-cuUcZM5PVp25LhPKWlZCTvDe6neyJbeEga4e6z35XC1ixpjo8zSp_OBnqvbyOg0c3FDK2i2wYsAOEGM5xBFNs"
             var notification_body = {
-                'notification': notification,
-                'registration_ids': ["dZX3eYL9TmSvR1kWW5ykXT:APA91bGJEeMtlPK9VXHTcqoTGL_If9e5sRX4hgZM2po9m4m67RhiBfWhf9aGCfQ_EdRpZxRKvYUaTOjZUrbalyLw1ApV6rprWVM6wIRsX1xikzVd_wKKDEAKYS7TsdhWnIssFw-4o1Vz"],
+            to:"fb9bOnSyQIKJNSNOWJu_lB:APA91bF7Zqirj_AARtEH63ROdpf-yagGN8_cfo1Rrr4Vdns4FwEMsyhj5fE9qfOh0zorLrvPxldSPGLwCVnEqKQceUO8scA9vNFUnP0YMMQXNvxiRGq3BA4IkImxTC68Vj0yrYfi06N9",
+            notification: {
+                "title": "Video Inquiry",
+                "body": {message:'Congratulations!! Yor request has been submitted, we will get back to you soon.'},
+            },
             }
             fcm.send(notification_body,async function (err, response) {
                 if (err) {
@@ -74,32 +74,32 @@ exports.createVideoInquire = async (req, res) => {
     }
 }
 
-exports.notification=async(req,res)=>{
-    try {
-        var serverKey=config.serverKey
-        var fcm = new FCM(serverKey);
-        var notification = {
-            "title": "Video Inquiry",
-            "body": 'Congratulations!! Yor request has been submitted, we will get back to you soon.',
-        }
+// exports.notification=async(req,res)=>{
+//     try {
+//         var serverKey=config.serverKey
+//         var fcm = new FCM(serverKey);
+//         var notification = {
+//             "title": "Video Inquiry",
+//             "body": 'Congratulations!! Yor request has been submitted, we will get back to you soon.',
+//         }
      
-        var notification_body = {
-            'notification': notification,
-            'registration_ids': ['ehdnkHMwTbOaMi77F68dK0:APA91bHd165YxY8_LNynyY0CO81JH1VE2d-0TM0Z6GOxlxcjUD1VLmCFz_rkOniZgzdMdW6GIVM4voLJRUNjt7HQVS4-bnIZa50armZHgwVYhI1caeuy733_UweVnYQxIKkjnn5weBs9'],
-        }
-        fcm.send(notification_body, function (err, response) {
-            if (err) {
-                console.log('error'+err)
-            }else{
-                console.log("Notification sent sucessfully."+response)
-                console.log(notification_body)
-                return res.status(200).send({ HasError: false, Message: "Notification sent sucessfully", });
+//         var notification_body = {
+//             'notification': notification,
+//             'registration_ids': "ehdnkHMwTbOaMi77F68dK0:APA91bHd165YxY8_LNynyY0CO81JH1VE2d-0TM0Z6GOxlxcjUD1VLmCFz_rkOniZgzdMdW6GIVM4voLJRUNjt7HQVS4-bnIZa50armZHgwVYhI1caeuy733_UweVnYQxIKkjnn5weBs9''ehdnkHMwTbOaMi77F68dK0:APA91bHd165YxY8_LNynyY0CO81JH1VE2d-0TM0Z6GOxlxcjUD1VLmCFz_rkOniZgzdMdW6GIVM4voLJRUNjt7HQVS4-bnIZa50armZHgwVYhI1caeuy733_UweVnYQxIKkjnn5weBs9"
+//         }
+//         fcm.send(notification_body, async function (err, response) {
+//             if (err) {
+//                 console.log('error'+err)
+//             }else{
+//                 console.log("Notification sent sucessfully."+response)
+//                 console.log(notification_body)
+//                 return res.status(200).send({ HasError: false, Message: "Notification sent sucessfully", });
 
-            }
-        })
+//             }
+//         })
 
-    } catch (error) {
-        console.log(error)
-        return res.status(500).send({ message: "Some error occurred.", HasError: true, error: error.message });
-    }
-}
+//     } catch (error) {
+//         console.log(error)
+//         return res.status(500).send({ message: "Some error occurred.", HasError: true, error: error.message });
+//     }
+// }
