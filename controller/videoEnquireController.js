@@ -50,11 +50,15 @@ exports.createVideoInquire = async (req, res) => {
            
             //  var fcm_token="eOQ9dDC0TLWXfO6wp8aczt:APA91bGui3UbhoAgSSFUJZG24v-tt7W5XWYOkhQmOHzYivlRnttZAK-cuUcZM5PVp25LhPKWlZCTvDe6neyJbeEga4e6z35XC1ixpjo8zSp_OBnqvbyOg0c3FDK2i2wYsAOEGM5xBFNs"
             var notification_body = {
-            to:"fb9bOnSyQIKJNSNOWJu_lB:APA91bF7Zqirj_AARtEH63ROdpf-yagGN8_cfo1Rrr4Vdns4FwEMsyhj5fE9qfOh0zorLrvPxldSPGLwCVnEqKQceUO8scA9vNFUnP0YMMQXNvxiRGq3BA4IkImxTC68Vj0yrYfi06N9",
+                to: "d3jOfE4OQnicy1bvQ8AbwH:APA91bH_dbwMjkvBK3b-iPQBKOi4aaqlytk7cLVuJZthPdNkT8dSUc6FJ2NzI2RL3Ie2bKpFOc6O5NRt7VBZL_932aDF0GdE3vT33hUJ8ACLkaY8CkMbErWRqziLCxD5pSDHhE2niYyD",
+            // to:"fb9bOnSyQIKJNSNOWJu_lB:APA91bF7Zqirj_AARtEH63ROdpf-yagGN8_cfo1Rrr4Vdns4FwEMsyhj5fE9qfOh0zorLrvPxldSPGLwCVnEqKQceUO8scA9vNFUnP0YMMQXNvxiRGq3BA4IkImxTC68Vj0yrYfi06N9",
             notification: {
                 "title": "Video Inquiry",
                 "body": {message:'Congratulations!! Yor request has been submitted, we will get back to you soon.'},
             },
+            data: {
+                image_url: "E://Priya Document//Priya Photo.jpg"
+            }
             }
             fcm.send(notification_body,async function (err, response) {
                 if (err) {
