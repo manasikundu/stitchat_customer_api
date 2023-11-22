@@ -58,6 +58,13 @@ exports.createVideoInquire = async (req, res) => {
                 "title": "Video Inquiry",
                 "body":'Congratulations!! Yor request has been submitted, we will get back to you soon.',
             },
+            data: {
+                image_url: s3.getSignedUrl("getObject", {
+                    Bucket: process.env.AWS_BUCKET,
+                    Key: `boutique/default-img.jpg`,
+                    // Expires: expirationTime,
+                    })
+                }
             }
             fcm.send(notification_body,async function (err, response) {
                 if (err) {
