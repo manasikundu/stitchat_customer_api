@@ -54,7 +54,7 @@ exports.createVideoInquire = async (req, res) => {
             var fcm = new FCM(serverKey);
             var notification_body = {
             to:"dZX3eYL9TmSvR1kWW5ykXT:APA91bGJEeMtlPK9VXHTcqoTGL_If9e5sRX4hgZM2po9m4m67RhiBfWhf9aGCfQ_EdRpZxRKvYUaTOjZUrbalyLw1ApV6rprWVM6wIRsX1xikzVd_wKKDEAKYS7TsdhWnIssFw-4o1Vz",
-            notification: {
+            data: {
                 "title": "Video Inquiry",
                 "body":'Congratulations!! Yor request has been submitted, we will get back to you soon.',
                 "type": "BIGPIC",
