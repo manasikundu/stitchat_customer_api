@@ -50,27 +50,21 @@ exports.createVideoInquire = async (req, res) => {
             dataJson.date_time = formattedDate ? formattedDate : ''
             dataJson.enquiry_id = enquiry_id ? newService.enquiry_id : ''
 
-            var serverKey=config.serverKey
-            var fcm = new FCM(serverKey);
+            var serverKey ="AAAAeWjlHHQ:APA91bEmHAGr364Xhn2Tr-gtkPhNCT6aHFzjJnQc1BHThevx06c7WjFLgzDHug7qCiPz77nJQsMIesruMdaincRc9T8i20weW20GP36reD9UfwfkeqIMFG84pNjXZVbtNOfhLjPQNExt"
+            var fcm = new FCM(serverKey);           
             var notification_body = {
             to:"dZX3eYL9TmSvR1kWW5ykXT:APA91bGJEeMtlPK9VXHTcqoTGL_If9e5sRX4hgZM2po9m4m67RhiBfWhf9aGCfQ_EdRpZxRKvYUaTOjZUrbalyLw1ApV6rprWVM6wIRsX1xikzVd_wKKDEAKYS7TsdhWnIssFw-4o1Vz",
-            data: {
+            notification: {
                 "title": "Video Inquiry",
                 "body":'Congratulations!! Yor request has been submitted, we will get back to you soon.',
+            },
+            data:{
                 "type": "BIGPIC",
                 "image_url": s3.getSignedUrl("getObject", {
                     Bucket: process.env.AWS_BUCKET,
                     Key: `boutique/default-img.jpg`,
-                    // Expires: expirationTime,
                     })
-            },
-            // data: {
-            //     image_url: s3.getSignedUrl("getObject", {
-            //         Bucket: process.env.AWS_BUCKET,
-            //         Key: `boutique/default-img.jpg`,
-            //         // Expires: expirationTime,
-            //         })
-            //     }
+            }
             }
             fcm.send(notification_body,async function (err, response) {
                 if (err) {
