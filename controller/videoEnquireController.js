@@ -56,15 +56,34 @@ exports.createVideoInquire = async (req, res) => {
             to:"dZX3eYL9TmSvR1kWW5ykXT:APA91bGJEeMtlPK9VXHTcqoTGL_If9e5sRX4hgZM2po9m4m67RhiBfWhf9aGCfQ_EdRpZxRKvYUaTOjZUrbalyLw1ApV6rprWVM6wIRsX1xikzVd_wKKDEAKYS7TsdhWnIssFw-4o1Vz",
             notification: {
                 "title": "Video Inquiry",
-                "body":'Congratulations!! Yor request has been submitted, we will get back to you soon.',
+                "type": "BIGTEXT",
+                // "body":'Congratulations!! Yor request has been submitted, we will get back to you soon.',
+                "body": 'Congratulations!! Yor request has been submitted, we will get back to you soon. Hope you are doing well. Waiting for you response. Thank you. ',
+                "click_action": "VIDEO_INQUIRY_NOTIFICATION"
             },
             data:{
                 "type": "BIGPIC",
                 "image_url": s3.getSignedUrl("getObject", {
                     Bucket: process.env.AWS_BUCKET,
                     Key: `boutique/default-img.jpg`,
-                    })
-            }
+                    }),
+                "actions": JSON.stringify([
+                    {
+                        "title": 'View',
+                        "action": 'VIEW_ACTION',
+                        "action_destination": "VIEW_INQUIRY_DETAILS"
+                    },
+                    {
+                        "title": 'Decline',
+                        "action": 'DECLINE_ACTION',
+                        "action_destination": "DECLINE_INQUIRY"
+                    }
+                    ]),
+                // "title": "Inbox style notification",
+                // "message": "Please check your today's task.",
+                // "type": "INBOX",
+                // "contentList": ['Shirt is loose', 'Meeting at 4pm', 'Need to alter the shirt', 'Update '],    
+                }
             }
             fcm.send(notification_body,async function (err, response) {
                 if (err) {
