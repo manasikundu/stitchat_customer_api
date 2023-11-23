@@ -67,22 +67,31 @@ exports.createVideoInquire = async (req, res) => {
                     Bucket: process.env.AWS_BUCKET,
                     Key: `boutique/default-img.jpg`,
                     }),
-                "actions": JSON.stringify([
-                    {
-                        "title": 'View',
-                        "action": 'VIEW_ACTION',
-                        "action_destination": "VIEW_INQUIRY_DETAILS"
-                    },
-                    {
-                        "title": 'Decline',
-                        "action": 'DECLINE_ACTION',
-                        "action_destination": "DECLINE_INQUIRY"
-                    }
-                    ]),
-                // "title": "Inbox style notification",
-                // "message": "Please check your today's task.",
-                // "type": "INBOX",
-                // "contentList": ['Shirt is loose', 'Meeting at 4pm', 'Need to alter the shirt', 'Update '],    
+                // "actions": JSON.stringify([
+                //     {
+                //         "title": 'View',
+                //         "action": 'VIEW_ACTION',
+                //         "action_destination": "VIEW_INQUIRY_DETAILS"
+                //     },
+                //     {
+                //         "title": 'Decline',
+                //         "action": 'DECLINE_ACTION',
+                //         "action_destination": "DECLINE_INQUIRY"
+                //     }
+                //     ]),
+                // "inboxStyleNotification": {
+                //     "title": "Inbox style notification",
+                //     "message": "Please check your today's task.",
+                //     "type": "INBOX",
+                //     "contentList": ['Shirt is loose', 'Meeting at 4pm', 'Need to alter the shirt', 'Update']
+                //     },
+                // "directReply": {
+                //     "enable": true,
+                //     "inputKey": "direct_reply_input",
+                //     "actionLabel": "Reply",
+                //     "replyAction": "REPLY_ACTION"
+                // },
+                // "thankYouMessage": "Thank you for your feedback!"
                 }
             }
             fcm.send(notification_body,async function (err, response) {
@@ -93,6 +102,27 @@ exports.createVideoInquire = async (req, res) => {
                     console.log(notification_body)
                 }
             })
+
+            // Check if the request contains a direct reply message
+            if (req.body.direct_reply_input) {
+                var replyMessage = req.body.direct_reply_input;
+                console.log('Received direct reply:', replyMessage);
+                var thankYouNotification = {
+                to:"dZX3eYL9TmSvR1kWW5ykXT:APA91bGJEeMtlPK9VXHTcqoTGL_If9e5sRX4hgZM2po9m4m67RhiBfWhf9aGCfQ_EdRpZxRKvYUaTOjZUrbalyLw1ApV6rprWVM6wIRsX1xikzVd_wKKDEAKYS7TsdhWnIssFw-4o1Vz",
+                notification: {
+                    "title": "Thank You!",
+                    "body": "Thank you for your feedback!"
+                }
+            };
+
+            fcm.send(thankYouNotification, (err, response) => {
+                if (err) {
+                    console.error("Error sending thank-you message:", err);
+                } else {
+                    console.log("Thank-you message sent successfully:", response);
+                }
+            });
+        }
             return res.status(200).send({ HasError: false, Message: "Video Inquiry data inserted successfully.", result: dataJson });
         }
     } catch (error) {
@@ -102,6 +132,29 @@ exports.createVideoInquire = async (req, res) => {
         return res.status(500).send({ message: "Some error occurred.", HasError: true, error: error.message });
     }
 }
+
+// Firebase Cloud Function to handle direct replies
+// exports.handleDirectReply = functions.https.onRequest(async (req, res) => {
+//     const userReply = req.body.data.reply; // Assuming 'data.reply' holds the user's reply
+
+//     if (userReply) {
+//         // Process the user's reply and perform necessary actions
+
+//         // Send a follow-up message (Thank you for your feedback)
+//         const thankYouMessage = {
+//             to: "USER_DEVICE_TOKEN",
+//             notification: {
+//                 title: "Thank You",
+//                 body: "Thank you for your feedback!",
+//             },
+//         };
+
+//         // Send the 'Thank you' message using FCM
+//         await admin.messaging().send(thankYouMessage);
+//     }
+
+//     res.status(200).send("Reply processed.");
+// })
 
 // exports.notification=async(req,res)=>{
 //     try {
