@@ -5,6 +5,7 @@ const Service = require('../service/userService')
 const orderService = require('../service/userServiceOrderService')
 const cartService = require('../service/userServiceCartService')
 const logService = require('../service/logService')
+const { generateAccessToken, auth } = require("../jwt");
 
 
 exports.createCoupon = async (req, res) => {
@@ -28,7 +29,7 @@ exports.createCoupon = async (req, res) => {
         if (!coupon_code || !coupon_name || !coupon_type || !minimum_order_amount || !start_date || !end_date) {
             return res.status(500).send({ HasError: true, message: "Invalid parameter." })
         } else {
-            const data = { coupon_code, coupon_name, description, coupon_type, minimum_order_amount, discount_amount, start_date, end_date, location, valid_user, status ,max_discount}
+            const data = { coupon_code, coupon_name, description, coupon_type, minimum_order_amount, discount_amount, start_date, end_date, location, valid_user, status, max_discount }
             const newCoupon = await couponService.createCoupon(data)
             var dataJson = {}
             dataJson.id = newCoupon.id ? newCoupon.id : 0
@@ -64,51 +65,54 @@ exports.applyCoupon = async (req, res) => {
         const g_token = auth(req)
         const user_id = g_token.user_id;
         var currentDate = new Date();
-
-        var result = await couponService.getCouponDetails(coupon_code)
-        var orderDetails = await orderService.orderDetailsByCoupon(user_id, coupon_code)
-        if (result) {
-            if (!orderDetails) {
-                couponDetails = result.toJSON()
-                const startDate = new Date(couponDetails.start_date);
-                const endDate = new Date(couponDetails.end_date);
-                var finalresult = {}
-                finalresult.id = couponDetails.id
-                finalresult.coupon_code = couponDetails.coupon_code
-                if (currentDate >= startDate && currentDate <= endDate) {
-                    if (couponDetails.valid_user == null || couponDetails.valid_user == user_id) {
-                        var cartDetails = await cartService.getCart(user_id)
-                        const cart_amount = cartDetails.reduce((total, num) => total + parseFloat(num.amount), 0)
-                        finalresult.cart_amount = cart_amount
-                        if (cart_amount >= couponDetails.minimum_order_amount) {
-                            var total
-                            if (couponDetails.coupon_type == 1) {//1-percentage,2-flat
-                                var discount = (couponDetails.discount_amount * cart_amount) / 100
-                                finalresult.discount_amount = discount
-                                if (discount > couponDetails.max_discount) {
-                                    discount = couponDetails.max_discount
+        if (coupon_code) {
+            var result = await couponService.getCouponDetails(coupon_code)
+            var orderDetails = await orderService.orderDetailsByCoupon(user_id, coupon_code)
+            if (result) {
+                if (!orderDetails) {
+                    couponDetails = result.toJSON()
+                    const startDate = new Date(couponDetails.start_date);
+                    const endDate = new Date(couponDetails.end_date);
+                    var finalresult = {}
+                    finalresult.id = couponDetails.id
+                    finalresult.coupon_code = couponDetails.coupon_code
+                    if (currentDate >= startDate && currentDate <= endDate) {
+                        if (couponDetails.valid_user == null || couponDetails.valid_user == user_id) {
+                            var cartDetails = await cartService.getCart(user_id)
+                            const cart_amount = cartDetails.reduce((total, num) => total + parseFloat(num.amount), 0)
+                            finalresult.cart_amount = cart_amount
+                            if (cart_amount >= couponDetails.minimum_order_amount) {
+                                var total
+                                if (couponDetails.coupon_type == 1) {//1-percentage,2-flat
+                                    var discount = (couponDetails.discount_amount * cart_amount) / 100
+                                    finalresult.discount_amount = discount
+                                    if (discount > couponDetails.max_discount) {
+                                        discount = couponDetails.max_discount
+                                    }
+                                    total = cart_amount - discount
+                                } else {
+                                    finalresult.discount_amount = couponDetails.discount_amount
+                                    total = cart_amount - couponDetails.discount_amount
                                 }
-                                total = cart_amount - discount
+                                finalresult.total_amount = total
+                                return res.status(200).send({ HasError: false, Message: "Coupon apply successfully", result: finalresult })
                             } else {
-                                finalresult.discount_amount = couponDetails.discount_amount
-                                total = cart_amount - couponDetails.discount_amount
+                                return res.status(200).send({ HasError: false, Message: `Need to add item worth ${couponDetails.minimum_order_amount} to apply this coupon.`, result: {} })
                             }
-                            finalresult.total_amount = total
-                            return res.status(200).send({ HasError: false, Message: "Coupon apply successfully", result: finalresult })
                         } else {
-                            return res.status(200).send({ HasError: false, Message: `Need to add item worth ${couponDetails.minimum_order_amount} to apply this coupon.`, result: {} })
+                            return res.status(200).send({ HasError: false, Message: "You are not eligible for this coupon.", result: {} })
                         }
                     } else {
-                        return res.status(200).send({ HasError: false, Message: "You are not eligible for this coupon.", result: {} })
+                        return res.status(200).send({ HasError: false, Message: "This coupon has been expired.", result: {} })
                     }
                 } else {
-                    return res.status(200).send({ HasError: false, Message: "This coupon has been expired.", result: {} })
+                    return res.status(200).send({ HasError: false, Message: "You have already applied this coupon.", result: {} })
                 }
             } else {
-                return res.status(200).send({ HasError: false, Message: "You have already applied this coupon.", result: {} })
+                return res.status(200).send({ HasError: false, Message: "This coupon doesn't exist.", result: {} })
             }
         } else {
-            return res.status(200).send({ HasError: false, Message: "This coupon doesn't exist.", result: {} })
+            return res.status(400).send({ HasError: false, Message: "Please enter a coupon.", result: {} })
         }
     } catch (error) {
         console.error(error)
