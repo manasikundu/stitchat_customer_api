@@ -315,11 +315,12 @@ exports.FashionDesignerDetails = async (req, res) => {
     // var designerDetails = [];
     // if (user_id) {
     const designerDetails = await FDService.getDesignerDetailsByUserId(user_id);
-    const btq_id = await db.query(`select * from sarter__boutique_user_map where user_id=${user_id}`);
-    const id = btq_id[0][0].boutique_id;
+    var btq_id = await db.query(`select * from sarter__boutique_user_map where user_id=${user_id}`);
+    console.log(btq_id)
+    var id = btq_id[0][0].boutique_id;
     const main = [];
     const result1 = await db.query(`select * from sarter__boutique_service_dic where boutique_id=${id}`); //category Type
-    for (let i in result1[0]) {
+    for (var i in result1[0]) {
       const mainJson = {};
       mainJson.categoryType = result1[0][i].category_type;
       const categoryType = result1[0][i].category_type;
