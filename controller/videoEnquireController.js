@@ -59,7 +59,17 @@ exports.createVideoInquire = async (req, res) => {
                 "type": "BIGTEXT",
                 // "body":'Congratulations!! Yor request has been submitted, we will get back to you soon.',
                 "body": 'Congratulations!! Yor request has been submitted, we will get back to you soon. Hope you are doing well. Waiting for you response. Thank you. ',
-                "click_action": "VIDEO_INQUIRY_NOTIFICATION"
+                // "click_action": "VIDEO_INQUIRY_NOTIFICATION"
+                // "actions": [
+                //     {
+                //         "title": "View",
+                //         "action": "VIEW_ACTION"
+                //     },
+                //     {
+                //         "title": "Decline",
+                //         "action": "DECLINE_ACTION"
+                //     }
+                // ]
             },
             data:{
                 "type": "BIGPIC",
@@ -91,25 +101,16 @@ exports.createVideoInquire = async (req, res) => {
                 //     "actionLabel": "Reply",
                 //     "replyAction": "REPLY_ACTION"
                 // },
-                // "thankYouMessage": "Thank you for your feedback!"
+                // // "thankYouMessage": "Thank you for your feedback!"
                 }
             }
-            fcm.send(notification_body,async function (err, response) {
-                if (err) {
-                    console.log(err)
-                }else{
-                    console.log("Notification sent sucessfully."+response)
-                    console.log(notification_body)
-                }
-            })
-
-            // Check if the request contains a direct reply message
+            
             if (req.body.direct_reply_input) {
                 var replyMessage = req.body.direct_reply_input;
                 console.log('Received direct reply:', replyMessage);
                 var thankYouNotification = {
-                to:"dZX3eYL9TmSvR1kWW5ykXT:APA91bGJEeMtlPK9VXHTcqoTGL_If9e5sRX4hgZM2po9m4m67RhiBfWhf9aGCfQ_EdRpZxRKvYUaTOjZUrbalyLw1ApV6rprWVM6wIRsX1xikzVd_wKKDEAKYS7TsdhWnIssFw-4o1Vz",
-                notification: {
+                    to:"dZX3eYL9TmSvR1kWW5ykXT:APA91bGJEeMtlPK9VXHTcqoTGL_If9e5sRX4hgZM2po9m4m67RhiBfWhf9aGCfQ_EdRpZxRKvYUaTOjZUrbalyLw1ApV6rprWVM6wIRsX1xikzVd_wKKDEAKYS7TsdhWnIssFw-4o1Vz",
+                    notification: {
                     "title": "Thank You!",
                     "body": "Thank you for your feedback!"
                 }
@@ -120,9 +121,51 @@ exports.createVideoInquire = async (req, res) => {
                     console.error("Error sending thank-you message:", err);
                 } else {
                     console.log("Thank-you message sent successfully:", response);
+                    console.log(thankYouNotification)
                 }
             });
+        } else {
+            fcm.send(notification_body,async function (err, response) {
+                if (err) {
+                    console.log(err)
+                }else{
+                    console.log("Notification sent sucessfully."+response)
+                    console.log(notification_body)
+                }
+            })
+
         }
+
+            
+        //     fcm.send(notification_body,async function (err, response) {
+        //         if (err) {
+        //             console.log(err)
+        //         }else{
+        //             console.log("Notification sent sucessfully."+response)
+        //             console.log(notification_body)
+        //         }
+        //     })
+
+        //     // Check if the request contains a direct reply message
+        //     if (req.body.direct_reply_input) {
+        //         var replyMessage = req.body.direct_reply_input;
+        //         console.log('Received direct reply:', replyMessage);
+        //         var thankYouNotification = {
+        //             to:"dZX3eYL9TmSvR1kWW5ykXT:APA91bGJEeMtlPK9VXHTcqoTGL_If9e5sRX4hgZM2po9m4m67RhiBfWhf9aGCfQ_EdRpZxRKvYUaTOjZUrbalyLw1ApV6rprWVM6wIRsX1xikzVd_wKKDEAKYS7TsdhWnIssFw-4o1Vz",
+        //             notification: {
+        //             "title": "Thank You!",
+        //             "body": "Thank you for your feedback!"
+        //         }
+        //     };
+
+        //     fcm.send(thankYouNotification, (err, response) => {
+        //         if (err) {
+        //             console.error("Error sending thank-you message:", err);
+        //         } else {
+        //             console.log("Thank-you message sent successfully:", response);
+        //         }
+        //     });
+        // }
             return res.status(200).send({ HasError: false, Message: "Video Inquiry data inserted successfully.", result: dataJson });
         }
     } catch (error) {
