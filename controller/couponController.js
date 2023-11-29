@@ -112,7 +112,7 @@ exports.applyCoupon = async (req, res) => {
                 return res.status(200).send({ HasError: false, Message: "This coupon doesn't exist.", result: {} })
             }
         } else {
-            return res.status(400).send({ HasError: true, Message: "Please enter a coupon.", result: {} })
+            return res.status(200).send({ HasError: true, Message: "Please enter a coupon.", result: {} })
         }
     } catch (error) {
         console.error(error)
