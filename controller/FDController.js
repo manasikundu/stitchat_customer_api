@@ -299,8 +299,6 @@ exports.FashionDesignerDetails = async (req, res) => {
 
     var method_name = await Service.getCallingMethodName();
     var apiEndpointInput = JSON.stringify(req.body);
-
-    // Track API hit
     apiTrack = await Service.trackApi(
       req.query.user_id,
       method_name,
@@ -310,9 +308,6 @@ exports.FashionDesignerDetails = async (req, res) => {
       req.ip
     );
     const boutiqueInfo = await db.query(`select * from sarter__boutique_basic_info where id in(select boutique_id from sarter__boutique_user_map where user_id =${user_id})`)
-    // console.log(boutiqueInfo)
-    // var designerDetails = [];
-    // if (user_id) {
     const designerDetails = await FDService.getDesignerDetailsByUserId(user_id);
     const btq_id = await db.query(`select * from sarter__boutique_user_map where user_id=${user_id}`);
     const id = btq_id[0][0].boutique_id;
