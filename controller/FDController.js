@@ -256,21 +256,7 @@ exports.fashionDesignerList = async (req, res) => {
       limit: limit,
       offset: offset,
     };
-
-    // Generate access token using the provided secretKey
-    var secretKey = "tensorflow";
-    var token = generateAccessToken(mobile_number, secretKey);
-
-    if (!token) {
-      return res.status(500).send({
-        HasError: true,
-        StatusCode: 500,
-        message: "Failed to generate token",
-      });
-    } else {
-      // Set the token in a custom response header
-      res.setHeader("X-Auth-Token", token);
-      return res.status(200).send({
+    return res.status(200).send({
         result: {
           fashionDesignerInfo: fashionDesignersWithWeekSchedule,
         },
@@ -278,7 +264,7 @@ exports.fashionDesignerList = async (req, res) => {
         StatusCode: 200,
         Message: "Fashion Designer List retrieving successfully.",
       });
-    }
+    
   } catch (error) {
     const logData = { user_id: "", status: 'false', message: error.message, device_id: '', created_at: Date.now(), updated_at: Date.now(), device_info: '', action: req.url }
     const log = await logService.createLog(logData)
@@ -286,8 +272,6 @@ exports.fashionDesignerList = async (req, res) => {
     res.status(500).send({ error: "An error occurred while fetching fashion designers." });
   }
 };
-
-
 
 
 // Details of FD
@@ -427,22 +411,7 @@ exports.FashionDesignerDetails = async (req, res) => {
         availableTime = `${startTime} - ${endTime}`;
       }
     }
-
-    // Generate access token using the provided secretKey
-    var secretKey = "tensorflow";
-    var token = generateAccessToken(mobile_number, secretKey);
-
-    if (!token) {
-      return res.status(500).send({
-        HasError: true,
-        StatusCode: 500,
-        message: "Failed to generate token",
-      });
-    } else {
-      // Set the token in a custom response header
-      res.setHeader("X-Auth-Token", token);
-
-      return res.status(200).send({
+    return res.status(200).send({
         result: {
           designer_name: fullName,
           about_me:
@@ -506,7 +475,7 @@ exports.FashionDesignerDetails = async (req, res) => {
         StatusCode: 200,
         Message: "Designer details retrieved successfully.",
       });
-    }
+    
   } catch (error) {
     const logData = { user_id: "", status: 'false', message: error.message, device_id: '', created_at: Date.now(), updated_at: Date.now(), device_info: '', action: req.url }
     const log = await logService.createLog(logData)
@@ -705,16 +674,7 @@ exports.fashionDesignerTimeSlot = async (req, res) => {
       }
       return daySlot;
     });
-    var secretKey = "tensorflow";
-    var token = generateAccessToken(mobile_number, secretKey);
-    if (!token) {
-      return res.status(500).send({
-        HasError: true,
-        StatusCode: 500,
-        message: "Failed to generate token",
-      });
-    } else {
-      res.setHeader("X-Auth-Token", token);
+    
       var result = {
         fashionDesignerdetails: {
           id: user_id,
@@ -757,7 +717,7 @@ exports.fashionDesignerTimeSlot = async (req, res) => {
         StatusCode: 200,
         Message: "Designer details retrieved successfully.",
       });
-    }
+    
   } catch (error) {
     const logData = { user_id: "", status: 'false', message: error.message, device_id: '', created_at: Date.now(), updated_at: Date.now(), device_info: '', action: req.url }
     const log = await logService.createLog(logData)

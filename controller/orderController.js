@@ -124,10 +124,6 @@ exports.orderList = async (req, res) => {
     }
     orderList.sort((a, b) => b.id - a.id)
 
-    // // Generate access token using the provided secretKey
-    // var secretKey = "tensorflow";
-    // var token = generateAccessToken(mobile_number, secretKey);
-
     if (orderList.length !== 0) {
       return res.status(200).send({
         result: {
