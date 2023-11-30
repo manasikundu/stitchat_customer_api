@@ -8,7 +8,7 @@ var generateAccessToken = (mobile_number, user_id) => {
 
 var auth = (req) => {
     var token = req.headers?.authorization
-    console.log(token)
+    // console.log(token)
     const decoded = jwt.verify(token, secretKey)
     return decoded
     // if (!token) {

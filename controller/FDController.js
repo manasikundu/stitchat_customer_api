@@ -280,6 +280,14 @@ exports.FashionDesignerDetails = async (req, res) => {
     var user_id = req.body.user_id;//fashion designer id
     const g_token = auth(req)
     var mobile_number = req.body.mobile_number;
+    
+    if (isNaN(user_id) || user_id === "") {
+      return res.status(400).send({
+        HasError: true,
+        StatusCode: 400,
+        Message: "Invalid parameter.",
+      });
+    }
 
     var method_name = await Service.getCallingMethodName();
     var apiEndpointInput = JSON.stringify(req.body);
@@ -293,6 +301,13 @@ exports.FashionDesignerDetails = async (req, res) => {
     );
     const boutiqueInfo = await db.query(`select * from sarter__boutique_basic_info where id in(select boutique_id from sarter__boutique_user_map where user_id =${user_id})`)
     const designerDetails = await FDService.getDesignerDetailsByUserId(user_id);
+    if (designerDetails.length === 0) {
+      return res.status(404).send({
+        HasError: true,
+        StatusCode: 400,
+        Message: "Designer not found.",
+      });
+    }
     const btq_id = await db.query(`select * from sarter__boutique_user_map where user_id=${user_id}`);
     const id = btq_id[0][0].boutique_id;
     const main = [];
@@ -364,13 +379,7 @@ exports.FashionDesignerDetails = async (req, res) => {
       }, {}));
       data[k].category = data1;
     }
-    if (designerDetails.length === 0) {
-      return res.status(404).send({
-        HasError: true,
-        StatusCode: 404,
-        Message: "Designer not found.",
-      });
-    }
+    
     var firstName = designerDetails[0]["first_name"];
     var lastName = designerDetails[0]["last_name"];
     var fullName =
