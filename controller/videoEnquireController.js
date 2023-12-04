@@ -59,72 +59,18 @@ exports.createVideoInquire = async (req, res) => {
                 "type": "BIGTEXT",
                 // "body":'Congratulations!! Yor request has been submitted, we will get back to you soon.',
                 "body": 'Congratulations!! Yor request has been submitted, we will get back to you soon. Hope you are doing well. Waiting for you response. Thank you. ',
-                // "click_action": "VIDEO_INQUIRY_NOTIFICATION"
-                // "actions": [
-                //     {
-                //         "title": "View",
-                //         "action": "VIEW_ACTION"
-                //     },
-                //     {
-                //         "title": "Decline",
-                //         "action": "DECLINE_ACTION"
-                //     }
-                // ]
-            },
-            data:{
-                "type": "BIGPIC",
-                "image_url": s3.getSignedUrl("getObject", {
-                    Bucket: process.env.AWS_BUCKET,
-                    Key: `boutique/default-img.jpg`,
-                    }),
-                // "actions": JSON.stringify([
-                //     {
-                //         "title": 'View',
-                //         "action": 'VIEW_ACTION',
-                //         "action_destination": "VIEW_INQUIRY_DETAILS"
-                //     },
-                //     {
-                //         "title": 'Decline',
-                //         "action": 'DECLINE_ACTION',
-                //         "action_destination": "DECLINE_INQUIRY"
-                //     }
-                //     ]),
-                // "inboxStyleNotification": {
-                //     "title": "Inbox style notification",
-                //     "message": "Please check your today's task.",
-                //     "type": "INBOX",
-                //     "contentList": ['Shirt is loose', 'Meeting at 4pm', 'Need to alter the shirt', 'Update']
-                //     },
-                // "directReply": {
-                //     "enable": true,
-                //     "inputKey": "direct_reply_input",
-                //     "actionLabel": "Reply",
-                //     "replyAction": "REPLY_ACTION"
-                // },
-                // // "thankYouMessage": "Thank you for your feedback!"
-                }
-            }
             
-            if (req.body.direct_reply_input) {
-                var replyMessage = req.body.direct_reply_input;
-                console.log('Received direct reply:', replyMessage);
-                var thankYouNotification = {
-                    to:"dZX3eYL9TmSvR1kWW5ykXT:APA91bGJEeMtlPK9VXHTcqoTGL_If9e5sRX4hgZM2po9m4m67RhiBfWhf9aGCfQ_EdRpZxRKvYUaTOjZUrbalyLw1ApV6rprWVM6wIRsX1xikzVd_wKKDEAKYS7TsdhWnIssFw-4o1Vz",
-                    notification: {
-                    "title": "Thank You!",
-                    "body": "Thank you for your feedback!"
-                }
-            };
-
-            fcm.send(thankYouNotification, (err, response) => {
-                if (err) {
-                    console.error("Error sending thank-you message:", err);
-                } else {
-                    console.log("Thank-you message sent successfully:", response);
-                    console.log(thankYouNotification)
-                }
-            });
-        } else {
+            },
+            data: {
+                type: "BIGPIC",
+                image_url: s3.getSignedUrl("getObject", {Bucket: process.env.AWS_BUCKET,Key: `boutique/default-img.jpg`,}),
+                title: "direct_reply_notification",
+                message: "Please share your feedback.",
+                type: "DIRECTREPLY"
+            }  
+        }
+    
+        } 
             fcm.send(notification_body,async function (err, response) {
                 if (err) {
                     console.log(err)
@@ -134,7 +80,7 @@ exports.createVideoInquire = async (req, res) => {
                 }
             })
 
-        }
+        
 
             
         //     fcm.send(notification_body,async function (err, response) {
@@ -167,7 +113,7 @@ exports.createVideoInquire = async (req, res) => {
         //     });
         // }
             return res.status(200).send({ HasError: false, Message: "Video Inquiry data inserted successfully.", result: dataJson });
-        }
+    
     } catch (error) {
         console.error(error)
         const logData = { user_id: "", status: 'false', message: error.message, device_id: '', created_at: Date.now(), updated_at: Date.now(), device_info: '', action: req.url }
