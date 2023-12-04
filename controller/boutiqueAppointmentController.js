@@ -23,6 +23,7 @@ var daysOfWeekConfig = [
 exports.bookBoutiqueAppointment = async (req, res) => {
   try {
     var { boutique_id, customer_id, appointment_date, start_time, end_time } = req.body
+    console.log(req.body)
     var boutique = await boutiqueService.getBoutiqueByBoutiqueId(boutique_id)
     if (!boutique) {
       return res.status(400).send({ HasError: true, Message: "Invalid boutique or customer." });
@@ -46,17 +47,19 @@ exports.bookBoutiqueAppointment = async (req, res) => {
       });
     }
     var slotAvailability = await botiqueAppointmentService.boutiqueWeeklySchedule(boutique_id);
-    const matchingSlot = slotAvailability.some((slot) => {
-      const slotStartTime = slot.start_time;
-      const slotEndTime = slot.end_time;
+    var matchingSlot = slotAvailability.some((slot) => {
+      var slotStartTime = slot.start_time;
+      var slotEndTime = slot.end_time;
 
       return (
-        slot.week_day === moment(appointment_date).isoWeekday() &&
-        start_time === slotStartTime &&
-        end_time === slotEndTime &&
-        slot.check_availability === 1
+        // slot.week_day == moment(appointment_date).isoWeekday() &&
+        start_time == slotStartTime &&
+        end_time == slotEndTime 
+        // slot.check_availability === 0
       );
     });
+
+    
     if (matchingSlot) {
       const appointmentData = {
         boutique_id: boutique_id,
@@ -104,7 +107,7 @@ exports.boutiqueSlot = async (req, res) => {
 
     var weekSchedules = schedule.map((boutique) => {
       var weekDay = boutique.week_day;
-      var availabilityText = boutique.check_availability === 1 ? true : false;
+      // var availabilityText = boutique.check_availability === 1 ? true : false;
       var startTime = boutique.start_time;
       var endTime = boutique.end_time;
       var dayConfig = daysOfWeekConfig.find((config) => config.value === weekDay);
@@ -117,7 +120,7 @@ exports.boutiqueSlot = async (req, res) => {
         start_time: startTime,
         end_time: endTime,
         slot_time: resultTime,
-        availibility: availabilityText
+        availibility: true
       };
     }).sort((a, b) => {
       if (a.start_time < b.start_time) return -1;
