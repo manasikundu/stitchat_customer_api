@@ -119,7 +119,15 @@ exports.boutiqueSlot = async (req, res) => {
         slot_time: resultTime,
         availibility: availabilityText
       };
-    })
+    }).sort((a, b) => {
+      if (a.start_time < b.start_time) return -1;
+      if (a.start_time > b.start_time) return 1;
+      return 0;
+    }).filter((slot, index, self) => {
+      return index === self.findIndex((s) => (
+        s.start_time === slot.start_time && s.end_time === slot.end_time
+      ));
+    });
 
     var items = await botiqueAppointmentService.itemInBoutiqueSlot(boutique_id)
     var itemArray = items.map((item) => {
