@@ -23,7 +23,6 @@ var daysOfWeekConfig = [
 exports.bookBoutiqueAppointment = async (req, res) => {
   try {
     var { boutique_id, customer_id, appointment_date, start_time, end_time } = req.body
-    console.log(req.body)
     var boutique = await boutiqueService.getBoutiqueByBoutiqueId(boutique_id)
     if (!boutique) {
       return res.status(400).send({ HasError: true, Message: "Invalid boutique or customer." });
@@ -50,6 +49,7 @@ exports.bookBoutiqueAppointment = async (req, res) => {
     var matchingSlot = slotAvailability.some((slot) => {
       var slotStartTime = slot.start_time;
       var slotEndTime = slot.end_time;
+      console.log(moment(appointment_date).isoWeekday())
 
       return (
         // slot.week_day == moment(appointment_date).isoWeekday() &&
