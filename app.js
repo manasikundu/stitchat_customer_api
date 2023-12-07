@@ -16,6 +16,8 @@ const videoInquire = require("./router/videoEnquireRouter")
 const coupon = require("./router/couponRouter")
 
 const bodyParser = require("body-parser");
+app.use(bodyParser.json({ limit: '50mb' }));
+app.use(bodyParser.urlencoded({ limit: '50mb', extended: true }));
 app.use(cors());
 
 app.use(bodyParser.json());
