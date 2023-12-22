@@ -50,29 +50,48 @@ exports.createVideoInquire = async (req, res) => {
             dataJson.date_time = formattedDate ? formattedDate : ''
             dataJson.enquiry_id = enquiry_id ? newService.enquiry_id : ''
 
-            var serverKey ="AAAAeWjlHHQ:APA91bEmHAGr364Xhn2Tr-gtkPhNCT6aHFzjJnQc1BHThevx06c7WjFLgzDHug7qCiPz77nJQsMIesruMdaincRc9T8i20weW20GP36reD9UfwfkeqIMFG84pNjXZVbtNOfhLjPQNExt"
+            var serverKey = "AAAAeWjlHHQ:APA91bEmHAGr364Xhn2Tr-gtkPhNCT6aHFzjJnQc1BHThevx06c7WjFLgzDHug7qCiPz77nJQsMIesruMdaincRc9T8i20weW20GP36reD9UfwfkeqIMFG84pNjXZVbtNOfhLjPQNExt"
             var fcm = new FCM(serverKey);  
             var image_url = s3.getSignedUrl("getObject", {Bucket: process.env.AWS_BUCKET,Key: `boutique/default-img.jpg`,})         
             var notification_body = {
-            to:"dZX3eYL9TmSvR1kWW5ykXT:APA91bGJEeMtlPK9VXHTcqoTGL_If9e5sRX4hgZM2po9m4m67RhiBfWhf9aGCfQ_EdRpZxRKvYUaTOjZUrbalyLw1ApV6rprWVM6wIRsX1xikzVd_wKKDEAKYS7TsdhWnIssFw-4o1Vz",
+                to: "dZX3eYL9TmSvR1kWW5ykXT:APA91bEEhK5aak9wzSKjaajmzZ82BS1JFzcJPVTArnSZAGOj9wOoLSVBJnmoQH5M0ETR5D0lNcqIO318fUFaL4EThlY5AL2XzkgZKgdosrzciX9ftGthDPOQG5o10yKOEUbYyZKTYyc2",
             notification: {
                 "title": "Video Inquiry",
-                "type": "BIGTEXT",
                 // "body":'Congratulations!! Yor request has been submitted, we will get back to you soon.',
                 "body": 'Congratulations!! Yor request has been submitted, we will get back to you soon. Hope you are doing well. Waiting for you response. Thank you. ',
             
             },
-            data: {
-                bigpic: {
-                    "type": "BIGPIC",
-                    "image_url": image_url,
-                },
-                direct_reply: {
-                    "type": "DIRECTREPLY",
-                    "title": "direct_reply_notification",
-                    "message": "Please share your feedback."
-                }
-            }
+            data: {}
+            // data: {
+            //     // bigpic: {
+            //     //     "type": "BIGPIC",
+            //     //     "image_url": image_url,
+            //     // },
+            //     // direct_reply: {
+            //     //     "type": "DIRECTREPLY",
+            //     //     "title": "direct_reply_notification",
+            //     //     "message": "Please share your feedback."
+            //     // }
+            // }
+        }
+        var notificationType = req.body.notificationType
+
+        if (notificationType === "BIGPIC") {
+            notification_body.data = {
+                "type": "BIGPIC",
+                "image_url": image_url,
+            };
+        } else if (notificationType === "BIGTEXT") {
+            notification_body.data = {
+                "type": "BIGTEXT",
+                "body": 'Congratulations!! Your request has been submitted, we will get back to you soon. Hope you are doing well. Waiting for your response. Thank you.',
+            };
+        } else if (notificationType === "DIRECTREPLY") {
+            notification_body.data = {
+                "type": "DIRECTREPLY",
+                "title": "direct_reply_notification",
+                "message": "Please share your feedback."
+            };
         }
     
         } 
