@@ -19,7 +19,8 @@ const s3 = require("../config/s3Config");
 const dotenv = require("dotenv");
 dotenv.config();
 const notificationService = require('../service/notificationService')
-
+const Boutique = require("../model/userBoutiqueInfoModel");
+const BoutiqueService = require("../service/userBoutiqueService");
 
 exports.createOrder = async (req, res) => {
     try {
@@ -40,7 +41,7 @@ exports.createOrder = async (req, res) => {
         const calculatedTotalPrice = delivery_price + sum_amount + extra_charge - discount_price;
         const coupon_amount = req.body.coupon_amount;
         const quantity = req.body.quantity;
-        const boutique_id = req.body.boutique_id || 0;
+        const boutique_id = req.body.boutique_id || 1;
         const deliveryDate = new Date(currentDate);
         deliveryDate.setDate(currentDate.getDate() + 5);
         const formattedDeliveryDate = deliveryDate.toISOString().slice(0, 19).replace("T", " ");
@@ -49,6 +50,7 @@ exports.createOrder = async (req, res) => {
 
         if (req.body.user_id) {
             const user = await Users.findOne({ where: { id: user_id } });
+            // console.log(user.first_name)
             if (user) {
                 const newOrder = await OrderService.createOrder(data);
                 if (newOrder) {
@@ -63,19 +65,29 @@ exports.createOrder = async (req, res) => {
                     if (cart.length != 0) {
                         const updateOrderIdInCart = await cartService.updateCartByUserId(newOrder.user_id, { order_id: orderId });
                         if (updateOrderIdInCart != 0) {
-                            newOrder.order_id = orderId;
-
+                            newOrder.order_id = orderId
+                            var boutique_name = await BoutiqueService.getBoutiqueById(boutique_id)
+                            const fullNameParts = [user.first_name, user.middle_name, user.last_name].filter(Boolean);
+                            const fullName = fullNameParts.join(' ')
+                            
                             var serverKey = "AAAAeWjlHHQ:APA91bEmHAGr364Xhn2Tr-gtkPhNCT6aHFzjJnQc1BHThevx06c7WjFLgzDHug7qCiPz77nJQsMIesruMdaincRc9T8i20weW20GP36reD9UfwfkeqIMFG84pNjXZVbtNOfhLjPQNExt";
                             var fcm = new FCM(serverKey);
-                            const image_url = s3.getSignedUrl("getObject", { Bucket: process.env.AWS_BUCKET, Key: `boutique/default-img.jpg` });
+                            var image_url = s3.getSignedUrl("getObject", { Bucket: process.env.AWS_BUCKET, Key: `boutique/default-img.jpg` });
 
                             var notification_body = {
                                 to: "dZX3eYL9TmSvR1kWW5ykXT:APA91bEEhK5aak9wzSKjaajmzZ82BS1JFzcJPVTArnSZAGOj9wOoLSVBJnmoQH5M0ETR5D0lNcqIO318fUFaL4EThlY5AL2XzkgZKgdosrzciX9ftGthDPOQG5o10yKOEUbYyZKTYyc2",
                                 notification: {
                                     "title": "Place Order",
-                                    "body": `Order placed successfully. Order ID: ${orderId}`, 
+                                    "body": `Order placed successfully ${orderId}`, 
                                 },
                                 data: {}
+                            };
+                            var notification_body_receiver = {
+                                to: "dZX3eYL9TmSvR1kWW5ykXT:APA91bEEhK5aak9wzSKjaajmzZ82BS1JFzcJPVTArnSZAGOj9wOoLSVBJnmoQH5M0ETR5D0lNcqIO318fUFaL4EThlY5AL2XzkgZKgdosrzciX9ftGthDPOQG5o10yKOEUbYyZKTYyc2",
+                                notification: {
+                                    title: 'Place Order',
+                                    body: `Dear ${boutique_name.boutique_name}, an order has been successfully created by customer ${fullName} with Order Details ${orderId}.`,
+                                },
                             };
 
                             var notificationType = req.body.notificationType;
@@ -126,28 +138,76 @@ exports.createOrder = async (req, res) => {
                                     }
                                 }
                             // } 
-                            var notificationData_body = notification_body.notification.body;
-                            var notificationData_title = notification_body.notification.title;
+                            var notificationDataSender_body = notification_body.notification.body;
+                            var notificationDataSender_title = notification_body.notification.title;
+                            var notificationDataReceiver_body = notification_body_receiver.notification.body;
+                            var notificationDataReceiver_title = notification_body_receiver.notification.title;
                             var notificationData_createdAt = moment().format('YYYY-MM-DD HH:mm:ss')
-                            var dataToInsert = {}
-                            dataToInsert.sender_id = 2
-                            dataToInsert.receiver_id = 1
-                            dataToInsert.type = 2
-                            dataToInsert.title = notificationData_title
-                            dataToInsert.body = notificationData_body
-                            dataToInsert.created_at = notificationData_createdAt
+                            var senderData = {}
+                            senderData.sender_id = user_id
+                            senderData.type = 2
+                            senderData.title = notificationDataSender_title
+                            senderData.body = notificationDataSender_body
+                            senderData.send_time = notificationData_createdAt
+                            senderData.created_at = notificationData_createdAt
+
+                            var receiverData = {}
+                            receiverData.receiver_id = 1
+                            receiverData.type = 2
+                            receiverData.title = notificationDataReceiver_title
+                            receiverData.body = notificationDataReceiver_body
+                            receiverData.send_time = notificationData_createdAt
+                            receiverData.created_at = notificationData_createdAt
+
 
                             fcm.send(notification_body, async function (err, response) {
                                 if (err) {
-                                    console.log(err)
+                                    console.log(err);
                                 } else {
-                                    var notificationData = await notificationService.insertNotification(dataToInsert)
-                                    console.log("Notification sent successfully." + response)
-                                    console.log(JSON.stringify(notification_body, null, 2))
-                                }
+                                    
+                                        var notificationData = await notificationService.insertNotification(senderData);
+                                        console.log("Notification sent successfully:", response);
+                                        console.log(JSON.stringify(notification_body, null, 2));
+                            
+                                        // Sending notification to the boutique
+                                        fcm.send(notification_body_receiver, async function (err, response) {
+                                            if (err) {
+                                                console.error('Error sending notification to boutique:', err);
+                                            } else {
+                                                    var notificationDataReceiver = await notificationService.insertNotification(receiverData)
+                                                    console.log('Notification inserted:', notificationDataReceiver);
+
+                                                    console.log('Notification sent to boutique:', response);
+                                                    console.log(JSON.stringify(notification_body_receiver, null, 2));
+                                                
+                                                }
+                                            
+                            //                 })
+                            // });
+                            
+
+                            // fcm.send(notification_body, async function (err, response) {
+                            //     if (err) {
+                            //         console.log(err)
+                            //     } else {
+                            //         var notificationData = await notificationService.insertNotification(dataToInsert)
+                            //         console.log("Notification sent successfully." + response)
+                            //         console.log(JSON.stringify(notification_body, null, 2))
+                            //     }
+                            //     fcm.send(notification_body_receiver, (err, response) => {
+                            //         if (err) {
+                            //             console.error('Error sending notification to boutique:', err);
+                            //         } else {
+                            //             var notificationDataReceiver = await notificationService.insertNotification(dataToInsert)
+                            //             console.log('Notification sent to boutique.' + response)
+                            //             console.log(JSON.stringify(notification_body_receiver, null, 2))
+                                    // }
+                                // });
 
                                 return res.status(200).send({ message: "Order Placed Successfully", HasError: false, result: newOrder })
-                            });
+                            })
+                        }
+                        })
                         } else {
                             return res.status(500).send({ message: "Failed to update in cart.", HasError: true, result: {} })
                         }
