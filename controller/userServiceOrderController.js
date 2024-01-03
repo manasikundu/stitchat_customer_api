@@ -159,54 +159,25 @@ exports.createOrder = async (req, res) => {
                             receiverData.send_time = notificationData_createdAt
                             receiverData.created_at = notificationData_createdAt
 
-
                             fcm.send(notification_body, async function (err, response) {
                                 if (err) {
                                     console.log(err);
                                 } else {
-                                    
-                                        var notificationData = await notificationService.insertNotification(senderData);
-                                        console.log("Notification sent successfully:", response);
-                                        console.log(JSON.stringify(notification_body, null, 2));
-                            
-                                        // Sending notification to the boutique
-                                        fcm.send(notification_body_receiver, async function (err, response) {
-                                            if (err) {
-                                                console.error('Error sending notification to boutique:', err);
-                                            } else {
-                                                    var notificationDataReceiver = await notificationService.insertNotification(receiverData)
-                                                    console.log('Notification inserted:', notificationDataReceiver);
-
-                                                    console.log('Notification sent to boutique:', response);
-                                                    console.log(JSON.stringify(notification_body_receiver, null, 2));
-                                                
-                                                }
-                                            
-                            //                 })
-                            // });
-                            
-
-                            // fcm.send(notification_body, async function (err, response) {
-                            //     if (err) {
-                            //         console.log(err)
-                            //     } else {
-                            //         var notificationData = await notificationService.insertNotification(dataToInsert)
-                            //         console.log("Notification sent successfully." + response)
-                            //         console.log(JSON.stringify(notification_body, null, 2))
-                            //     }
-                            //     fcm.send(notification_body_receiver, (err, response) => {
-                            //         if (err) {
-                            //             console.error('Error sending notification to boutique:', err);
-                            //         } else {
-                            //             var notificationDataReceiver = await notificationService.insertNotification(dataToInsert)
-                            //             console.log('Notification sent to boutique.' + response)
-                            //             console.log(JSON.stringify(notification_body_receiver, null, 2))
-                                    // }
-                                // });
-
+                                    var notificationData = await notificationService.insertNotification(senderData);
+                                    console.log("Notification sent successfully:", response);
+                                    console.log(JSON.stringify(notification_body, null, 2));
+                                    // Sending notification to the boutique
+                                    fcm.send(notification_body_receiver, async function (err, response) {
+                                    if (err) {
+                                        console.error('Error sending notification to boutique:', err);
+                                    } else {
+                                        var notificationDataReceiver = await notificationService.insertNotification(receiverData)
+                                        console.log('Notification sent to boutique:', response);
+                                        console.log(JSON.stringify(notification_body_receiver, null, 2));
+                                    }         
                                 return res.status(200).send({ message: "Order Placed Successfully", HasError: false, result: newOrder })
-                            })
-                        }
+                                })
+                            }
                         })
                         } else {
                             return res.status(500).send({ message: "Failed to update in cart.", HasError: true, result: {} })
