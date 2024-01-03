@@ -16,6 +16,11 @@ const s3 = require("../config/s3Config");
 const dotenv = require("dotenv");
 dotenv.config();
 const logService = require("../service/logService")
+const transporter = require('../invoiceConfig')
+const invoiceGenerator = require('../invoiceGenerator')
+const { generateHTMLInvoice, generatePDFInvoice } = require('../invoiceGenerator')
+
+
 
 var expirationTime = 600;
 var orderStatusConfig = [
@@ -335,6 +340,7 @@ exports.orderDetails = async (req, res) => {
       if (!cartOrderHistory || cartOrderHistory.length === 0) {
         return res.status(400).send({ HasError: true, message: 'Invalid order.' });
       }
+      
       const maskedNumberHist = cartOrderHistory.mobile_number ? Service.maskMobileNumber(cartOrderHistory.mobile_number) : '';
       for (var i in cartOrderHistory) {
         var orderHistory = {};
@@ -407,7 +413,8 @@ exports.orderDetails = async (req, res) => {
               // gender: category[0].category_type,
               type: orderItems[j].type || 0,
               type_name: orderItems[j].type === 1 ? "ALTER" : (orderItems[j].type === 2 ? "REPAIR" : ""),
-              unit_price: orderItems[j].amount || '',
+              unit_price: order.sum_amount || '',
+              quantity: orderItems[j].quantity || 1,
               delivery_date: order.delivery_date || '',
               deliver_time: '',
               material_received: 0,
@@ -439,12 +446,13 @@ exports.orderDetails = async (req, res) => {
           order_track_hist_json.activity_date = ''
           order_track_history.push(order_track_hist_json)
         }
-        return res.status(200).send({
-          result: { ...orderHistory, items: itemArray, order_track: order_track_history, order_status_info: [orderStatusConfig] },
-          HasError: false,
-          Message: 'Order details retrieved successfully.',
-        });
+      return res.status(200).send({
+        result: { ...orderHistory, items: itemArray, order_track: order_track_history, order_status_info: [orderStatusConfig] },
+        HasError: false,
+        Message: 'Order details retrieved successfully.',
+        })
       }
+    // )}    
     } else {
       return res.status(200).send({ HasError: true, message: "Invalid order." });
     }
@@ -515,4 +523,46 @@ exports.cancelOrder = async (req, res) => {
       Message: error.message,
     });
   }
-};
+}
+
+// Separate endpoint or function for sending invoice
+// app.post('/sendInvoice', async (req, res) => {
+exports.sendInvoice = async (req, res) => {
+  try {
+    const orderId = req.body.orderId; 
+
+    // Fetch order details for the specific orderId
+    const orderDetails = await OrderService.getOrderDetails(orderId); // Replace with your logic
+
+    // Generate the invoice HTML content
+    const htmlContent = invoiceGenerator.generateHTMLInvoice(orderDetails); // Replace with your logic
+
+    // Generate PDF invoice from HTML content
+    const pdfPath = await generatePDFInvoice(htmlContent, orderDetails.orderId); // Replace with your logic
+
+    // Prepare email with the invoice attached
+    const mailOptions = {
+      from: 'your-email@gmail.com',
+      to: orderDetails.customer_email,
+      subject: 'Invoice for your order',
+      attachments: [{
+        filename: `${orderDetails.orderId}.pdf`,
+        path: pdfPath,
+      }]
+    };
+
+    // Send the email with the invoice attached
+    transporter.sendMail(mailOptions, async (error, info) => {
+      if (error) {
+        console.error('Error sending email:', error);
+        return res.status(500).send({ message: 'Failed to send email with invoice', HasError: true });
+      }
+      console.log('Email sent:', info.response);
+      return res.status(200).send({ message: 'Invoice sent successfully.', HasError: false });
+    });
+  } catch (error) {
+    console.error('Error occurred while sending invoice:', error);
+    return res.status(500).send({ HasError: true, message: 'Error sending invoice.' });
+  }
+}
+

@@ -5,76 +5,173 @@ const UsersAddress = require("../model/userAddressModel")
 const Service = require('../service/userService')
 const cartService = require('../service/userServiceCartService')
 const logService = require('../service/logService')
-const { generateAccessToken, auth } = require("../jwt");
+const { generateAccessToken, auth } = require("../jwt")
+const nodemailer = require('nodemailer');
+const orderServiceItem = require("../service/userServiceCartService")
+const { or } = require('sequelize')
+const transporter = require('../invoiceConfig')
+const invoiceGenerator = require('../invoiceGenerator')
+const { generateHTMLInvoice, generatePDFInvoice } = require('../invoiceGenerator')
+const orderService = require("../service/orderService");
+const FCM = require('fcm-node');
+const config=require("../config/fcm.json")
+const s3 = require("../config/s3Config");
+const dotenv = require("dotenv");
+dotenv.config();
+const notificationService = require('../service/notificationService')
 
 
 exports.createOrder = async (req, res) => {
     try {
-        const user_id = req.body.user_id
-        // const g_token = auth(req)
-        // const user_id = g_token.user_id;
-        const name = req.body.name
-        const email = req.body.email
-        const mobile_number = req.body.mobile_number
-        const address_id = req.body.address_id
-        const status = 2
-        var currentDate = new Date();
-        var formattedDate = currentDate.toISOString().slice(0, 19).replace("T", " ")
-        const coupon_id = req.body.coupon_id || 0
-        const coupon_code = req.body.coupon_code || ''
-        const delivery_price = req.body.delivery_price || 50
-        const sum_amount = req.body.sum_amount || 0
-        const discount_price = req.body.discount_price || 0
-        const extra_charge = req.body.extra_charge || 0
-        const calculatedTotalPrice = delivery_price + sum_amount + extra_charge - discount_price
-        const coupon_amount = req.body.coupon_amount
-        const quantity = req.body.quantity
-        const boutique_id = req.body.boutique_id || 0
+        const user_id = req.body.user_id;
+        const name = req.body.name;
+        const email = req.body.email;
+        const mobile_number = req.body.mobile_number;
+        const address_id = req.body.address_id;
+        const status = 2;
+        const currentDate = new Date();
+        const formattedDate = currentDate.toISOString().slice(0, 19).replace("T", " ");
+        const coupon_id = req.body.coupon_id || 0;
+        const coupon_code = req.body.coupon_code || '';
+        const delivery_price = req.body.delivery_price || 50;
+        const sum_amount = req.body.sum_amount || 0;
+        const discount_price = req.body.discount_price || 0;
+        const extra_charge = req.body.extra_charge || 0;
+        const calculatedTotalPrice = delivery_price + sum_amount + extra_charge - discount_price;
+        const coupon_amount = req.body.coupon_amount;
+        const quantity = req.body.quantity;
+        const boutique_id = req.body.boutique_id || 0;
         const deliveryDate = new Date(currentDate);
         deliveryDate.setDate(currentDate.getDate() + 5);
         const formattedDeliveryDate = deliveryDate.toISOString().slice(0, 19).replace("T", " ");
-        // const total_price = req.body.total_price || 0
-        const data = { user_id, name, email, mobile_number, address_id, coupon_amount, quantity, status, created_at: formattedDate, updated_at: formattedDate, coupon_id, coupon_code, delivery_price, sum_amount, discount_price, extra_charge, total_price: calculatedTotalPrice, boutique_id, delivery_date: formattedDeliveryDate }
+
+        const data = { user_id, name, email, mobile_number, address_id, coupon_amount, quantity, status, created_at: formattedDate, updated_at: formattedDate, coupon_id, coupon_code, delivery_price, sum_amount, discount_price, extra_charge, total_price: calculatedTotalPrice, boutique_id, delivery_date: formattedDeliveryDate };
+
         if (req.body.user_id) {
-            const user = await Users.findOne({ where: { id: user_id } })
+            const user = await Users.findOne({ where: { id: user_id } });
             if (user) {
-                const newOrder = await OrderService.createOrder(data)
+                const newOrder = await OrderService.createOrder(data);
                 if (newOrder) {
                     const today = new Date();
                     const year = today.getFullYear();
                     const month = today.getMonth() + 1; // Months are zero-based, so we add 1.
                     const day = today.getDate();
-                    const orderId = "STIAR" + day + month + year + newOrder.id
-                    const updateOrderId = await OrderService.updateOrder(newOrder.id, { order_id: orderId })
-                    var cart = await cartService.getCart(user_id)
+                    const orderId = "STIAR" + day + month + year + newOrder.id;
+                    const updateOrderId = await OrderService.updateOrder(newOrder.id, { order_id: orderId });
+
+                    var cart = await cartService.getCart(user_id);
                     if (cart.length != 0) {
-                        const updateOrderIdInCart = await cartService.updateCartByUserId(newOrder.user_id, { order_id: orderId })
+                        const updateOrderIdInCart = await cartService.updateCartByUserId(newOrder.user_id, { order_id: orderId });
                         if (updateOrderIdInCart != 0) {
-                            newOrder.order_id=orderId
-                            // const orderDetails = await OrderService.orderDetails(newOrder.id)
-                            return res.status(200).send({ message: "Order Placed Sucessfully", HasError: false ,result: newOrder})
+                            newOrder.order_id = orderId;
+
+                            var serverKey = "AAAAeWjlHHQ:APA91bEmHAGr364Xhn2Tr-gtkPhNCT6aHFzjJnQc1BHThevx06c7WjFLgzDHug7qCiPz77nJQsMIesruMdaincRc9T8i20weW20GP36reD9UfwfkeqIMFG84pNjXZVbtNOfhLjPQNExt";
+                            var fcm = new FCM(serverKey);
+                            const image_url = s3.getSignedUrl("getObject", { Bucket: process.env.AWS_BUCKET, Key: `boutique/default-img.jpg` });
+
+                            var notification_body = {
+                                to: "dZX3eYL9TmSvR1kWW5ykXT:APA91bEEhK5aak9wzSKjaajmzZ82BS1JFzcJPVTArnSZAGOj9wOoLSVBJnmoQH5M0ETR5D0lNcqIO318fUFaL4EThlY5AL2XzkgZKgdosrzciX9ftGthDPOQG5o10yKOEUbYyZKTYyc2",
+                                notification: {
+                                    "title": "Place Order",
+                                    "body": `Order placed successfully. Order ID: ${orderId}`, 
+                                },
+                                data: {}
+                            };
+
+                            var notificationType = req.body.notificationType;
+
+                            if (notificationType === "BIGPIC") {
+                                notification_body.data = {
+                                    "type": "BIGPIC",
+                                    "image_url": image_url,
+                                };
+                            } else if (notificationType === "BIGTEXT") {
+                                notification_body.data = {
+                                    "type": "BIGTEXT",
+                                    "body": 'Congratulations!! Your request has been submitted, we will get back to you soon. Hope you are doing well. Waiting for your response. Thank you.',
+                                };
+                            } else if (notificationType === "DIRECTREPLY") {
+                                notification_body.data = {
+                                    "type": "DIRECTREPLY",
+                                    "title": "direct_reply_notification",
+                                    "message": "Please share your feedback.",
+                                    "actions": [
+                                        {
+                                            "action_type": "view",
+                                            "title": "View",
+                                            "intent": {
+                                                "type": "activity",
+                                                "target": "MainActivity"
+                                            }
+                                        },
+                                        {
+                                            "action_type": "dismiss",
+                                            "title": "Dismiss",
+                                            "intent": {
+                                                "type": "broadcast",
+                                                "target": "NotificationReceiver",
+                                                "extra": {
+                                                    "ID": 0
+                                                }
+                                            }
+                                        }
+                                    ]
+                                }
+                            } else if (notificationType == "INBOX") {
+                                notification_body.data = {
+                                    "type": "INBOX",
+                                    "title": "Inbox style notification",
+                                    "message": "Please check your today's tasks.",
+                                    "contentList": ["Add items", "Edit your items if you want to add/delete any item", "Place order"]
+                                    }
+                                }
+                            // } 
+                            var notificationData_body = notification_body.notification.body;
+                            var notificationData_title = notification_body.notification.title;
+                            var notificationData_createdAt = moment().format('YYYY-MM-DD HH:mm:ss')
+                            var dataToInsert = {}
+                            dataToInsert.sender_id = 2
+                            dataToInsert.receiver_id = 1
+                            dataToInsert.type = 2
+                            dataToInsert.title = notificationData_title
+                            dataToInsert.body = notificationData_body
+                            dataToInsert.created_at = notificationData_createdAt
+
+                            fcm.send(notification_body, async function (err, response) {
+                                if (err) {
+                                    console.log(err)
+                                } else {
+                                    var notificationData = await notificationService.insertNotification(dataToInsert)
+                                    console.log("Notification sent successfully." + response)
+                                    console.log(JSON.stringify(notification_body, null, 2))
+                                }
+
+                                return res.status(200).send({ message: "Order Placed Successfully", HasError: false, result: newOrder })
+                            });
                         } else {
-                            return res.status(500).send({ message: "failed to update in cart.", HasError: true, result: {} })
+                            return res.status(500).send({ message: "Failed to update in cart.", HasError: true, result: {} })
                         }
                     } else {
                         return res.status(200).send({ message: "Please add item in cart to place order", HasError: false })
                     }
                 } else {
-                    return res.status(500).send({ message: "Failed to create order", HasError: true });
+                    return res.status(500).send({ message: "Failed to create order", HasError: true })
                 }
             } else {
-                return res.status(200).send({ message: "This user doesn't exist", HasError: false });
+                return res.status(200).send({ message: "This user doesn't exist", HasError: false })
             }
         } else {
-            return res.status(400).send({ message: "Please enter a userId", HasError: true });
+            return res.status(400).send({ message: "Please enter a userId", HasError: true })
         }
+
     } catch (error) {
         console.error(error)
         const logData = { user_id: "", status: 'false', message: error.message, device_id: '', created_at: Date.now(), updated_at: Date.now(), device_info: '', action: req.url }
-        const log = await logService.createLog(logData)
+        const log = await logService.createLog(logData);
         return res.status(500).send({ message: "Some error occurred.", HasError: true, error: error.message })
     }
 }
+
 
 exports.orderHistory = async (req, res) => {
     try {

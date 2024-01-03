@@ -5,6 +5,7 @@ const VideoInquire = require("../model/videoEnquireModel")
 const categoryItem = require("../model/categoryItemModel")
 const Service = require('../service/userService')
 const logService = require('../service/logService')
+const notificationService = require('../service/notificationService')
 const FCM = require('fcm-node');
 const config=require("../config/fcm.json")
 const s3 = require("../config/s3Config");
@@ -58,86 +59,82 @@ exports.createVideoInquire = async (req, res) => {
             notification: {
                 "title": "Video Inquiry",
                 // "body":'Congratulations!! Yor request has been submitted, we will get back to you soon.',
-                "body": 'Congratulations!! Yor request has been submitted, we will get back to you soon. Hope you are doing well. Waiting for you response. Thank you. ',
+                "body": 'Congratulations!! Your request has been submitted, we will get back to you soon. Hope you are doing well. Waiting for you response. Thank you. ',
             
             },
             data: {}
-            // data: {
-            //     // bigpic: {
-            //     //     "type": "BIGPIC",
-            //     //     "image_url": image_url,
-            //     // },
-            //     // direct_reply: {
-            //     //     "type": "DIRECTREPLY",
-            //     //     "title": "direct_reply_notification",
-            //     //     "message": "Please share your feedback."
-            //     // }
-            // }
-        }
-        var notificationType = req.body.notificationType
+            }
+            var notificationType = req.body.notificationType
 
-        if (notificationType === "BIGPIC") {
-            notification_body.data = {
-                "type": "BIGPIC",
-                "image_url": image_url,
-            };
-        } else if (notificationType === "BIGTEXT") {
-            notification_body.data = {
-                "type": "BIGTEXT",
-                "body": 'Congratulations!! Your request has been submitted, we will get back to you soon. Hope you are doing well. Waiting for your response. Thank you.',
-            };
-        } else if (notificationType === "DIRECTREPLY") {
-            notification_body.data = {
-                "type": "DIRECTREPLY",
-                "title": "direct_reply_notification",
-                "message": "Please share your feedback."
-            };
-        }
-    
-        } 
+            if (notificationType === "BIGPIC") {
+                notification_body.data = {
+                    "type": "BIGPIC",
+                    "image_url": image_url,
+                };
+            } else if (notificationType === "BIGTEXT") {
+                notification_body.data = {
+                    "type": "BIGTEXT",
+                    "body": 'Congratulations!! Your request has been submitted, we will get back to you soon. Hope you are doing well. Waiting for your response. Thank you.',
+                };
+            } else if (notificationType === "DIRECTREPLY") {
+                notification_body.data = {
+                    "type": "DIRECTREPLY",
+                    "title": "direct_reply_notification",
+                    "message": "Please share your feedback.",
+                    "actions": [
+                        {
+                            "action_type": "view",
+                            "title": "View",
+                            "intent": {
+                                "type": "activity",
+                                "target": "MainActivity"
+                            }
+                        },
+                        {
+                            "action_type": "dismiss",
+                            "title": "Dismiss",
+                            "intent": {
+                                "type": "broadcast",
+                                "target": "NotificationReceiver",
+                                "extra": {
+                                    "ID": 0
+                                }
+                            }
+                        }
+                    ]
+                }
+            } else if (notificationType == "INBOX") {
+                notification_body.data = {
+                    "type": "INBOX",
+                    "title": "Inbox style notification",
+                    "message": "Please check your today's tasks.",
+                    "contentList": ["Add items", "Edit your items if you want to add/delete any item", "Place order"]
+                    }
+                }
+            } 
+            var notificationData_body = notification_body.data.body
+            var notificationData_title = notification_body.notification.title
+            var notificationData_createdAt = moment().format('YYYY-MM-DD HH:mm:ss')
+            var dataToInsert = {}
+            dataToInsert.sender_id = 2
+            dataToInsert.receiver_id = 1
+            dataToInsert.type = 2
+            dataToInsert.title = notificationData_title
+            dataToInsert.body = notificationData_body
+            dataToInsert.created_at = notificationData_createdAt
+
             fcm.send(notification_body,async function (err, response) {
                 if (err) {
                     console.log(err)
-                }else{
-                    console.log("Notification sent sucessfully."+response)
-                    console.log(notification_body)
-                }
-            })
-
-        
-
-            
-        //     fcm.send(notification_body,async function (err, response) {
-        //         if (err) {
-        //             console.log(err)
-        //         }else{
-        //             console.log("Notification sent sucessfully."+response)
-        //             console.log(notification_body)
-        //         }
-        //     })
-
-        //     // Check if the request contains a direct reply message
-        //     if (req.body.direct_reply_input) {
-        //         var replyMessage = req.body.direct_reply_input;
-        //         console.log('Received direct reply:', replyMessage);
-        //         var thankYouNotification = {
-        //             to:"dZX3eYL9TmSvR1kWW5ykXT:APA91bGJEeMtlPK9VXHTcqoTGL_If9e5sRX4hgZM2po9m4m67RhiBfWhf9aGCfQ_EdRpZxRKvYUaTOjZUrbalyLw1ApV6rprWVM6wIRsX1xikzVd_wKKDEAKYS7TsdhWnIssFw-4o1Vz",
-        //             notification: {
-        //             "title": "Thank You!",
-        //             "body": "Thank you for your feedback!"
-        //         }
-        //     };
-
-        //     fcm.send(thankYouNotification, (err, response) => {
-        //         if (err) {
-        //             console.error("Error sending thank-you message:", err);
-        //         } else {
-        //             console.log("Thank-you message sent successfully:", response);
-        //         }
-        //     });
-        // }
+                    }else{
+                        var notificationData = await notificationService.insertNotification(dataToInsert)
+                        // console.log("Notification inserted successfully:", notificationData)
+                        console.log("Notification sent sucessfully."+response)
+                        // console.log(notification_body)
+                        console.log(JSON.stringify(notification_body, null, 2))  
+                        }
+                    })
             return res.status(200).send({ HasError: false, Message: "Video Inquiry data inserted successfully.", result: dataJson });
-    
     } catch (error) {
         console.error(error)
         const logData = { user_id: "", status: 'false', message: error.message, device_id: '', created_at: Date.now(), updated_at: Date.now(), device_info: '', action: req.url }

@@ -41,8 +41,11 @@ var ApiTrack = sequelize.define(
   {
     sequelize,
     tableName: "sarter__api_track",
-    timestamps: false, // Set to false if the table does not have 'createdAt' and 'updatedAt' columns
+    timestamps: false, 
   }
 );
+// ApiTrack.sync().then(() => {
+//   console.log("ApiTrack Model synced");
+// });
 
 module.exports = ApiTrack;
