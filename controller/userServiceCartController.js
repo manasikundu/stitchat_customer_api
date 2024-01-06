@@ -7,6 +7,7 @@ const tailorService = require("../service/tailorService")
 const Service = require('../service/userService')
 const { generateAccessToken, auth } = require("../jwt");
 const logService = require('../service/logService')
+const cron = require('node-cron');
 
 
 exports.createServiceCart = async (req, res) => {
@@ -215,29 +216,6 @@ exports.updateCart = async (req, res) => {
     } else {
       return res.status(400).send({ message: "Please enter Id to update", HasError: true })
     }
-    // const requestData = req.body;
-    // const results = await Promise.all(
-    //   requestData.map(async (updateData) => {
-    //     const id = updateData.cart_id;
-    //     const data = { ...updateData };
-    //     delete data['cart_id'];
-    //     const result = await cartService.updateCart(id, data);
-    //     return result[0] !== 0;
-    //   })
-    // );
-
-    // const successCount = results.filter((result) => result).length;
-    // if (successCount === requestData.length) {
-    //   return res.status(200).send({
-    //     message: "All Carts Successfully Updated.",
-    //     HasError: false,
-    //   });
-    // } else {
-    //   return res.status(500).send({
-    //     message: "Some Carts failed to update.",
-    //     HasError: true,
-    //   });
-    // }
   } catch (error) {
     console.log(error);
     const logData = { user_id: "", status: 'false', message: error.message, device_id: '', created_at: Date.now(), updated_at: Date.now(), device_info: '', action: req.url }

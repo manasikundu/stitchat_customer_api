@@ -67,9 +67,8 @@ exports.createOrder = async (req, res) => {
                         if (updateOrderIdInCart != 0) {
                             newOrder.order_id = orderId
                             var boutique_name = await BoutiqueService.getBoutiqueById(boutique_id)
-                            const fullNameParts = [user.first_name, user.middle_name, user.last_name].filter(Boolean);
-                            const fullName = fullNameParts.join(' ')
-                            
+                            var fullName = user.first_name && user.last_name ? user.first_name + " " + user.last_name: user.first_name || user.last_name;
+
                             var serverKey = "AAAAeWjlHHQ:APA91bEmHAGr364Xhn2Tr-gtkPhNCT6aHFzjJnQc1BHThevx06c7WjFLgzDHug7qCiPz77nJQsMIesruMdaincRc9T8i20weW20GP36reD9UfwfkeqIMFG84pNjXZVbtNOfhLjPQNExt";
                             var fcm = new FCM(serverKey);
                             var image_url = s3.getSignedUrl("getObject", { Bucket: process.env.AWS_BUCKET, Key: `boutique/default-img.jpg` });
@@ -203,6 +202,115 @@ exports.createOrder = async (req, res) => {
     }
 }
 
+exports.cancelAlterationOrRepairOrder = async (req, res) => {
+    try {
+        var order_id = req.query.order_id
+        var method_name = await Service.getCallingMethodName()
+        var apiEndpointInput = JSON.stringify(req.body)
+        var apiTrack = await Service.trackApi(req.query.user_id, method_name, apiEndpointInput, req.query.device_id, req.query.device_info, req.ip)
+        if (order_id == undefined || !Number.isInteger(parseInt(order_id))) {
+            return res.status(400).send({
+                HasError: true,
+                StatusCode: 400,
+                message: "Invalid parameter.",
+            })
+        }
+        const orderCancelResult = await OrderService.cancelOrder(order_id)
+
+        if (orderCancelResult.error) {
+            return res.status(500).send({
+                HasError: true,
+                Message: "Error canceling the order.",
+            })
+        } else {
+            const orderDetails = await OrderService.getOrderHistory(order_id)
+
+            for (var i in orderDetails) {
+                var boutique_id = orderDetails[i].boutique_id
+                console.log(boutique_id)
+                var boutique_name = await BoutiqueService.getBoutiqueById(boutique_id)
+                const itemCancelResult = await OrderService.cancelItem(orderDetails[i].order_id)
+                if (itemCancelResult.error) {
+                    return res.status(500).send({
+                        HasError: true,
+                        Message: "Error canceling the items within the order.",
+                    })
+                }
+            }
+            
+
+            var serverKey = "AAAAeWjlHHQ:APA91bEmHAGr364Xhn2Tr-gtkPhNCT6aHFzjJnQc1BHThevx06c7WjFLgzDHug7qCiPz77nJQsMIesruMdaincRc9T8i20weW20GP36reD9UfwfkeqIMFG84pNjXZVbtNOfhLjPQNExt";
+                            var fcm = new FCM(serverKey);
+                            // var image_url = s3.getSignedUrl("getObject", { Bucket: process.env.AWS_BUCKET, Key: `boutique/default-img.jpg` });
+
+                            var notification_body = {
+                                to: "d3jOfE4OQnicy1bvQ8AbwH:APA91bH_dbwMjkvBK3b-iPQBKOi4aaqlytk7cLVuJZthPdNkT8dSUc6FJ2NzI2RL3Ie2bKpFOc6O5NRt7VBZL_932aDF0GdE3vT33hUJ8ACLkaY8CkMbErWRqziLCxD5pSDHhE2niYyD",
+                                // to: "dZX3eYL9TmSvR1kWW5ykXT:APA91bEEhK5aak9wzSKjaajmzZ82BS1JFzcJPVTArnSZAGOj9wOoLSVBJnmoQH5M0ETR5D0lNcqIO318fUFaL4EThlY5AL2XzkgZKgdosrzciX9ftGthDPOQG5o10yKOEUbYyZKTYyc2",
+                                notification: {
+                                    "title": "Place Order",
+                                    "body": `Order cancelled successfully ${orderDetails[i].order_id}`, 
+                                },
+                                data: {}
+                            };
+                            var notification_body_receiver = {
+                                to: "d3jOfE4OQnicy1bvQ8AbwH:APA91bH_dbwMjkvBK3b-iPQBKOi4aaqlytk7cLVuJZthPdNkT8dSUc6FJ2NzI2RL3Ie2bKpFOc6O5NRt7VBZL_932aDF0GdE3vT33hUJ8ACLkaY8CkMbErWRqziLCxD5pSDHhE2niYyD",
+                                notification: {
+                                    title: 'Place Order',
+                                    body: `Dear ${boutique_name.boutique_name}, an order has been cancelled by customer with Order Details ${orderDetails[i].order_id}.`,
+                                },
+                            }
+                            var notificationDataSender_body = notification_body.notification.body;
+                            var notificationDataSender_title = notification_body.notification.title;
+                            var notificationDataReceiver_body = notification_body_receiver.notification.body;
+                            var notificationDataReceiver_title = notification_body_receiver.notification.title;
+                            var notificationData_createdAt = moment().format('YYYY-MM-DD HH:mm:ss')
+                            var senderData = {}
+                            senderData.sender_id = 1
+                            senderData.type = 2
+                            senderData.title = notificationDataSender_title
+                            senderData.body = notificationDataSender_body
+                            senderData.send_time = notificationData_createdAt
+                            senderData.created_at = notificationData_createdAt
+
+                            var receiverData = {}
+                            receiverData.receiver_id = 1
+                            receiverData.type = 2
+                            receiverData.title = notificationDataReceiver_title
+                            receiverData.body = notificationDataReceiver_body
+                            receiverData.send_time = notificationData_createdAt
+                            receiverData.created_at = notificationData_createdAt
+
+                            fcm.send(notification_body, async function (err, response) {
+                                if (err) {
+                                    console.log(err);
+                                } else {
+                                    var notificationData = await notificationService.insertNotification(senderData);
+                                    console.log("Notification sent successfully:", response);
+                                    console.log(JSON.stringify(notification_body, null, 2));
+                                    // Sending notification to the boutique
+                                    fcm.send(notification_body_receiver, async function (err, response) {
+                                    if (err) {
+                                        console.error('Error sending notification to boutique:', err);
+                                    } else {
+                                        var notificationDataReceiver = await notificationService.insertNotification(receiverData)
+                                        console.log('Notification sent to boutique:', response);
+                                        console.log(JSON.stringify(notification_body_receiver, null, 2));
+                                    }
+                                    })
+                                }
+                                })            
+            return res.status(200).send({HasError: false,Message: "Order cancelled successfully."})
+        }
+    } catch (error) {
+        console.error(error)
+        const logData = { user_id: "", status: 'false', message: error.message, device_id: '', created_at: Date.now(), updated_at: Date.now(), device_info: '', action: req.url }
+        const log = await logService.createLog(logData)
+        return res.status(500).send({
+            HasError: true,
+            Message: error.message,
+        })
+    }
+}
 
 exports.orderHistory = async (req, res) => {
     try {
