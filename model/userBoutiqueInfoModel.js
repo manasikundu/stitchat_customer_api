@@ -90,6 +90,9 @@ var Boutique = sequelize.define(
       type: DataTypes.NUMERIC(10, 2),
       defaultValue: 0,
     },
+    pincode: {
+      type: DataTypes.STRING,
+    },
   },
   {
     sequelize,
