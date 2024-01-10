@@ -2,7 +2,7 @@ const { Sequelize } = require("sequelize");
 
 const sequelize = new Sequelize("dachier_live", "postgres", "ts1234", {
   // host: "localhost",
-  host: "103.112.26.98",
+  host: "1.6.115.26",
   dialect: "postgres",
   port: 5432,
 });

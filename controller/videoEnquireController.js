@@ -17,6 +17,7 @@ var expirationTime = 600;
 
 exports.createVideoInquire = async (req, res) => {
     try {
+        console.log('hi')
         const name = req.body.name
         const email = req.body.email
         const guest_email = req.body.guest_email
