@@ -57,8 +57,7 @@ exports.createVideoInquire = async (req, res) => {
             var fcm = new FCM(serverKey);  
             var image_url = s3.getSignedUrl("getObject", {Bucket: process.env.AWS_BUCKET,Key: `boutique/default-img.jpg`,})         
             var notification_body = {
-                to: "d3jOfE4OQnicy1bvQ8AbwH:APA91bH_dbwMjkvBK3b-iPQBKOi4aaqlytk7cLVuJZthPdNkT8dSUc6FJ2NzI2RL3Ie2bKpFOc6O5NRt7VBZL_932aDF0GdE3vT33hUJ8ACLkaY8CkMbErWRqziLCxD5pSDHhE2niYyD",
-                // to: "dZX3eYL9TmSvR1kWW5ykXT:APA91bHigZIZ-jGkmj48S4Fau8-7Ab8wIOQ4i1VqS3lV5KvuzA2iRVH69-QJT1qPLgDKw4BGh72_1o3S5MTD9adlnSiZXiOTJLau3zB9wLjuDYteGJBaaHWZ6zmeSe-y6Wb94EoQh2Va",
+                to: "dZX3eYL9TmSvR1kWW5ykXT:APA91bHigZIZ-jGkmj48S4Fau8-7Ab8wIOQ4i1VqS3lV5KvuzA2iRVH69-QJT1qPLgDKw4BGh72_1o3S5MTD9adlnSiZXiOTJLau3zB9wLjuDYteGJBaaHWZ6zmeSe-y6Wb94EoQh2Va",
             notification: {
                 "title": "Video Inquiry",
                 // "body":'Congratulations!! Yor request has been submitted, we will get back to you soon.',

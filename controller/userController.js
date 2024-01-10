@@ -23,8 +23,7 @@ var verifiedOTPs = new Set();
 
 exports.insertMobileNumber = async (req, res) => {
   try {
-    console.log(req.body)
-    var newUserData = req.body
+    var newUserData = req.body;
     var insertError = [];
     if (!newUserData.mobile_number || !/^\+?[1-9]\d{9}$/.test(newUserData.mobile_number.replace(/\D/g, "")) || newUserData.mobile_number.includes(" ")) {
       insertError.push({ field: "phone_no", message: "Invalid phone number." });
@@ -101,7 +100,7 @@ exports.insertMobileNumber = async (req, res) => {
     //   }
     // }
   } catch (error) {
-    console.error("Error creating user:", error);
+    console.log(error);
     const logData = { user_id: "", status: 'false', message: error.message, device_id: '', created_at: Date.now(), updated_at: Date.now(), device_info: '', action: req.url }
     const log = await logService.createLog(logData)
     return res.status(500).send({ HasError: false, message: "An error occurred while inserting the mobile number." ,error: error.message });

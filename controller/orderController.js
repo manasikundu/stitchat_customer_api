@@ -16,9 +16,7 @@ const s3 = require("../config/s3Config");
 const dotenv = require("dotenv");
 dotenv.config();
 const logService = require("../service/logService")
-const transporter = require('../invoiceConfig')
-const invoiceGenerator = require('../invoiceGenerator')
-const { generateHTMLInvoice, generatePDFInvoice } = require('../invoiceGenerator')
+
 
 
 

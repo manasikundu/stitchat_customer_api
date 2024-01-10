@@ -5,22 +5,17 @@ const UsersAddress = require("../model/userAddressModel")
 const Service = require('../service/userService')
 const cartService = require('../service/userServiceCartService')
 const logService = require('../service/logService')
-const { generateAccessToken, auth } = require("../jwt")
-const nodemailer = require('nodemailer');
-const orderServiceItem = require("../service/userServiceCartService")
-const { or } = require('sequelize')
-const transporter = require('../invoiceConfig')
-const invoiceGenerator = require('../invoiceGenerator')
-const { generateHTMLInvoice, generatePDFInvoice } = require('../invoiceGenerator')
-const orderService = require("../service/orderService");
 const FCM = require('fcm-node');
-const config=require("../config/fcm.json")
 const s3 = require("../config/s3Config");
 const dotenv = require("dotenv");
 dotenv.config();
 const notificationService = require('../service/notificationService')
 const Boutique = require("../model/userBoutiqueInfoModel");
 const BoutiqueService = require("../service/userBoutiqueService");
+const { generateAccessToken, auth } = require("../jwt");
+var ejs = require("ejs");
+var genearatePdf = require("html-pdf");
+const path = require("path");
 
 exports.createOrder = async (req, res) => {
     try {
@@ -178,6 +173,25 @@ exports.createOrder = async (req, res) => {
                                 })
                             }
                         })
+                            // const orderDetails = await OrderService.orderDetails(newOrder.id)
+                            var alphaNumericString = Math.random().toString(36).replace("0.", "");
+                            var pdfName = "invoice" + "_" + alphaNumericString + ".pdf";
+                            var pdfDirPath = path.join(__dirname,"../invoices",pdfName);
+                            var htmls = fs.readFileSync("./views/invoice.ejs","utf8",function (err, resulte) {
+                                    if (err) {
+                                        consolr.log(err);
+                                        return res.status(500).send({
+                                            message: "Failed to create invoice.",
+                                        });
+                                    }
+                                }
+                            );
+                            var options = { format: "A4", orientation: "portrait" };
+                            var result1 = ejs.render(htmls);
+                            genearatePdf.create(result1, options).toStream(function (err, stream) {
+                              stream.pipe(fs.createWriteStream(pdfDirPath));
+                            });
+                            return res.status(200).send({ message: "Order Placed Sucessfully", HasError: false, result: newOrder })
                         } else {
                             return res.status(500).send({ message: "Failed to update in cart.", HasError: true, result: {} })
                         }
