@@ -28,9 +28,9 @@ exports.insertMobileNumber = async (req, res) => {
     if (!newUserData.mobile_number || !/^\+?[1-9]\d{9}$/.test(newUserData.mobile_number.replace(/\D/g, "")) || newUserData.mobile_number.includes(" ")) {
       insertError.push({ field: "phone_no", message: "Invalid phone number." });
     }
-    if (newUserData.user_type_id !== 3 && newUserData.user_type_id !== 7) {
-      insertError.push({ field: "user_type_id", message: "Invalid user type." })
-    }
+    // if (newUserData.user_type_id !== 3 && newUserData.user_type_id !== 7) {
+    //   insertError.push({ field: "user_type_id", message: "Invalid user type." })
+    // }
     if (insertError.length > 0) {
       return res.status(200).send({ HasError: true, errors: insertError })
     }
