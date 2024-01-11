@@ -9,7 +9,6 @@ dotenv.config();
 var expirationTime = 600;
 const logService = require('../service/logService')
 
-
 var daysOfWeekConfig = [
   { day: "Monday", value: 1 },
   { day: "Tuesday", value: 2 },
