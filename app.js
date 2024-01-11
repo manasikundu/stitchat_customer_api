@@ -15,7 +15,7 @@ const userServiceOrder = require("./router/userServiceOrderRouter")
 const videoInquire = require("./router/videoEnquireRouter")
 const coupon = require("./router/couponRouter")
 const ShowroomRequest = require('./router/showroomRequestRouter')
-// const showroomserviceOrder=require('./router/showroomServiceOrderRouter')
+const showroomserviceOrder=require('./router/showroomServiceOrderRouter')
 
 const bodyParser = require("body-parser");
 app.use(bodyParser.json({ limit: '50mb' }));
@@ -47,7 +47,7 @@ app.use("", userServiceOrder)
 app.use("", videoInquire)
 app.use("", coupon)
 app.use("", ShowroomRequest)
-// app.use("", showroomserviceOrder)
+app.use("", showroomserviceOrder)
 
 
 const port = 8000

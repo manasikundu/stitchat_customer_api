@@ -24,7 +24,7 @@ var ShowroomServiceOrder = sequelize.define(
         c_area: {
             type: DataTypes.STRING
         },
-        c_street: {
+        c_address: {
             type: DataTypes.STRING
         },
         c_landmark: {
