@@ -84,27 +84,27 @@ exports.createVideoInquire = async (req, res) => {
                     "type": "DIRECTREPLY",
                     "title": "direct_reply_notification",
                     "message": "Please share your feedback.",
-                    "actions": [
-                        {
-                            "action_type": "view",
-                            "title": "View",
-                            "intent": {
-                                "type": "activity",
-                                "target": "MainActivity"
-                            }
-                        },
-                        {
-                            "action_type": "dismiss",
-                            "title": "Dismiss",
-                            "intent": {
-                                "type": "broadcast",
-                                "target": "NotificationReceiver",
-                                "extra": {
-                                    "ID": 0
-                                }
-                            }
-                        }
-                    ]
+                    // "actions": [
+                    //     {
+                    //         "action_type": "view",
+                    //         "title": "View",
+                    //         "intent": {
+                    //             "type": "activity",
+                    //             "target": "MainActivity"
+                    //         }
+                    //     },
+                    //     {
+                    //         "action_type": "dismiss",
+                    //         "title": "Dismiss",
+                    //         "intent": {
+                    //             "type": "broadcast",
+                    //             "target": "NotificationReceiver",
+                    //             "extra": {
+                    //                 "ID": 0
+                    //             }
+                    //         }
+                    //     }
+                    // ]
                 }
             } else if (notificationType == "INBOX") {
                 notification_body.data = {
