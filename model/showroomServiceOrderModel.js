@@ -43,7 +43,7 @@ var ShowroomServiceOrder = sequelize.define(
             type: DataTypes.INTEGER
         },
         alternation_type: {
-            type: DataTypes.INTEGER
+            type: DataTypes.STRING
         },
         quantity: {
             type: DataTypes.INTEGER
@@ -77,6 +77,9 @@ var ShowroomServiceOrder = sequelize.define(
         },
         updated_at: {
             type: DataTypes.DATE,
+        },
+        note: {
+            type: DataTypes.TEXT,
         },
     },
     {
