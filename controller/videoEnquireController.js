@@ -131,12 +131,8 @@ exports.createVideoInquire = async (req, res) => {
                     console.log(err)
                     }else{
                         var notificationData = await notificationService.insertNotification(dataToInsert)
-                        // console.log("Notification inserted successfully:", notificationData)
-                        console.log("Notification sent sucessfully."+response)
-                        // console.log(notification_body)
-                        console.log(JSON.stringify(notification_body, null, 2))  
-                        }
-                    })
+                    }
+            })
             return res.status(200).send({ HasError: false, Message: "Video Inquiry data inserted successfully.", result: dataJson });
     } catch (error) {
         console.error(error)

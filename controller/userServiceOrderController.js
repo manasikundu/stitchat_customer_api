@@ -62,7 +62,7 @@ exports.createOrder = async (req, res) => {
                         if (updateOrderIdInCart != 0) {
                             newOrder.order_id = orderId
                             var boutique_name = await BoutiqueService.getBoutiqueById(boutique_id)
-                            var fullName = user.first_name && user.last_name ? user.first_name + " " + user.last_name: user.first_name || user.last_name;
+                            var fullName = user.first_name && user.last_name ? user.first_name + " " + user.last_name : user.first_name || user.last_name;
 
                             var serverKey = "AAAAeWjlHHQ:APA91bEmHAGr364Xhn2Tr-gtkPhNCT6aHFzjJnQc1BHThevx06c7WjFLgzDHug7qCiPz77nJQsMIesruMdaincRc9T8i20weW20GP36reD9UfwfkeqIMFG84pNjXZVbtNOfhLjPQNExt";
                             var fcm = new FCM(serverKey);
@@ -72,7 +72,7 @@ exports.createOrder = async (req, res) => {
                                 to: "d3jOfE4OQnicy1bvQ8AbwH:APA91bH_dbwMjkvBK3b-iPQBKOi4aaqlytk7cLVuJZthPdNkT8dSUc6FJ2NzI2RL3Ie2bKpFOc6O5NRt7VBZL_932aDF0GdE3vT33hUJ8ACLkaY8CkMbErWRqziLCxD5pSDHhE2niYyD",
                                 notification: {
                                     "title": "Place Order",
-                                    "body": `Order placed successfully ${orderId}`, 
+                                    "body": `Order placed successfully ${orderId}`,
                                 },
                                 data: {}
                             };
@@ -129,8 +129,8 @@ exports.createOrder = async (req, res) => {
                                     "title": "Inbox style notification",
                                     "message": "Please check your today's tasks.",
                                     "contentList": ["Add items", "Edit your items if you want to add/delete any item", "Place order"]
-                                    }
                                 }
+                            }
                             // } 
                             var notificationDataSender_body = notification_body.notification.body;
                             var notificationDataSender_title = notification_body.notification.title;
@@ -154,43 +154,54 @@ exports.createOrder = async (req, res) => {
                             receiverData.created_at = notificationData_createdAt
 
                             fcm.send(notification_body, async function (err, response) {
-                                if (err) {
+                                if (err)
                                     console.log(err);
-                                } else {
-                                    var notificationData = await notificationService.insertNotification(senderData);
-                                    console.log("Notification sent successfully:", response);
-                                    console.log(JSON.stringify(notification_body, null, 2));
-                                    // Sending notification to the boutique
-                                    fcm.send(notification_body_receiver, async function (err, response) {
-                                    if (err) {
-                                        console.error('Error sending notification to boutique:', err);
-                                    } else {
-                                        var notificationDataReceiver = await notificationService.insertNotification(receiverData)
-                                        console.log('Notification sent to boutique:', response);
-                                        console.log(JSON.stringify(notification_body_receiver, null, 2));
-                                    }         
-                                return res.status(200).send({ message: "Order Placed Successfully", HasError: false, result: newOrder })
-                                })
-                            }
-                        })
+                                var notificationData = await notificationService.insertNotification(senderData);
+                            })
+                            fcm.send(notification_body, async function (err, response) {
+                                if (err)
+                                    console.log(err);
+                                var notificationData = await notificationService.insertNotification(senderData);
+                            })
+
+                            // fcm.send(notification_body, async function (err, response) {
+                            //     if (err) {
+                            //         console.log(err);
+                            //     } else {
+                            //         var notificationData = await notificationService.insertNotification(senderData);
+                            //         console.log("Notification sent successfully:", response);
+                            //         console.log(JSON.stringify(notification_body, null, 2));
+                            //         // Sending notification to the boutique
+                            //         fcm.send(notification_body_receiver, async function (err, response) {
+                            //             if (err) {
+                            //                 console.error('Error sending notification to boutique:', err);
+                            //             } else {
+                            //                 var notificationDataReceiver = await notificationService.insertNotification(receiverData)
+                            //                 console.log('Notification sent to boutique:', response);
+                            //                 console.log(JSON.stringify(notification_body_receiver, null, 2));
+                            //             }
+                            //             return res.status(200).send({ message: "Order Placed Successfully", HasError: false, result: newOrder })
+                            //         })
+                            //     }
+                            // })
                             // const orderDetails = await OrderService.orderDetails(newOrder.id)
-                            var alphaNumericString = Math.random().toString(36).replace("0.", "");
-                            var pdfName = "invoice" + "_" + alphaNumericString + ".pdf";
-                            var pdfDirPath = path.join(__dirname,"../invoices",pdfName);
-                            var htmls = fs.readFileSync("./views/invoice.ejs","utf8",function (err, resulte) {
-                                    if (err) {
-                                        consolr.log(err);
-                                        return res.status(500).send({
-                                            message: "Failed to create invoice.",
-                                        });
-                                    }
-                                }
-                            );
-                            var options = { format: "A4", orientation: "portrait" };
-                            var result1 = ejs.render(htmls);
-                            genearatePdf.create(result1, options).toStream(function (err, stream) {
-                              stream.pipe(fs.createWriteStream(pdfDirPath));
-                            });
+                            // var alphaNumericString = Math.random().toString(36).replace("0.", "");
+                            // var pdfName = "invoice" + "_" + alphaNumericString + ".pdf";
+                            // var pdfDirPath = path.join(__dirname,"../invoices",pdfName);
+                            // var htmls = fs.readFileSync("./views/invoice.ejs","utf8",function (err, resulte) {
+                            //         if (err) {
+                            //             consolr.log(err);
+                            //             return res.status(500).send({
+                            //                 message: "Failed to create invoice.",
+                            //             });
+                            //         }
+                            //     }
+                            // );
+                            // var options = { format: "A4", orientation: "portrait" };
+                            // var result1 = ejs.render(htmls);
+                            // genearatePdf.create(result1, options).toStream(function (err, stream) {
+                            //   stream.pipe(fs.createWriteStream(pdfDirPath));
+                            // });
                             return res.status(200).send({ message: "Order Placed Sucessfully", HasError: false, result: newOrder })
                         } else {
                             return res.status(500).send({ message: "Failed to update in cart.", HasError: true, result: {} })
@@ -239,7 +250,7 @@ exports.cancelAlterationOrRepairOrder = async (req, res) => {
         } else {
             const orderDetails = await OrderService.getOrderHistory(order_id)
             console.log(orderDetails)
-        
+
             for (var i in orderDetails) {
                 const utcTimestamp = moment.utc(orderDetails[i].created_at)
                 const istTimestamp = utcTimestamp.clone().tz('Asia/Kolkata')
@@ -254,48 +265,49 @@ exports.cancelAlterationOrRepairOrder = async (req, res) => {
 
                     const itemCancelResult = await OrderService.cancelItem(orderDetails[i].order_id)
                     if (itemCancelResult.error) {
-                        return res.status(500).send({HasError: true,Message: "Error canceling the items within the order.",})}            
-                        var serverKey = "AAAAeWjlHHQ:APA91bEmHAGr364Xhn2Tr-gtkPhNCT6aHFzjJnQc1BHThevx06c7WjFLgzDHug7qCiPz77nJQsMIesruMdaincRc9T8i20weW20GP36reD9UfwfkeqIMFG84pNjXZVbtNOfhLjPQNExt";
-                        var fcm = new FCM(serverKey);
-                        // var image_url = s3.getSignedUrl("getObject", { Bucket: process.env.AWS_BUCKET, Key: `boutique/default-img.jpg` });
+                        return res.status(500).send({ HasError: true, Message: "Error canceling the items within the order.", })
+                    }
+                    var serverKey = "AAAAeWjlHHQ:APA91bEmHAGr364Xhn2Tr-gtkPhNCT6aHFzjJnQc1BHThevx06c7WjFLgzDHug7qCiPz77nJQsMIesruMdaincRc9T8i20weW20GP36reD9UfwfkeqIMFG84pNjXZVbtNOfhLjPQNExt";
+                    var fcm = new FCM(serverKey);
+                    // var image_url = s3.getSignedUrl("getObject", { Bucket: process.env.AWS_BUCKET, Key: `boutique/default-img.jpg` });
 
-                        var notification_body = {
-                            to: "d3jOfE4OQnicy1bvQ8AbwH:APA91bH_dbwMjkvBK3b-iPQBKOi4aaqlytk7cLVuJZthPdNkT8dSUc6FJ2NzI2RL3Ie2bKpFOc6O5NRt7VBZL_932aDF0GdE3vT33hUJ8ACLkaY8CkMbErWRqziLCxD5pSDHhE2niYyD",
-                            notification: {
-                                "title": "Cancel Order",
-                                "body": `Order cancelled successfully ${orderDetails[i].order_id}`, 
-                                },
-                                data: {}
-                        }
-                        var notification_body_receiver = {
-                            to: "d3jOfE4OQnicy1bvQ8AbwH:APA91bH_dbwMjkvBK3b-iPQBKOi4aaqlytk7cLVuJZthPdNkT8dSUc6FJ2NzI2RL3Ie2bKpFOc6O5NRt7VBZL_932aDF0GdE3vT33hUJ8ACLkaY8CkMbErWRqziLCxD5pSDHhE2niYyD",
-                            notification: {
-                                title: 'Cancel Order',
-                                body: `Dear ${boutique_name.boutique_name}, an order has been cancelled by customer with Order Details ${orderDetails[i].order_id}.`,
-                            },
-                        }
-                        var notificationDataSender_body = notification_body.notification.body;
-                        var notificationDataSender_title = notification_body.notification.title;
-                        var notificationDataReceiver_body = notification_body_receiver.notification.body;
-                        var notificationDataReceiver_title = notification_body_receiver.notification.title;
-                        var notificationData_createdAt = moment().format('YYYY-MM-DD HH:mm:ss')
-                        var senderData = {}
-                        senderData.sender_id = 1
-                        senderData.type = 2
-                        senderData.title = notificationDataSender_title
-                        senderData.body = notificationDataSender_body
-                        senderData.send_time = notificationData_createdAt
-                        senderData.created_at = notificationData_createdAt
+                    var notification_body = {
+                        to: "d3jOfE4OQnicy1bvQ8AbwH:APA91bH_dbwMjkvBK3b-iPQBKOi4aaqlytk7cLVuJZthPdNkT8dSUc6FJ2NzI2RL3Ie2bKpFOc6O5NRt7VBZL_932aDF0GdE3vT33hUJ8ACLkaY8CkMbErWRqziLCxD5pSDHhE2niYyD",
+                        notification: {
+                            "title": "Cancel Order",
+                            "body": `Order cancelled successfully ${orderDetails[i].order_id}`,
+                        },
+                        data: {}
+                    }
+                    var notification_body_receiver = {
+                        to: "d3jOfE4OQnicy1bvQ8AbwH:APA91bH_dbwMjkvBK3b-iPQBKOi4aaqlytk7cLVuJZthPdNkT8dSUc6FJ2NzI2RL3Ie2bKpFOc6O5NRt7VBZL_932aDF0GdE3vT33hUJ8ACLkaY8CkMbErWRqziLCxD5pSDHhE2niYyD",
+                        notification: {
+                            title: 'Cancel Order',
+                            body: `Dear ${boutique_name.boutique_name}, an order has been cancelled by customer with Order Details ${orderDetails[i].order_id}.`,
+                        },
+                    }
+                    var notificationDataSender_body = notification_body.notification.body;
+                    var notificationDataSender_title = notification_body.notification.title;
+                    var notificationDataReceiver_body = notification_body_receiver.notification.body;
+                    var notificationDataReceiver_title = notification_body_receiver.notification.title;
+                    var notificationData_createdAt = moment().format('YYYY-MM-DD HH:mm:ss')
+                    var senderData = {}
+                    senderData.sender_id = 1
+                    senderData.type = 2
+                    senderData.title = notificationDataSender_title
+                    senderData.body = notificationDataSender_body
+                    senderData.send_time = notificationData_createdAt
+                    senderData.created_at = notificationData_createdAt
 
-                        var receiverData = {}
-                        receiverData.receiver_id = 1
-                        receiverData.type = 2
-                        receiverData.title = notificationDataReceiver_title
-                        receiverData.body = notificationDataReceiver_body
-                        receiverData.send_time = notificationData_createdAt
-                        receiverData.created_at = notificationData_createdAt
+                    var receiverData = {}
+                    receiverData.receiver_id = 1
+                    receiverData.type = 2
+                    receiverData.title = notificationDataReceiver_title
+                    receiverData.body = notificationDataReceiver_body
+                    receiverData.send_time = notificationData_createdAt
+                    receiverData.created_at = notificationData_createdAt
 
-                        fcm.send(notification_body, async function (err, response) {
+                    fcm.send(notification_body, async function (err, response) {
                         if (err) {
                             console.log(err)
                         } else {
@@ -305,22 +317,22 @@ exports.cancelAlterationOrRepairOrder = async (req, res) => {
 
                             // Sending notification to the boutique
                             fcm.send(notification_body_receiver, async function (err, response) {
-                            if (err) {
-                                console.error('Error sending notification to boutique:', err)
-                            } else {
-                                var notificationDataReceiver = await notificationService.insertNotification(receiverData)
-                                console.log('Notification sent to boutique:', response)
-                                console.log(JSON.stringify(notification_body_receiver, null, 2))
-                            }
-                        })
-                    }
-                }) 
-                return res.status(200).send({HasError: false,Message: "Order cancelled successfully."})
-            } else {
-                return res.status(400).send({HasError: true,StatusCode: 500,message: "Order cannot be canceled after 30 minutes from creation.",})
+                                if (err) {
+                                    console.error('Error sending notification to boutique:', err)
+                                } else {
+                                    var notificationDataReceiver = await notificationService.insertNotification(receiverData)
+                                    console.log('Notification sent to boutique:', response)
+                                    console.log(JSON.stringify(notification_body_receiver, null, 2))
+                                }
+                            })
+                        }
+                    })
+                    return res.status(200).send({ HasError: false, Message: "Order cancelled successfully." })
+                } else {
+                    return res.status(400).send({ HasError: true, StatusCode: 500, message: "Order cannot be canceled after 30 minutes from creation.", })
+                }
             }
-            }          
-        }    
+        }
     } catch (error) {
         console.error(error)
         const logData = { user_id: "", status: 'false', message: error.message, device_id: '', created_at: Date.now(), updated_at: Date.now(), device_info: '', action: req.url }
