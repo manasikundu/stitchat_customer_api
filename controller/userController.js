@@ -66,29 +66,40 @@ exports.insertMobileNumber = async (req, res) => {
       newUserData.reg_on = formattedDate;
       newUserData.created_at = formattedDate;
       newUserData.updated_at = formattedDate;
+      newUserData.user_type_id = 3
+      newUserData.user_type_name = 'Customer'
       otpCache[newUserData.mobile_number] = { value: otp, timestamp: Date.now() }
-      if (newUserData.user_type_id === 7) {
-        newUserData.user_type_name = "Showroom"
-        var newShowroom = await Service.insertNewUserWithOTP(newUserData, otp, formattedDate);
-        
-        if (newShowroom) {
-          return res.status(200).send({ result: { otp, isPresent: false }, HasError: false, Message: "OTP sent successfully." });
-        } else {
-          return res.status(500).send({ HasError: false, Message: "Error sending OTP." });
-        }
-      } else if (newUserData.user_type_id === 3) {
-        newUserData.user_type_name = "Customer"
-        var newUser = await Service.insertNewUserWithOTP(newUserData, otp, formattedDate);
-        
-        if (newUser) {
-          return res.status(200).send({ result: { otp, isPresent: false }, HasError: false, Message: "OTP sent successfully." });
-        } else {
-          return res.status(500).send({ HasError: false, Message: "Error sending OTP." });
-        }
+      var newUser = await Service.insertNewUserWithOTP(newUserData, otp, formattedDate);
+
+      if (newUser) {
+        return res.status(200).send({ result: { otp, isPresent: false }, HasError: false, Message: "OTP sent successfully." })
       } else {
-        return res.status(400).send({ HasError: true, Message: "Invalid user_type_id." });
+        return res.status(500).send({ HasError: false, Message: "Error sending OTP." });
+
       }
-    }
+      
+    //   if (newUserData.user_type_id === 7) {
+    //     newUserData.user_type_name = "Showroom"
+    //     var newShowroom = await Service.insertNewUserWithOTP(newUserData, otp, formattedDate);
+        
+    //     if (newShowroom) {
+    //       return res.status(200).send({ result: { otp, isPresent: false }, HasError: false, Message: "OTP sent successfully." });
+    //     } else {
+    //       return res.status(500).send({ HasError: false, Message: "Error sending OTP." });
+    //     }
+    //   } else if (newUserData.user_type_id === 3) {
+    //     newUserData.user_type_name = "Customer"
+    //     var newUser = await Service.insertNewUserWithOTP(newUserData, otp, formattedDate);
+        
+    //     if (newUser) {
+    //       return res.status(200).send({ result: { otp, isPresent: false }, HasError: false, Message: "OTP sent successfully." });
+    //     } else {
+    //       return res.status(500).send({ HasError: false, Message: "Error sending OTP." });
+    //     }
+    //   } else {
+    //     return res.status(200).send({ HasError: true, Message: "Invalid user_type_id." });
+    //   }
+    // }
     
     //   var newUser = await Service.insertNewUserWithOTP(newUserData, otp, formattedDate)
     //   if (newUser) {
@@ -98,7 +109,7 @@ exports.insertMobileNumber = async (req, res) => {
     //   } else {
     //     return res.status(500).send({ HasError: false, Message: "Error sending OTP." })
     //   }
-    // }
+    }
   } catch (error) {
     console.log(error);
     const logData = { user_id: "", status: 'false', message: error.message, device_id: '', created_at: Date.now(), updated_at: Date.now(), device_info: '', action: req.url }
