@@ -101,14 +101,6 @@ exports.insertMobileNumber = async (req, res) => {
     //   }
     // }
     
-    //   var newUser = await Service.insertNewUserWithOTP(newUserData, otp, formattedDate)
-    //   if (newUser) {
-    //     return res.status(200).send({ result: { otp, isPresent: false }, HasError: false, Message: "OTP sent successfully." })
-    //   } else if (newShowroom) { 
-    //     return res.status(200).send({ result: { otp, isPresent: false }, HasError: false, Message: "OTP sent successfully." })
-    //   } else {
-    //     return res.status(500).send({ HasError: false, Message: "Error sending OTP." })
-    //   }
     }
   } catch (error) {
     console.log(error);
