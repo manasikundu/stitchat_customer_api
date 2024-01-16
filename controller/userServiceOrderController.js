@@ -158,10 +158,10 @@ exports.createOrder = async (req, res) => {
                                     console.log(err);
                                 var notificationData = await notificationService.insertNotification(senderData);
                             })
-                            fcm.send(notification_body, async function (err, response) {
+                            fcm.send(notification_body_receiver, async function (err, response) {
                                 if (err)
                                     console.log(err);
-                                var notificationData = await notificationService.insertNotification(senderData);
+                                var notificationData = await notificationService.insertNotification(receiverData);
                             })
 
                             // fcm.send(notification_body, async function (err, response) {
