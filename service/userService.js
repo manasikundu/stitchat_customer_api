@@ -20,14 +20,14 @@ exports.insertNewUserWithOTP = async (userData, otp, formattedDate) => {
     userData.created_at = formattedDate;
     userData.updated_at = formattedDate;
     var newUser = await Users.create(userData);
-    if (userData.isShowroom) {
-      var showroomData = {
-        ...userData, 
-        user_id: newUser.id, 
-      }
-    var newShowroom = await Showrooms.create(showroomData)
-    }
-    return {newUser, newShowroom}
+    // if (userData.isShowroom) {
+    //   var showroomData = {
+    //     ...userData, 
+    //     user_id: newUser.id, 
+    //   }
+    // var newShowroom = await Showrooms.create(showroomData)
+    // }
+    return newUser
   } catch (error) {
     console.error('Error inserting new user with OTP:', error);
     return error
