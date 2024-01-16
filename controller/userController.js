@@ -45,12 +45,9 @@ exports.insertMobileNumber = async (req, res) => {
     var currentTimestamp = Date.now();
     var currentDate = new Date(currentTimestamp);
     var formattedDate = `${currentDate.getFullYear()}-${String(currentDate.getMonth() + 1).padStart(2, '0')}-${String(currentDate.getDate()).padStart(2, '0')} ${String(currentDate.getHours()).padStart(2, '0')}:${String(currentDate.getMinutes()).padStart(2, '0')}:${String(currentDate.getSeconds()).padStart(2, '0')}`;
+    var regFlags = {}
+
     if (existingUser) {
-      if (newUserData.user_type_id === 3 && existingUser.user_type_id === 7) {
-        return res.status(200).send({ HasError: true, Message: "This number has already registered as a showroom" });
-      } else if (newUserData.user_type_id === 7 && existingUser.user_type_id === 3) {
-        return res.status(200).send({ HasError: true, Message: "This number has already registered as a customer" });
-      }
       
       if (otpCache[existingUser.mobile_number] && Date.now() - otpCache[existingUser.mobile_number].timestamp < OTP_EXPIRY_TIME) {
         otp = otpCache[existingUser.mobile_number].value;
@@ -58,10 +55,12 @@ exports.insertMobileNumber = async (req, res) => {
       } else {
         otp = Service.generateOTP();
         otpCache[existingUser.mobile_number] = { value: otp, timestamp: Date.now() };
+        regFlags[existingUser.mobile_number] = true
         var storeNewOTPForExistingUser = await Users.update({ otp, otp_timestamp: Date.now(), updated_at: formattedDate }, { where: { mobile_number: existingUser.mobile_number } });
       }
       return res.status(200).send({ result: { otp, isPresent: true }, HasError: false, Message: "OTP sent successfully." });
     } else {
+      
       otp = Service.generateOTP();
       newUserData.reg_on = formattedDate;
       newUserData.created_at = formattedDate;
@@ -69,38 +68,19 @@ exports.insertMobileNumber = async (req, res) => {
       newUserData.user_type_id = 3
       newUserData.user_type_name = 'Customer'
       otpCache[newUserData.mobile_number] = { value: otp, timestamp: Date.now() }
-      var newUser = await Service.insertNewUserWithOTP(newUserData, otp, formattedDate);
-
-      if (newUser) {
-        return res.status(200).send({ result: { otp, isPresent: false }, HasError: false, Message: "OTP sent successfully." })
-      } else {
-        return res.status(500).send({ HasError: false, Message: "Error sending OTP." });
-
-      }
       
-    //   if (newUserData.user_type_id === 7) {
-    //     newUserData.user_type_name = "Showroom"
-    //     var newShowroom = await Service.insertNewUserWithOTP(newUserData, otp, formattedDate);
-        
-    //     if (newShowroom) {
-    //       return res.status(200).send({ result: { otp, isPresent: false }, HasError: false, Message: "OTP sent successfully." });
-    //     } else {
-    //       return res.status(500).send({ HasError: false, Message: "Error sending OTP." });
-    //     }
-    //   } else if (newUserData.user_type_id === 3) {
-    //     newUserData.user_type_name = "Customer"
-    //     var newUser = await Service.insertNewUserWithOTP(newUserData, otp, formattedDate);
-        
-    //     if (newUser) {
-    //       return res.status(200).send({ result: { otp, isPresent: false }, HasError: false, Message: "OTP sent successfully." });
-    //     } else {
-    //       return res.status(500).send({ HasError: false, Message: "Error sending OTP." });
-    //     }
-    //   } else {
-    //     return res.status(200).send({ HasError: true, Message: "Invalid user_type_id." });
-    //   }
-    // }
-    
+      regFlags[newUserData.mobile_number] = false;  // Set regFlag to false for new users
+      return res.status(200).send({ result: { otp, isPresent: false }, HasError: false, Message: "OTP sent successfully." })
+
+      // var newUser = await Service.insertNewUserWithOTP(newUserData, otp, formattedDate);
+
+      // if (newUser) {
+      //   return res.status(200).send({ result: { otp, isPresent: false }, HasError: false, Message: "OTP sent successfully." })
+      // } else {
+      //   return res.status(500).send({ HasError: false, Message: "Error sending OTP." });
+
+      // }
+      
     }
   } catch (error) {
     console.log(error);
