@@ -1,6 +1,9 @@
 const tailorService = require("../service/tailorService")
 const Service = require('../service/userService')
 const logService = require('../service/logService')
+const db = require("../dbConnection")
+const CategoryItem = require("../model/categoryItemModel")
+const Tailor=require('../model/tailorServiceModel')
 
 
 exports.itemListForTailor = async (req, res) => {
@@ -64,5 +67,90 @@ exports.serviceType = async (req, res) => {
         const logData = { user_id: "", status: 'false', message: error.message, device_id: '', created_at: Date.now(), updated_at: Date.now(), device_info: '', action: req.url }
         const log = await logService.createLog(logData)
         return res.status(500).send({ message: "Some error occurred.", HasError: true, error: error.message })
+    }
+}
+
+
+exports.alternationType = async (req, res) => {
+    try {
+        const itemsMen = await tailorService.getItemForTailorMen()
+        const itemsWomen = await tailorService.getItemForTailorWomen()
+        const itemsKids = await tailorService.getItemForTailorKids()
+
+        const result = []
+
+        // Process Men's items
+        for (var item of itemsMen) {
+            const { id, name } = item
+            const serviceDetails = await tailorService.serviceDetails(id)
+            const servicesArray = serviceDetails
+                .filter(service => service.service_type === 1)
+                .map(({ id: service_id, name: service_name, amount, service_type }) => ({
+                    service_id,
+                    service_name,
+                    amount,
+                    service_type_id: service_type,
+                    service_type_name: 'ALTER',
+                }))
+
+            result.push({
+                gender_type: 1,
+                gender_type_name: 'Men',
+                category_item_id: id,
+                category_name: name,
+                alternationType: servicesArray,
+            })
+        }
+
+        // Process Women's items
+        for (var item of itemsWomen) {
+            const { id, name } = item
+            const serviceDetails = await tailorService.serviceDetails(id)
+            const servicesArray = serviceDetails
+                .filter(service => service.service_type === 1)
+                .map(({ id: service_id, name: service_name, amount, service_type }) => ({
+                    service_id,
+                    service_name,
+                    amount,
+                    service_type_id: service_type,
+                    service_type_name: 'ALTER',
+                }))
+
+            result.push({
+                gender_type: 2,
+                gender_type_name: 'Women',
+                category_item_id: id,
+                category_name: name,
+                alternationType: servicesArray,
+            })
+        }
+
+        // Process Kids' items
+        for (var item of itemsKids) {
+            const { id, name } = item
+            const serviceDetails = await tailorService.serviceDetails(id)
+            const servicesArray = serviceDetails
+                .filter(service => service.service_type === 1)
+                .map(({ id: service_id, name: service_name, amount, service_type }) => ({
+                    service_id,
+                    service_name,
+                    amount,
+                    service_type_id: service_type,
+                    service_type_name: 'ALTER',
+                }))
+
+            result.push({
+                gender_type: 3,
+                gender_type_name: 'Kids',
+                category_item_id: id,
+                category_name: name,
+                alternationType: servicesArray,
+            })
+        }
+
+        return res.status(200).send({ message: "Item List retrieved successfully.", HasError: false, result })
+    } catch (error) {
+        console.error(error)
+        return res.status(500).send({ HasError: false, message: 'Internal Server Error' })
     }
 }
