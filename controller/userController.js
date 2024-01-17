@@ -34,58 +34,87 @@ exports.insertMobileNumber = async (req, res) => {
     if (insertError.length > 0) {
       return res.status(200).send({ HasError: true, errors: insertError })
     }
-    newUserData.device_id = newUserData.device_id || "";
-    newUserData.fcm_token = newUserData.fcm_key || "";
     var existingUser = await Users.findOne({ where: { mobile_number: newUserData.mobile_number } });
-    var method_name = await Service.getCallingMethodName();
-    var apiEndpointInput = JSON.stringify(newUserData);
-    apiTrack = await Service.trackApi(existingUser ? existingUser.id : null, method_name, apiEndpointInput, newUserData.device_id, newUserData.device_info, req.ip);
-    
-    var otp;
-    var currentTimestamp = Date.now();
-    var currentDate = new Date(currentTimestamp);
-    var formattedDate = `${currentDate.getFullYear()}-${String(currentDate.getMonth() + 1).padStart(2, '0')}-${String(currentDate.getDate()).padStart(2, '0')} ${String(currentDate.getHours()).padStart(2, '0')}:${String(currentDate.getMinutes()).padStart(2, '0')}:${String(currentDate.getSeconds()).padStart(2, '0')}`;
-    // var regFlags = {}
 
     if (existingUser) {
-      
+      newUserData.device_id = newUserData.device_id || "";
+      newUserData.fcm_token = newUserData.fcm_key || "";
+      var method_name = await Service.getCallingMethodName();
+      var apiEndpointInput = JSON.stringify(newUserData);
+      apiTrack = await Service.trackApi(existingUser ? existingUser.id : null, method_name, apiEndpointInput, newUserData.device_id, newUserData.device_info, req.ip);
+      var otp;
+      var currentTimestamp = Date.now();
+      var currentDate = new Date(currentTimestamp);
+      var formattedDate = `${currentDate.getFullYear()}-${String(currentDate.getMonth() + 1).padStart(2, '0')}-${String(currentDate.getDate()).padStart(2, '0')} ${String(currentDate.getHours()).padStart(2, '0')}:${String(currentDate.getMinutes()).padStart(2, '0')}:${String(currentDate.getSeconds()).padStart(2, '0')}`;
       if (otpCache[existingUser.mobile_number] && Date.now() - otpCache[existingUser.mobile_number].timestamp < OTP_EXPIRY_TIME) {
         otp = otpCache[existingUser.mobile_number].value;
         var updateExistingUserOTP = await Users.update({ otp, otp_timestamp: Date.now(), updated_at: formattedDate }, { where: { mobile_number: existingUser.mobile_number } });
       } else {
         otp = Service.generateOTP();
         otpCache[existingUser.mobile_number] = { value: otp, timestamp: Date.now() };
-        // regFlags[existingUser.mobile_number] = true
         var storeNewOTPForExistingUser = await Users.update({ otp, otp_timestamp: Date.now(), updated_at: formattedDate }, { where: { mobile_number: existingUser.mobile_number } });
       }
-      return res.status(200).send({ result: { otp, isPresent: true }, HasError: false, Message: "OTP sent successfully." });
+      return res.status(200).send({ result: { otp, isPresent: true, regFlag: true }, HasError: false, Message: "OTP sent successfully." });
     } else {
-      
-      otp = Service.generateOTP();
-      newUserData.reg_on = formattedDate;
-      newUserData.created_at = formattedDate;
-      newUserData.updated_at = formattedDate;
-      newUserData.user_type_id = 3
-      newUserData.user_type_name = 'Customer'
-      otpCache[newUserData.mobile_number] = { value: otp, timestamp: Date.now() }
-      
-      // regFlags[newUserData.mobile_number] = false;  // Set regFlag to false for new users
-
-      var newUser = await Service.insertNewUserWithOTP(newUserData, otp, formattedDate);
-
-      if (newUser) {
-        return res.status(200).send({ result: { otp, isPresent: false }, HasError: false, Message: "OTP sent successfully." })
-      } else {
-        return res.status(500).send({ HasError: false, Message: "Error sending OTP." });
-
+      if (req.body.confirmationFlag == 'true') {
+        otp = Service.generateOTP();
+        newUserData.reg_on = formattedDate;
+        newUserData.created_at = formattedDate;
+        newUserData.updated_at = formattedDate;
+        newUserData.user_type_id = 3
+        newUserData.user_type_name = 'Customer'
+        otpCache[newUserData.mobile_number] = { value: otp, timestamp: Date.now() }
+        var newUser = await Service.insertNewUserWithOTP(newUserData, otp, formattedDate);
+        return res.status(200).send({ result: { otp, isPresent: false, regFlag: false }, HasError: false, Message: "OTP sent successfully." })
+      }if (req.body.confirmationFlag == 'false') {
+        return res.status(200).send({ result: { isPresent: false, regFlag: false }, HasError: false, Message: "Please confirm your number." })
       }
-      
     }
+
+    // var existingUser = await Users.findOne({ where: { mobile_number: newUserData.mobile_number } });
+    // newUserData.device_id = newUserData.device_id || "";
+    // newUserData.fcm_token = newUserData.fcm_key || "";
+    // var method_name = await Service.getCallingMethodName();
+    // var apiEndpointInput = JSON.stringify(newUserData);
+    // apiTrack = await Service.trackApi(existingUser ? existingUser.id : null, method_name, apiEndpointInput, newUserData.device_id, newUserData.device_info, req.ip);
+
+    // var otp;
+    // var currentTimestamp = Date.now();
+    // var currentDate = new Date(currentTimestamp);
+    // var formattedDate = `${currentDate.getFullYear()}-${String(currentDate.getMonth() + 1).padStart(2, '0')}-${String(currentDate.getDate()).padStart(2, '0')} ${String(currentDate.getHours()).padStart(2, '0')}:${String(currentDate.getMinutes()).padStart(2, '0')}:${String(currentDate.getSeconds()).padStart(2, '0')}`;
+    // if (existingUser) {
+    //   if (otpCache[existingUser.mobile_number] && Date.now() - otpCache[existingUser.mobile_number].timestamp < OTP_EXPIRY_TIME) {
+    //     otp = otpCache[existingUser.mobile_number].value;
+    //     var updateExistingUserOTP = await Users.update({ otp, otp_timestamp: Date.now(), updated_at: formattedDate }, { where: { mobile_number: existingUser.mobile_number } });
+    //   } else {
+    //     otp = Service.generateOTP();
+    //     otpCache[existingUser.mobile_number] = { value: otp, timestamp: Date.now() };
+    //     var storeNewOTPForExistingUser = await Users.update({ otp, otp_timestamp: Date.now(), updated_at: formattedDate }, { where: { mobile_number: existingUser.mobile_number } });
+    //   }
+    //   return res.status(200).send({ result: { otp, isPresent: true }, HasError: false, Message: "OTP sent successfully." });
+    // } else {
+    //   otp = Service.generateOTP();
+    //   newUserData.reg_on = formattedDate;
+    //   newUserData.created_at = formattedDate;
+    //   newUserData.updated_at = formattedDate;
+    //   newUserData.user_type_id = 3
+    //   newUserData.user_type_name = 'Customer'
+    //   otpCache[newUserData.mobile_number] = { value: otp, timestamp: Date.now() }
+    //   var newUser = await Service.insertNewUserWithOTP(newUserData, otp, formattedDate);
+
+    //   if (newUser) {
+    //     return res.status(200).send({ result: { otp, isPresent: false }, HasError: false, Message: "OTP sent successfully." })
+    //   } else {
+    //     return res.status(500).send({ HasError: false, Message: "Error sending OTP." });
+
+    //   }
+
+    // }
   } catch (error) {
     console.log(error);
     const logData = { user_id: "", status: 'false', message: error.message, device_id: '', created_at: Date.now(), updated_at: Date.now(), device_info: '', action: req.url }
     const log = await logService.createLog(logData)
-    return res.status(500).send({ HasError: false, message: "An error occurred while inserting the mobile number." ,error: error.message });
+    return res.status(500).send({ HasError: false, message: "An error occurred while inserting the mobile number.", error: error.message });
   }
 }
 
@@ -173,7 +202,7 @@ exports.verifyOTP = async (req, res) => {
     console.error("Error verifying OTP:", error);
     const logData = { user_id: "", status: 'false', message: error.message, device_id: '', created_at: Date.now(), updated_at: Date.now(), device_info: '', action: req.url }
     const log = await logService.createLog(logData)
-    return res.status(500).send({ HasError: true, Message: "An error occurred while verifying the OTP." ,error: error.message });
+    return res.status(500).send({ HasError: true, Message: "An error occurred while verifying the OTP.", error: error.message });
   }
 }
 
@@ -226,7 +255,7 @@ exports.userProfile = async (req, res) => {
     // const id = req.body.user_id
     const g_token = auth(req)
     const id = g_token.user_id;
-    
+
 
     var result1 = await Service.getUserDetails(id)
     if (result1) {
@@ -285,7 +314,7 @@ exports.userProfile = async (req, res) => {
     console.log(error)
     const logData = { user_id: "", status: 'false', message: error.message, device_id: '', created_at: Date.now(), updated_at: Date.now(), device_info: '', action: req.url }
     const log = await logService.createLog(logData)
-    res.status(500).send({ message: "Something went wrong.", HasError: true ,error: error.message })
+    res.status(500).send({ message: "Something went wrong.", HasError: true, error: error.message })
   }
 }
 
@@ -313,7 +342,7 @@ exports.updateProfile = async (req, res) => {
     console.log(error)
     const logData = { user_id: "", status: 'false', message: error.message, device_id: '', created_at: Date.now(), updated_at: Date.now(), device_info: '', action: req.url }
     const log = await logService.createLog(logData)
-    res.status(500).send({ message: "Something went wrong.", HasError: true,error: error.message })
+    res.status(500).send({ message: "Something went wrong.", HasError: true, error: error.message })
   }
 }
 
@@ -329,7 +358,7 @@ exports.aboutUs = async (req, res) => {
     console.log(error)
     const logData = { user_id: "", status: 'false', message: error.message, device_id: '', created_at: Date.now(), updated_at: Date.now(), device_info: '', action: req.url }
     const log = await logService.createLog(logData)
-    res.status(500).send({ message: "Something went wrong.", HasError: true,error: error.message  })
+    res.status(500).send({ message: "Something went wrong.", HasError: true, error: error.message })
   }
 }
 
@@ -345,7 +374,7 @@ exports.contactInfo = async (req, res) => {
     console.log(error)
     const logData = { user_id: "", status: 'false', message: error.message, device_id: '', created_at: Date.now(), updated_at: Date.now(), device_info: '', action: req.url }
     const log = await logService.createLog(logData)
-    res.status(500).send({ message: "Something went wrong.", HasError: true ,error: error.message })
+    res.status(500).send({ message: "Something went wrong.", HasError: true, error: error.message })
   }
 }
 
@@ -363,7 +392,7 @@ exports.contactUs = async (req, res) => {
     console.log(error)
     const logData = { user_id: "", status: 'false', message: error.message, device_id: '', created_at: Date.now(), updated_at: Date.now(), device_info: '', action: req.url }
     const log = await logService.createLog(logData)
-    res.status(500).send({ message: "Something went wrong.", HasError: true ,error: error.message })
+    res.status(500).send({ message: "Something went wrong.", HasError: true, error: error.message })
   }
 }
 
@@ -396,7 +425,7 @@ exports.privacyPolicy = async (req, res) => {
     console.log(error)
     const logData = { user_id: "", status: 'false', message: error.message, device_id: '', created_at: Date.now(), updated_at: Date.now(), device_info: '', action: req.url }
     const log = await logService.createLog(logData)
-    res.status(500).send({ message: "Something went wrong.", HasError: true ,error: error.message })
+    res.status(500).send({ message: "Something went wrong.", HasError: true, error: error.message })
   }
 }
 
@@ -457,6 +486,6 @@ exports.profilePicUpload = async (req, res) => {
     console.log(error)
     const logData = { user_id: "", status: 'false', message: error.message, device_id: '', created_at: Date.now(), updated_at: Date.now(), device_info: '', action: req.url }
     const log = await logService.createLog(logData)
-    res.status(500).send({ message: "Something went wrong.", HasError: true ,error: error.message })
+    res.status(500).send({ message: "Something went wrong.", HasError: true, error: error.message })
   }
 }
