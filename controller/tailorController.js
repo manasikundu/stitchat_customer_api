@@ -4,6 +4,7 @@ const logService = require('../service/logService')
 const db = require("../dbConnection")
 const CategoryItem = require("../model/categoryItemModel")
 const Tailor=require('../model/tailorServiceModel')
+const OrderService = require('../service/userServiceOrderService')
 
 
 exports.itemListForTailor = async (req, res) => {
@@ -147,10 +148,22 @@ exports.alternationType = async (req, res) => {
                 alternationType: servicesArray,
             })
         }
-
-        return res.status(200).send({ message: "Item List retrieved successfully.", HasError: false, result })
+        // const orderDetails = await OrderService.getOrderHistory(order_id)
+        // for (var j in orderDetails) {
+        //     console.log(orderDetails[i].created_at)
+        // }
+        var startTime = "09:00:00"
+        var endTime = "21:00:00"
+        var levels = ["4 hours", "8 hours", "16 hours", "32 hours", "48 hours"]
+        var result1 = levels.map(level => ({
+            level: level,
+            end_time: "", 
+            selectflag: false
+        }))
+        
+        return res.status(200).send({ message: "Alternation Type Item List retrieved successfully.", HasError: false, result, timeslot: result1})
     } catch (error) {
         console.error(error)
-        return res.status(500).send({ HasError: false, message: 'Internal Server Error' })
+        return res.status(500).send({ HasError: false, message: 'Some error occurred.' })
     }
 }
