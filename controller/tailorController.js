@@ -5,7 +5,7 @@ const db = require("../dbConnection")
 const CategoryItem = require("../model/categoryItemModel")
 const Tailor=require('../model/tailorServiceModel')
 const OrderService = require('../service/userServiceOrderService')
-
+const moment = require('moment')
 
 exports.itemListForTailor = async (req, res) => {
     try {
@@ -148,19 +148,41 @@ exports.alternationType = async (req, res) => {
                 alternationType: servicesArray,
             })
         }
-        // const orderDetails = await OrderService.getOrderHistory(order_id)
-        // for (var j in orderDetails) {
-        //     console.log(orderDetails[i].created_at)
-        // }
-        var startTime = "09:00:00"
-        var endTime = "21:00:00"
-        var levels = ["4 hours", "8 hours", "16 hours", "32 hours", "48 hours"]
-        var result1 = levels.map(level => ({
-            level: level,
-            end_time: "", 
-            selectflag: false
-        }))
+
+        var currentTime = moment().format('YYYY-MM-DD HH:mm:ss')
         
+        var startTimeStr = "09:00:00"
+        var endTimeStr = "21:00:00"
+        
+        var startTime = {
+            hours: parseInt(startTimeStr.split(":")[0], 10),
+            minutes: parseInt(startTimeStr.split(":")[1], 10)
+        }
+        
+        var endTime = {
+            hours: parseInt(endTimeStr.split(":")[0], 10),
+            minutes: parseInt(endTimeStr.split(":")[1], 10)
+        }
+        
+        var levels = ["4 hours", "8 hours", "16 hours", "32 hours", "48 hours"]
+        
+        var result1 = levels.map(level => {
+            const endTimeForLevel = moment(currentTime).add(parseInt(level, 10), 'hours')
+            const endTimeForLevelHours = endTimeForLevel.hours()
+            const endTimeForLevelMinutes = endTimeForLevel.minutes()
+        
+            const selectFlag =
+                (endTimeForLevelHours > startTime.hours || (endTimeForLevelHours === startTime.hours && endTimeForLevelMinutes >= startTime.minutes)) &&
+                (endTimeForLevelHours < endTime.hours || (endTimeForLevelHours === endTime.hours && endTimeForLevelMinutes <= endTime.minutes))
+        
+            return {
+                level: level,
+                // end_time: endTimeForLevel.format("YYYY-MM-DD HH:mm:ss"),
+                end_time: endTimeForLevel.format("YYYY-MM-DD h:mm:ss A"),
+                selectflag: selectFlag
+            }
+        })
+    
         return res.status(200).send({ message: "Alternation Type Item List retrieved successfully.", HasError: false, result, timeslot: result1})
     } catch (error) {
         console.error(error)
