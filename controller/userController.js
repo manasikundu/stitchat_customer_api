@@ -498,11 +498,11 @@ exports.verifyPincode = async (req, res) => {
     var pincodeExists = await Service.pincodeVerify(pincode)
 
     if (pincodeExists == true) {
-      return res.status(200).send({ HasError: false, StatusCode:200, message: 'We are providing our services.' });
+      return res.status(200).send({ HasError: false, message: 'We are providing our services.' });
     } else {
-      return res.status(200).send({ HasError: true, StatusCode:200, message: 'We are not providing our services in this area.' });
+      return res.status(200).send({ HasError: true, message: 'We are not providing our services in this area.' });
     }
   } catch (error) {
-    return res.status(500).send({ HasError: true, StatusCode:500, Message: "Some error occurred.", error: error.message });
+    return res.status(500).send({ HasError: true, Message: "Some error occurred.", error: error.message });
   }
 }
