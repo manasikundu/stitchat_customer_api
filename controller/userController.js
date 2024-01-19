@@ -489,3 +489,20 @@ exports.profilePicUpload = async (req, res) => {
     res.status(500).send({ message: "Something went wrong.", HasError: true, error: error.message })
   }
 }
+
+
+exports.verifyPincode = async (req, res) => {
+  try {
+    const g_token = auth(req)
+    var pincode = req.body.pincode
+    var pincodeExists = await Service.pincodeVerify(pincode)
+
+    if (pincodeExists == true) {
+      return res.status(200).send({ HasError: false, StatusCode:200, message: 'We are providing our services.' });
+    } else {
+      return res.status(500).send({ HasError: true, StatusCode:500, message: 'We are not providing our services in this area.' });
+    }
+  } catch (error) {
+    return res.status(500).send({ HasError: true, StatusCode:500, Message: "Some error occurred.", error: error.message });
+  }
+}

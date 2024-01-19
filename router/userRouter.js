@@ -15,5 +15,7 @@ router.get("/contactInfo", Controller.contactInfo);
 router.post("/contactUs", Controller.contactUs);
 router.get("/privacyPolicy", Controller.privacyPolicy)
 router.post("/profilePicUpload", Controller.profilePicUpload)
+router.post("/verifyPincode", Controller.verifyPincode)
+
 
 module.exports = router;

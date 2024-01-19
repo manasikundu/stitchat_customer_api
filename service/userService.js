@@ -7,6 +7,8 @@ const crypto = require("crypto");
 const ApiTrack = require("../model/apiTrackModel");
 const { Mobile } = require("aws-sdk");
 const contactUs = require('../model/contactUsModel')
+const UsersAddress = require("../model/userAddressModel")
+
 
 exports.generateOTP = () => {
   return crypto.randomInt(100000, 999999).toString();
@@ -208,4 +210,15 @@ exports.maskMobileNumber =  (phoneNumber) => {
   const middleMask = '*'.repeat(phoneNumber.length - 4);
   const maskedNumber = `${firstTwo}${middleMask}${lastTwo}`;
   return maskedNumber;
+}
+
+exports.pincodeVerify = async (pincode) => {
+  try {
+    const result = await UsersAddress.findAll({ where: { pincode: pincode } })
+    // return result
+    return result.length > 0
+  } catch (error) {
+    console.log(error)
+    return error 
+  } 
 }
