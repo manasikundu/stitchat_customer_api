@@ -500,7 +500,7 @@ exports.verifyPincode = async (req, res) => {
     if (pincodeExists == true) {
       return res.status(200).send({ HasError: false, StatusCode:200, message: 'We are providing our services.' });
     } else {
-      return res.status(500).send({ HasError: true, StatusCode:500, message: 'We are not providing our services in this area.' });
+      return res.status(200).send({ HasError: true, StatusCode:200, message: 'We are not providing our services in this area.' });
     }
   } catch (error) {
     return res.status(500).send({ HasError: true, StatusCode:500, Message: "Some error occurred.", error: error.message });
