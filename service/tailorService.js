@@ -5,13 +5,19 @@ const Tailor=require('../model/tailorServiceModel')
 
 exports.getItemForTailor = async () => {
     try {
-        var query = `SELECT * 
+        var query = `SELECT DISTINCT ON (name) *
         FROM sarter__category_item_dic 
         WHERE parent_id IN (
             SELECT id 
             FROM sarter__category_item_dic 
-            WHERE parent_id IN (1, 12)
-        )`
+            WHERE parent_id IN (1, 12))`
+        // var query = `SELECT DISTINCT * 
+        // FROM sarter__category_item_dic 
+        // WHERE parent_id IN (
+        //     SELECT id 
+        //     FROM sarter__category_item_dic 
+        //     WHERE parent_id IN (1, 12)
+        // )`
         var result = await db.query(query)
         return result[0]
     } catch (error) {
@@ -19,6 +25,7 @@ exports.getItemForTailor = async () => {
         return error
     }
 }
+
 exports.getItemForTailorMen = async () => {
     try {
         var query = `SELECT * FROM sarter__category_item_dic WHERE parent_id IN (SELECT id FROM sarter__category_item_dic WHERE parent_id=1)`     
