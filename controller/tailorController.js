@@ -148,6 +148,7 @@ exports.alternationType = async (req, res) => {
                 alternationType: servicesArray,
             })
         }
+        result.sort((a, b) => a.gender_type - b.gender_type || a.category_item_id - b.category_item_id)
 
         var currentTime = moment().format('YYYY-MM-DD HH:mm:ss')
         
