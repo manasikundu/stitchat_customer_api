@@ -1,6 +1,7 @@
 const db = require("../dbConnection")
 const CategoryItem = require("../model/categoryItemModel")
 const Tailor=require('../model/tailorServiceModel')
+const { Op, Sequelize } = require("sequelize");
 
 
 exports.getItemForTailor = async () => {
@@ -25,6 +26,90 @@ exports.getItemForTailor = async () => {
         return error
     }
 }
+
+exports.getItem = async () => {
+    try {
+        const parentResults = await CategoryItem.findAll({
+            attributes: ['id'],
+            where: {
+                parent_id: {
+                    [Sequelize.Op.in]: [1, 12]
+                }
+            }
+        })
+
+        if (!Array.isArray(parentResults)) {
+            return ('Parent results is not an array');
+        }
+
+        const parentIds = parentResults.map(parent => parent.id);
+
+        const result = await CategoryItem.findAll({
+            attributes: [
+              [Sequelize.fn('DISTINCT', Sequelize.col('name')), 'name'],
+              'id', 
+              'parent_id',
+            ],
+            where: {
+              parent_id: {
+                [Sequelize.Op.in]: parentIds,
+              },
+            },
+            order: [['name', 'ASC']],
+          });
+
+        return result;
+    } catch (error) {
+        console.error(error);
+        return error;
+    }
+};
+
+
+// exports.getItem = async () => {
+//     try {
+//         const parentResults = await CategoryItem.findAll({
+//             attributes: ['id'],
+//             where: {
+//                 parent_id: {
+//                     [Sequelize.Op.in]: [1, 12]
+//                 }
+//             }
+//         });
+
+//         if (!Array.isArray(parentResults)) {
+//             return ('Parent results is not an array');
+//         }
+
+//         const parentIds = parentResults.map(parent => parent.id);
+//         console.log(parentIds)
+
+//         const result = await CategoryItem.findAll({
+//             attributes: [[Sequelize.fn('DISTINCT', Sequelize.col('name')), 'name']],
+//             where: {
+//                 parent_id: {
+//                     [Sequelize.Op.in]: parentIds
+//                 }
+//             },
+//             order: [['name', 'ASC']],
+//             include: [{
+//                 model: CategoryItem,
+//                 as: 'Children',
+//                 required: true,
+//                 include: [{
+//                     model: CategoryItem,
+//                     as: 'Children',
+//                     required: true
+//                 }]
+//             }]
+//         });
+
+//         return result;
+//     } catch (error) {
+//         console.error(error);
+//         return error;
+//     }
+// };
 
 exports.getItemForTailorMen = async () => {
     try {
@@ -61,11 +146,7 @@ exports.getItemForTailorWomen = async () => {
 }
 exports.getItemForTailorKids = async () => {
     try {
-        var query = `SELECT DISTINCT ON (name) *
-        FROM sarter__category_item_dic
-        WHERE parent_id IN (SELECT id FROM sarter__category_item_dic WHERE type IN (2, 3))
-          AND type <> 1`
-        // var query = `SELECT * FROM sarter__category_item_dic WHERE parent_id IN (SELECT id FROM sarter__category_item_dic WHERE parent_id in (1, 12) and type in (2, 3))`
+        var query = `SELECT DISTINCT ON (name) * FROM sarter__category_item_dic WHERE parent_id IN (SELECT id FROM sarter__category_item_dic WHERE parent_id in (1, 12)) and type in (2, 3)`
         var result = await db.query(query)
         return result[0]
     } catch (error) {

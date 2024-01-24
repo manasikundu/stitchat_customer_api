@@ -10,12 +10,16 @@ const moment = require('moment')
 exports.itemListForTailor = async (req, res) => {
     try {
         var items = await tailorService.getItemForTailor()
+        // items.sort((a, b) => a.id - b.id)
         var method_name = await Service.getCallingMethodName()
         var apiEndpointInput = JSON.stringify(req.body)
         var apiTrack = await Service.trackApi(req.query.user_id,method_name,apiEndpointInput,req.query.device_id,req.query.device_info,req.ip)
     
         if (items.length > 0) {
             var itemList = items.map(item => ({ item_id: item.id, item_name: item.name }))
+            // itemList.sort((a, b) => b.id - a.id)
+            // console.log(itemList)
+
             return res.status(200).send({ message: "Item List retrieved successfully.", HasError: false, result: itemList })
         } else {
             return res.status(500).send({ message: "Items not found.", HasError: true, result: [] })
@@ -86,12 +90,13 @@ exports.alternationType = async (req, res) => {
             const serviceDetails = await tailorService.serviceDetails(id)
             const servicesArray = serviceDetails
                 .filter(service => service.service_type === 1)
-                .map(({ id: service_id, name: service_name, amount, service_type }) => ({
+                .map(({ id: service_id, name: service_name, amount, service_type, measurement_flag }) => ({
                     service_id,
                     service_name,
                     amount,
                     service_type_id: service_type,
                     service_type_name: 'ALTER',
+                    measurement_flag: measurement_flag,
                 }))
 
             result.push({
@@ -99,6 +104,7 @@ exports.alternationType = async (req, res) => {
                 gender_type_name: 'Men',
                 category_item_id: id,
                 category_name: name,
+                alternation_flag: item.alternation_flag,
                 alternationType: servicesArray,
             })
         }
@@ -109,12 +115,13 @@ exports.alternationType = async (req, res) => {
             const serviceDetails = await tailorService.serviceDetails(id)
             const servicesArray = serviceDetails
                 .filter(service => service.service_type === 1)
-                .map(({ id: service_id, name: service_name, amount, service_type }) => ({
+                .map(({ id: service_id, name: service_name, amount, service_type, measurement_flag }) => ({
                     service_id,
                     service_name,
                     amount,
                     service_type_id: service_type,
                     service_type_name: 'ALTER',
+                    measurement_flag: measurement_flag,
                 }))
 
             result.push({
@@ -122,6 +129,7 @@ exports.alternationType = async (req, res) => {
                 gender_type_name: 'Women',
                 category_item_id: id,
                 category_name: name,
+                alternation_flag: item.alternation_flag,
                 alternationType: servicesArray,
             })
         }
@@ -132,12 +140,13 @@ exports.alternationType = async (req, res) => {
             const serviceDetails = await tailorService.serviceDetails(id)
             const servicesArray = serviceDetails
                 .filter(service => service.service_type === 1)
-                .map(({ id: service_id, name: service_name, amount, service_type }) => ({
+                .map(({ id: service_id, name: service_name, amount, service_type, measurement_flag }) => ({
                     service_id,
                     service_name,
                     amount,
                     service_type_id: service_type,
                     service_type_name: 'ALTER',
+                    measurement_flag: measurement_flag,
                 }))
 
             result.push({
@@ -145,6 +154,7 @@ exports.alternationType = async (req, res) => {
                 gender_type_name: 'Kids',
                 category_item_id: id,
                 category_name: name,
+                alternation_flag: item.alternation_flag,
                 alternationType: servicesArray,
             })
         }
