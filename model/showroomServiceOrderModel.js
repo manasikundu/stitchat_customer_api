@@ -81,6 +81,21 @@ var ShowroomServiceOrder = sequelize.define(
         note: {
             type: DataTypes.TEXT,
         },
+        booking_code:{
+            type: DataTypes.STRING,   
+        },
+        d_name:{
+            type: DataTypes.STRING,   
+        },
+        d_mobile_number:{
+            type: DataTypes.STRING,   
+        },
+        delivery_label:{
+            type: DataTypes.STRING,   
+        },
+        alternation_json:{
+            type: DataTypes.TEXT,   
+        }
     },
     {
         sequelize,

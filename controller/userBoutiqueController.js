@@ -29,24 +29,24 @@ exports.getAddress = async (req, res) => {
   try {
     var { latitude, longitude } = req.body;
     if (!latitude || !longitude) {
-      return res.status(400).send({HasError: true,message: "Invalid parameter."});
+      return res.status(400).send({ HasError: true, message: "Invalid parameter." });
     }
     var method_name = await Service.getCallingMethodName();
     console.log(method_name);
     var apiEndpointInput = JSON.stringify(req.body);
-    apiTrack = await Service.trackApi(req.query.user_id,method_name,apiEndpointInput,req.query.device_id,req.query.device_info,req.ip);
+    apiTrack = await Service.trackApi(req.query.user_id, method_name, apiEndpointInput, req.query.device_id, req.query.device_info, req.ip);
     var response = await geocoder.reverse({ lat: latitude, lon: longitude });
     var address = response[0]?.formattedAddress;
     if (address) {
-      return res.status(200).send({HasError: false,address});
+      return res.status(200).send({ HasError: false, address });
     } else {
-      return res.status(500).send({HasError: true,message: "Address not found for the given latitude and longitude."});
+      return res.status(500).send({ HasError: true, message: "Address not found for the given latitude and longitude." });
     }
   } catch (error) {
     console.error("Error processing request:", error);
     const logData = { user_id: "", status: 'false', message: error.message, device_id: '', created_at: Date.now(), updated_at: Date.now(), device_info: '', action: req.url }
     const log = await logService.createLog(logData)
-    return res.status(500).send({HasError: true,message: "An error occurred while processing the request.",error: error.message });
+    return res.status(500).send({ HasError: true, message: "An error occurred while processing the request.", error: error.message });
   }
 }
 
@@ -83,11 +83,11 @@ exports.getNearestBoutiqueList = async (req, res) => {
     var filter_by_item = req.body.filter_by_item;
     var search = req.body.search
     if (!latitude || !longitude) {
-      return res.status(400).send({HasError: true,message: "Invalid Credential."});
+      return res.status(400).send({ HasError: true, message: "Invalid Credential." });
     }
     var method_name = await Service.getCallingMethodName();
     var apiEndpointInput = JSON.stringify(req.body);
-    apiTrack = await Service.trackApi(req.query.user_id,method_name,apiEndpointInput,req.query.device_id,req.query.device_info,req.ip);
+    apiTrack = await Service.trackApi(req.query.user_id, method_name, apiEndpointInput, req.query.device_id, req.query.device_info, req.ip);
     var boutiques = [];
     if (letter) {
       boutiques = await BoutiqueService.getBoutiques(letter);
@@ -147,7 +147,7 @@ exports.getNearestBoutiqueList = async (req, res) => {
     sortedAndFilteredBoutiques = sortedAndFilteredBoutiques.filter(boutique => boutique.boutique_name !== null)
 
     sortedAndFilteredBoutiques.forEach((boutique) => {
-      if (boutique.location_lat && boutique.location_lng ) {
+      if (boutique.location_lat && boutique.location_lng) {
         var boutiqueDistance = geolib.getDistance(
           { latitude, longitude },
           { latitude: boutique.location_lat, longitude: boutique.location_lng }
@@ -170,7 +170,7 @@ exports.getNearestBoutiqueList = async (req, res) => {
     var sortedBoutiques = boutiquesWithin500km.sort((a, b) => a.distance - b.distance);
     var responseData = {};
     var expirationTime = 600;
-    var masked_number = sortedBoutiques[0].contact_number !== null ? Service.maskMobileNumber(sortedBoutiques[0].contact_number) : null; 
+    var masked_number = sortedBoutiques[0].contact_number !== null ? Service.maskMobileNumber(sortedBoutiques[0].contact_number) : null;
 
     if (sortedBoutiques.length === 1) {
       responseData = {
@@ -194,41 +194,41 @@ exports.getNearestBoutiqueList = async (req, res) => {
         ],
       };
     } else {
-      responseData = {nearbyBoutiques: []};
+      responseData = { nearbyBoutiques: [] };
       var uniqueIds = new Set()
       var boutiqueLogoUrl = "";
       for (var i = 0; i < sortedBoutiques.length; i++) {
         var boutique = sortedBoutiques[i];
         if (!uniqueIds.has(boutique.id)) {
           uniqueIds.add(boutique.id)
-        var boutiqueLogoUrl = "";
-        var boutiqueLogoUrl = boutique.boutique_logo
-          ? await s3.getSignedUrl("getObject", {
-            Bucket: process.env.AWS_BUCKET,
-            Key: `boutique/${boutique.boutique_logo}`,
-            Expires: expirationTime,
-          })
-          : s3.getSignedUrl("getObject", {
-            Bucket: process.env.AWS_BUCKET,
-            Key: `boutique/default-img.jpg`,
-            Expires: expirationTime,
-          })
-        var maskedNumber = boutique.contact_number !== null ? Service.maskMobileNumber(boutique.contact_number) : ''; 
-        responseData.nearbyBoutiques.push({
-          id: boutique.id,
-          boutique_name: boutique.boutique_name,
-          address: boutique.address,
-          image: boutiqueLogoUrl,
-          contact_number: boutique.contact_number,
-          contact_number: maskedNumber,
-          category: mapCategoryType(boutique.categoryType),
-          latitude: boutique.location_lat,
-          longitude: boutique.location_lng,
-          distance: `${boutique.distanceInKm.toFixed(2)}`,
-        });
+          var boutiqueLogoUrl = "";
+          var boutiqueLogoUrl = boutique.boutique_logo
+            ? await s3.getSignedUrl("getObject", {
+              Bucket: process.env.AWS_BUCKET,
+              Key: `boutique/${boutique.boutique_logo}`,
+              Expires: expirationTime,
+            })
+            : s3.getSignedUrl("getObject", {
+              Bucket: process.env.AWS_BUCKET,
+              Key: `boutique/default-img.jpg`,
+              Expires: expirationTime,
+            })
+          var maskedNumber = boutique.contact_number !== null ? Service.maskMobileNumber(boutique.contact_number) : '';
+          responseData.nearbyBoutiques.push({
+            id: boutique.id,
+            boutique_name: boutique.boutique_name,
+            address: boutique.address,
+            image: boutiqueLogoUrl,
+            contact_number: boutique.contact_number,
+            contact_number: maskedNumber,
+            category: mapCategoryType(boutique.categoryType),
+            latitude: boutique.location_lat,
+            longitude: boutique.location_lng,
+            distance: `${boutique.distanceInKm.toFixed(2)}`,
+          });
+        }
       }
     }
-  }
     var secretKey = "tensorflow";
     var token = generateAccessToken(mobile_number, secretKey);
     if (!token) {
@@ -265,7 +265,7 @@ exports.getNearestBoutiqueList = async (req, res) => {
       HasError: true,
       StatusCode: 500,
       message: "An error occurred while processing the request.",
-      error: error.message 
+      error: error.message
     });
   }
 };
@@ -282,16 +282,16 @@ exports.boutiqueDetails = async (req, res) => {
     var maskedNumber = Service.maskMobileNumber(result.contact_number)
     var boutiqueLogo = "";
     var boutiqueLogo = result.boutique_logo
-            ? await s3.getSignedUrl("getObject", {
-            Bucket: process.env.AWS_BUCKET,
-            Key: `boutique/${result.boutique_logo}`,
-            Expires: expirationTime,
-          })
-          : s3.getSignedUrl("getObject", {
-            Bucket: process.env.AWS_BUCKET,
-            Key: `boutique/default-img.jpg`,
-            Expires: expirationTime,
-    })
+      ? await s3.getSignedUrl("getObject", {
+        Bucket: process.env.AWS_BUCKET,
+        Key: `boutique/${result.boutique_logo}`,
+        Expires: expirationTime,
+      })
+      : s3.getSignedUrl("getObject", {
+        Bucket: process.env.AWS_BUCKET,
+        Key: `boutique/default-img.jpg`,
+        Expires: expirationTime,
+      })
     basicInfo.id = result.id ? result.id : 0
     basicInfo.boutique_name = result.boutique_name ? result.boutique_name : ''
     basicInfo.boutique_code = result.boutique_code ? result.boutique_code : ''
@@ -445,8 +445,26 @@ exports.boutiqueDetails = async (req, res) => {
     return res.status(500).send({
       HasError: true,
       message: "An error occurred while processing the request.",
-      error: error.message 
+      error: error.message
     });
   }
 }
 
+exports.getBoutiqueByPincode = async (req, res) => {
+  try {
+    if (req.body.pincode) {
+      const pincode = req.body.pincode
+      const result = await Boutique.findOne({ where: { pincode: pincode } })
+      if (result) {
+        return res.status(200).send({ message: "Boutique data fetched sucessfully.", HasError: false, data: result });
+      } else {
+        return res.status(200).send({ message: "No boutique has registered in this pincode", HasError: false });
+      }
+    } else {
+      return res.status(200).send({ message: "Please enter a pincode", HasError: false });
+    }
+  } catch (error) {
+    console.error(error);
+    return res.status(500).send({ message: "Some error occurred.", HasError: true, error: error.message });
+  }
+}
