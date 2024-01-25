@@ -10,15 +10,13 @@ const moment = require('moment')
 exports.itemListForTailor = async (req, res) => {
     try {
         var items = await tailorService.getItemForTailor()
-        // items.sort((a, b) => a.id - b.id)
         var method_name = await Service.getCallingMethodName()
         var apiEndpointInput = JSON.stringify(req.body)
         var apiTrack = await Service.trackApi(req.query.user_id,method_name,apiEndpointInput,req.query.device_id,req.query.device_info,req.ip)
     
         if (items.length > 0) {
             var itemList = items.map(item => ({ item_id: item.id, item_name: item.name }))
-            // itemList.sort((a, b) => b.id - a.id)
-            // console.log(itemList)
+            itemList.sort((a, b) => a.id - b.id)
 
             return res.status(200).send({ message: "Item List retrieved successfully.", HasError: false, result: itemList })
         } else {

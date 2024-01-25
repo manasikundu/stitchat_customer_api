@@ -1,24 +1,18 @@
 const db = require("../dbConnection")
 const CategoryItem = require("../model/categoryItemModel")
 const Tailor=require('../model/tailorServiceModel')
-const { Op, Sequelize } = require("sequelize");
+const { Op, Sequelize } = require("sequelize")
 
 
 exports.getItemForTailor = async () => {
     try {
-        var query = `SELECT DISTINCT ON (name) *
+        var query = `SELECT *
         FROM sarter__category_item_dic 
         WHERE parent_id IN (
             SELECT id 
             FROM sarter__category_item_dic 
-            WHERE parent_id IN (1, 12))`
-        // var query = `SELECT DISTINCT * 
-        // FROM sarter__category_item_dic 
-        // WHERE parent_id IN (
-        //     SELECT id 
-        //     FROM sarter__category_item_dic 
-        //     WHERE parent_id IN (1, 12)
-        // )`
+            WHERE parent_id IN (1, 12) and alternation_flag=1)`
+        
         var result = await db.query(query)
         return result[0]
     } catch (error) {
@@ -27,99 +21,14 @@ exports.getItemForTailor = async () => {
     }
 }
 
-exports.getItem = async () => {
-    try {
-        const parentResults = await CategoryItem.findAll({
-            attributes: ['id'],
-            where: {
-                parent_id: {
-                    [Sequelize.Op.in]: [1, 12]
-                }
-            }
-        })
-
-        if (!Array.isArray(parentResults)) {
-            return ('Parent results is not an array');
-        }
-
-        const parentIds = parentResults.map(parent => parent.id);
-
-        const result = await CategoryItem.findAll({
-            attributes: [
-              [Sequelize.fn('DISTINCT', Sequelize.col('name')), 'name'],
-              'id', 
-              'parent_id',
-            ],
-            where: {
-              parent_id: {
-                [Sequelize.Op.in]: parentIds,
-              },
-            },
-            order: [['name', 'ASC']],
-          });
-
-        return result;
-    } catch (error) {
-        console.error(error);
-        return error;
-    }
-};
-
-
-// exports.getItem = async () => {
-//     try {
-//         const parentResults = await CategoryItem.findAll({
-//             attributes: ['id'],
-//             where: {
-//                 parent_id: {
-//                     [Sequelize.Op.in]: [1, 12]
-//                 }
-//             }
-//         });
-
-//         if (!Array.isArray(parentResults)) {
-//             return ('Parent results is not an array');
-//         }
-
-//         const parentIds = parentResults.map(parent => parent.id);
-//         console.log(parentIds)
-
-//         const result = await CategoryItem.findAll({
-//             attributes: [[Sequelize.fn('DISTINCT', Sequelize.col('name')), 'name']],
-//             where: {
-//                 parent_id: {
-//                     [Sequelize.Op.in]: parentIds
-//                 }
-//             },
-//             order: [['name', 'ASC']],
-//             include: [{
-//                 model: CategoryItem,
-//                 as: 'Children',
-//                 required: true,
-//                 include: [{
-//                     model: CategoryItem,
-//                     as: 'Children',
-//                     required: true
-//                 }]
-//             }]
-//         });
-
-//         return result;
-//     } catch (error) {
-//         console.error(error);
-//         return error;
-//     }
-// };
-
 exports.getItemForTailorMen = async () => {
     try {
-        var query = `SELECT DISTINCT ON (name) *
+        var query = `SELECT *
         FROM sarter__category_item_dic 
         WHERE parent_id IN (
             SELECT id 
             FROM sarter__category_item_dic 
-            WHERE parent_id=1)`
-        // var query = `SELECT * FROM sarter__category_item_dic WHERE parent_id IN (SELECT id FROM sarter__category_item_dic WHERE parent_id=1)`     
+            WHERE parent_id=1 and alternation_flag=1)`
         var result = await db.query(query)
         return result[0]
     } catch (error) {
@@ -129,14 +38,13 @@ exports.getItemForTailorMen = async () => {
 }
 exports.getItemForTailorWomen = async () => {
     try {
-        var query = `SELECT DISTINCT ON (name) *
+        var query = `SELECT *
         FROM sarter__category_item_dic 
         WHERE parent_id IN (
             SELECT id 
             FROM sarter__category_item_dic 
-            WHERE parent_id=12)`
+            WHERE parent_id=12 and alternation_flag=1)`
 
-        // var query = `SELECT * FROM sarter__category_item_dic WHERE parent_id IN (SELECT id FROM sarter__category_item_dic WHERE parent_id=12)`
         var result = await db.query(query)
         return result[0]
     } catch (error) {
@@ -146,7 +54,7 @@ exports.getItemForTailorWomen = async () => {
 }
 exports.getItemForTailorKids = async () => {
     try {
-        var query = `SELECT DISTINCT ON (name) * FROM sarter__category_item_dic WHERE parent_id IN (SELECT id FROM sarter__category_item_dic WHERE parent_id in (1, 12)) and type in (2, 3)`
+        var query = `SELECT * FROM sarter__category_item_dic WHERE parent_id IN (SELECT id FROM sarter__category_item_dic WHERE parent_id in (1, 12)) and type in (2, 3) and alternation_flag=1`
         var result = await db.query(query)
         return result[0]
     } catch (error) {
@@ -180,12 +88,12 @@ exports.getServiceName = async (id) => {
 
 exports.getItemList = async () => {
     try {
-        const catArray = { '1': 'Men', '12': 'Women' };
-        const detail = [];
+        const catArray = { '1': 'Men', '12': 'Women' }
+        const detail = []
 
         for (var [k1, v1] of Object.entries(catArray)) {
-            const genderType = k1 === '1' ? 1 : k1 === '12' ? 2 : 3;
-            const genderTypeName = k1 === '1' ? 'Men' : k1 === '12' ? 'Women' : 'Kids';
+            const genderType = k1 === '1' ? 1 : k1 === '12' ? 2 : 3
+            const genderTypeName = k1 === '1' ? 'Men' : k1 === '12' ? 'Women' : 'Kids'
             
             const categoryItems = await db.query(`
                 SELECT
@@ -209,19 +117,19 @@ exports.getItemList = async () => {
                 WHERE
                     cid.parent_id = ${k1} AND
                     tc.status = 1
-            `);
+            `)
 
             if (categoryItems && categoryItems.length > 0) {
-                detail.push(...categoryItems);
+                detail.push(...categoryItems)
             }
         }
-        const rows = detail.map(result => result.rows).flat();
-        data = rows.filter(item => item !== undefined);
-        return data;
+        const rows = detail.map(result => result.rows).flat()
+        data = rows.filter(item => item !== undefined)
+        return data
 
-        // return detail;
+        // return detail
     } catch (error) {
-        console.error(error);
-        throw new Error('Error fetching category items');
+        console.error(error)
+        throw new Error('Error fetching category items')
     }
-};
+}
