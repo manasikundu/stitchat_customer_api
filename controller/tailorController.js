@@ -74,7 +74,7 @@ exports.serviceType = async (req, res) => {
 }
 
 
-exports.alternationType = async (req, res) => {
+exports.alterationType = async (req, res) => {
     try {
         const itemsMen = await tailorService.getItemForTailorMen()
         const itemsWomen = await tailorService.getItemForTailorWomen()

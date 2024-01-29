@@ -4,7 +4,7 @@ const router = new route();
 
 router.get("/itemListForTailor", tailorController.itemListForTailor)
 router.get("/serviceType", tailorController.serviceType)
-router.get("/alternationType", tailorController.alternationType)
+router.get("/alterationType", tailorController.alterationType)
 
 
 module.exports = router;
