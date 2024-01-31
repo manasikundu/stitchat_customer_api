@@ -79,7 +79,10 @@ exports.alterationType = async (req, res) => {
         const itemsMen = await tailorService.getItemForTailorMen()
         const itemsWomen = await tailorService.getItemForTailorWomen()
         const itemsKids = await tailorService.getItemForTailorKids()
-
+        var method_name = await Service.getCallingMethodName()
+        var apiEndpointInput = JSON.stringify(req.body)
+        var apiTrack = await Service.trackApi(req.query.user_id,method_name,apiEndpointInput,req.query.device_id,req.query.device_info,req.ip)
+    
         const result = []
 
         // Process Men's items
@@ -179,15 +182,15 @@ exports.alterationType = async (req, res) => {
             const endTimeForLevel = moment(currentTime).add(parseInt(level, 10), 'hours')
             const endTimeForLevelHours = endTimeForLevel.hours()
             const endTimeForLevelMinutes = endTimeForLevel.minutes()
-        
-            const selectFlag =
-                (endTimeForLevelHours > startTime.hours || (endTimeForLevelHours === startTime.hours && endTimeForLevelMinutes >= startTime.minutes)) &&
-                (endTimeForLevelHours < endTime.hours || (endTimeForLevelHours === endTime.hours && endTimeForLevelMinutes <= endTime.minutes))
-        
+            const roundedMinutes = Math.round(endTimeForLevel.minutes() / 30) * 30;
+            const roundedEndTime = endTimeForLevel.minutes(roundedMinutes).seconds(0);
+
+            const selectFlag = (roundedEndTime.hours() > startTime.hours || (roundedEndTime.hours() === startTime.hours && roundedEndTime.minutes() >= startTime.minutes)) && (roundedEndTime.hours() < endTime.hours || (roundedEndTime.hours() === endTime.hours && roundedEndTime.minutes() <= endTime.minutes));
+
             return {
                 level: level,
                 // end_time: endTimeForLevel.format("YYYY-MM-DD HH:mm:ss"),
-                end_time: endTimeForLevel.format("YYYY-MM-DD h:mm:ss A"),
+                end_time: roundedEndTime.format("YYYY-MM-DD h:mm:ss A"),
                 selectflag: selectFlag
             }
         })
@@ -195,6 +198,8 @@ exports.alterationType = async (req, res) => {
         return res.status(200).send({ message: "Alteration Type Item List retrieved successfully.", HasError: false, result, timeslot: result1})
     } catch (error) {
         console.error(error)
+        const logData = { user_id: "", status: 'false', message: error.message, device_id: '', created_at: Date.now(), updated_at: Date.now(), device_info: '', action: req.url }
+        const log = await logService.createLog(logData)
         return res.status(500).send({ HasError: false, message: 'Some error occurred.' })
     }
 }

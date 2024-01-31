@@ -50,6 +50,30 @@ exports.getAddress = async (req, res) => {
   }
 }
 
+exports.getCoordinates = async (req, res) => {
+  try {
+    var { address } = req.body;
+    if (!address) {
+      return res.status(400).send({ HasError: true, message: "Invalid parameter." });
+    }
+    
+    var response = await geocoder.geocode(address);
+    var coordinates = response[0]?.latitude && response[0]?.longitude
+      ? { latitude: response[0].latitude, longitude: response[0].longitude }
+      : null;
+
+    if (coordinates) {
+      return res.status(200).send({ HasError: false, coordinates });
+    } else {
+      return res.status(500).send({ HasError: true, message: "Coordinates not found for the given address." });
+    }
+  } catch (error) {
+    console.error("Error processing request:", error);
+    
+    return res.status(500).send({ HasError: true, message: "An error occurred while processing the request.", error: error.message });
+  }
+}
+
 // Nearest boutique from lat and long, sort_type filter
 exports.getNearestBoutiqueList = async (req, res) => {
   try {
@@ -229,17 +253,7 @@ exports.getNearestBoutiqueList = async (req, res) => {
         }
       }
     }
-    var secretKey = "tensorflow";
-    var token = generateAccessToken(mobile_number, secretKey);
-    if (!token) {
-      return res.status(500).send({
-        HasError: true,
-        StatusCode: 500,
-        message: "Failed to generate token",
-      });
-    } else {
-      res.setHeader("X-Auth-Token", token);
-      if (!boutiques || boutiques.length === 0) {
+    if (!boutiques || boutiques.length === 0) {
         return res.status(200).json({
           HasError: false,
           StatusCode: 200,
@@ -256,14 +270,12 @@ exports.getNearestBoutiqueList = async (req, res) => {
           category: organizedServices,
         });
       }
-    }
   } catch (error) {
     console.error("Error processing request:", error);
     const logData = { user_id: "", status: 'false', message: error.message, device_id: '', created_at: Date.now(), updated_at: Date.now(), device_info: '', action: req.url }
     const log = await logService.createLog(logData)
     return res.status(500).json({
       HasError: true,
-      StatusCode: 500,
       message: "An error occurred while processing the request.",
       error: error.message
     });
