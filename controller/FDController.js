@@ -888,7 +888,7 @@ exports.addNewAddress = async (req, res) => {
     console.error("Error adding/updating address:", error);
     const logData = { user_id: "", status: 'false', message: error.message, device_id: '', created_at: Date.now(), updated_at: Date.now(), device_info: '', action: req.url }
     const log = await logService.createLog(logData)
-    return res.status(500).json({
+    return res.status(500).send({
       HasError: true,
       StatusCode: 500,
       message: "An error occurred while adding/updating the address",
