@@ -844,7 +844,6 @@ exports.addNewAddress = async (req, res) => {
       return res.status(200).send({
         result: result1,
         HasError: false,
-        StatusCode: 200,
         message: "Address updated successfully",
       });
     } else {
@@ -879,10 +878,9 @@ exports.addNewAddress = async (req, res) => {
       }
       var result1 = {};
       (result1.user_id = user_id), (result1.address = data);
-      return res.status(201).send({
+      return res.status(200).send({
         result: result1,
         HasError: false,
-        StatusCode: 201,
         message: "Address added successfully",
       });
     }
