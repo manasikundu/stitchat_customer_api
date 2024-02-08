@@ -94,7 +94,10 @@ var ShowroomServiceOrder = sequelize.define(
             type: DataTypes.STRING,   
         },
         alternation_json:{
-            type: DataTypes.TEXT,   
+            type: DataTypes.STRING,   
+        },
+        delivery_type:{
+            type: DataTypes.INTEGER,   
         }
     },
     {

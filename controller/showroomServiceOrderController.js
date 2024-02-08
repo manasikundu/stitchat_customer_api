@@ -1,22 +1,75 @@
 const ShowroomServiceOrderService = require('../service/showroomServiceOrderService')
-const User = require("../model/userModel");
-const Boutique = require("../model/userBoutiqueInfoModel");
-const Address = require('../model/userAddressModel');
-const { where } = require('sequelize');
+const Users = require("../model/userModel");
+const UsersAddress = require('../model/userAddressModel');
 
 exports.createShowroomServiceOrder = async (req, res) => {
     try {
         const { body } = req;
-        if (body.s_user_id) {
-            const s_user = await User.findOne({ where: { id: body.s_user_id } })//need to add user_type_id
+        const currentDate = new Date()
+        const formattedDate = currentDate.toISOString().slice(0, 19).replace("T", " ")
+
+        const data = {
+            s_user_id: body.user_id,
+            c_name: body.customer_name,
+            c_mobile_number: body.customer_mobile_number,
+            c_email: body.customer_email,
+            c_area: body.customer_area,
+            c_address: body.customer_address,
+            c_landmark: body.customer_landmark,
+            c_pincode: body.customer_pincode,
+            c_city: body.customer_city,
+            c_state: body.customer_state,
+            category_item_dic_id: body.category_item_dic_id,
+            alternation_type: body.alternation_type,
+            quantity: body.quantity,
+            total_amount: body.total_amount,
+            exp_delivery_date: body.exp_delivery_date,
+            invoice_number: body.invoice_number,
+            created_at: formattedDate,                   //generate booking code
+            updated_at: formattedDate,
+            note: body.note,
+            d_name: body.deliver_customer_name,
+            d_mobile_number: body.deliver_customer_mobile_number,
+            delivery_label: body.delivery_label,
+            alternation_json: JSON.stringify(body.alternation_json),
+            delivery_type: body.delivery_type,
+        }
+        if (data.s_user_id) {//showroom user
+            const s_user = await Users.findOne({ where: { id: data.s_user_id } })
             if (s_user) {
-                const fe = await Address.findAll({ where: { pincode: body.c_pincode } });
-                const feJSON = fe.map(instance => instance.toJSON());
-                // console.log(feJSON)
-                for (let i in feJSON) {
-                    console.log(feJSON[i].user_id)
-                    const fe_details = await User.findOne({ where: { id: feJSON[i].user_id, user_type_id: 1 } })
-                    console.log(fe_details)
+                Users.hasMany(UsersAddress, { foreignKey: 'user_id' });
+                UsersAddress.belongsTo(Users, { foreignKey: 'user_id' });
+                var fe = await Users.findOne({
+                    where: {
+                        user_type_id: 1,
+                    },
+                    include: [
+                        {
+                            model: UsersAddress,
+                            where: {
+                                pincode: data.c_pincode,
+                            },
+                        },
+                    ],
+                });
+                if (fe) {
+                    fe = fe.toJSON()
+                    data.fe_id = fe.id
+                    const result = await ShowroomServiceOrderService.createShowroomServiceOrder(data);
+                    if (result) {
+                        const currentDate = new Date();
+                        const year = currentDate.getFullYear();
+                        const month = (currentDate.getMonth() + 1).toString().padStart(2, '0');
+                        const day = currentDate.getDate().toString().padStart(2, '0');
+                        const id = result.toJSON().id
+                        const code = `SATALT${year}${month}${day}${id}`;
+                        const updateBookingCode = await ShowroomServiceOrderService.updateBookingCode(id, code);
+                        return res.status(200).send({ message: "Order Placed Successfully", HasError: false, result: updateBookingCode });
+                    } else {
+                        return res.status(500).send({ message: "Failed to place order", HasError: true });
+                    }
+                } else {
+                    return res.status(200).send({ message: "Unable to find field executive", HasError: true });
                 }
             } else {
                 return res.status(200).send({ message: "This showroom doesn't exist.", HasError: true });
@@ -24,60 +77,6 @@ exports.createShowroomServiceOrder = async (req, res) => {
         } else {
             return res.status(400).send({ message: "Please enter showroom id.", HasError: true });
         }
-
-        //     const s_user_id = req.body.s_user_id
-        //     const c_name = req.body.c_name
-        //     const c_mobile_number = req.body.c_mobile_number
-        //     const c_email = req.body.c_email
-        //     const c_area = req.body.c_area
-        //     const c_address = req.body.c_address
-        //     const c_landmark = req.body.c_landmark
-        //     const c_pincode = req.body.c_pincode
-        //     const c_city = req.body.c_city
-        //     const c_state = req.body.c_state
-        //     const category_item_dic_id = req.body.category_item_dic_id
-        //     const alternation_type = req.body.alternation_type
-        //     const quantity = req.body.quantity
-        //     const total_amount = req.body.total_amount
-        //     const exp_delivery_date = req.body.exp_delivery_date
-        //     const parent_id = req.body.parent_id
-        //     const fe_id = req.body.fe_id
-        //     const boutique_id = req.body.boutique_id
-        //     const status = req.body.status
-        //     const log_report = req.body.log_report
-        //     const invoice_number = req.body.invoice_number
-        //     const s_user = await Users.findOne({ where: { id: s_user_id ,user_type_id: 7} })
-        //     if (!s_user) {
-        //         return res.status(400).send({
-        //             message: "Invalid user ID.", HasError: true
-        //         })
-        //     } else {
-        //         const fe_id = await Users.findOne({ where: { id: fe_id, user_type_id: 1} });
-        //         if (!fe_id) {
-        //             return res.status(400).send({
-        //                 message: "Invalid Field executive ID.", HasError: true
-        //             })
-        //     } else {
-        //         const boutique = await Boutique.findOne({ where: { id: boutique_id } });
-        //         if (!boutique) {
-        //             return res.status(400).send({
-        //                 message: "Invalid boutique ID.", HasError:true
-        //             });
-        //         } else {
-        //             const result = await ShowroomServiceOrderService.createShowroomServiceOrder(req.body);
-
-        //             if (!result) {
-        //                 return res.status(500).send({
-        //                     message: "Failed to proceed data."
-        //                 });
-        //             } else {
-        //                 return res.status(200).send({
-        //                     message: "Successfully proceed data."
-        //                 });
-        //             }
-        //         }
-        //     }
-        // }
     } catch (error) {
         return res.status(500).send({ message: "Some error occurred.", HasError: true, error: error.message });
     }
@@ -106,15 +105,15 @@ exports.boutiqueAssign = async (req, res) => {
 exports.updateStatus = async (req, res) => {
     try {
         const order_id = req.body.order_id
-        const status=req.body.status
-        if (order_id && status){
-            const result = await ShowroomServiceOrderService.updateStatus(order_id,status)
+        const status = req.body.status
+        if (order_id && status) {
+            const result = await ShowroomServiceOrderService.updateStatus(order_id, status)
             if (result.length != 0) {
                 return res.status(200).send({ message: "Status updated succesfully.", HasError: false, data: result[1] });
             } else {
                 return res.status(500).send({ message: "Failed to assign a boutique.", HasError: true });
             }
-        }else{
+        } else {
             return res.status(200).send({ message: "Please enter required field.", HasError: true });
         }
     } catch (error) {

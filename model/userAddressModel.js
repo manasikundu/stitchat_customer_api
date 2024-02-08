@@ -1,6 +1,6 @@
 const { DataTypes } = require("sequelize");
 const sequelize = require("../dbConnection");
-const User=require('./userModel')
+const Users=require('../model//userModel')
 var UsersAddress = sequelize.define(
   "sarter__users_address",
   {
@@ -62,6 +62,7 @@ var UsersAddress = sequelize.define(
     timestamps: false, 
   }
 );
-UsersAddress.belongsTo(User,{ foreignKey: "user_id", targetKey: "id" });
+
+
 
 module.exports = UsersAddress;

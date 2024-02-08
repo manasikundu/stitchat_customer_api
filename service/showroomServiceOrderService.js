@@ -19,3 +19,7 @@ exports.updateStatus = async (order_id, status) => {
     const result = await ShowroomOrder.update({ status: status }, { where: { id: order_id }, returning: true })
     return result
 }
+exports.updateBookingCode = async (id, code) => {
+    const result = await ShowroomOrder.update({ booking_code: code }, { where: { id: id }, returning: true })
+    return result
+}
