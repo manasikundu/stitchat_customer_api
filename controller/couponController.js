@@ -86,13 +86,16 @@ exports.applyCoupon = async (req, res) => {
                                 if (couponDetails.coupon_type == 1) {//1-percentage,2-flat
                                     var discount = (couponDetails.discount_amount * cart_amount) / 100
                                     finalresult.discount_amount = discount
+                                    finalresult.delivery_price = 50
                                     if (discount > couponDetails.max_discount) {
                                         discount = couponDetails.max_discount
                                     }
-                                    total = cart_amount - discount
+                                    total = cart_amount - discount + finalresult.delivery_price
                                 } else {
                                     finalresult.discount_amount = couponDetails.discount_amount
-                                    total = cart_amount - couponDetails.discount_amount
+                                    finalresult.delivery_price = 50
+                                    total = cart_amount - couponDetails.discount_amount + finalresult.delivery_price
+
                                 }
                                 finalresult.total_amount = total
                                 return res.status(200).send({ HasError: false, Message: "Coupon apply successfully", result: finalresult })
