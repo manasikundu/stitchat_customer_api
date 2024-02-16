@@ -1,11 +1,150 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
+    <title>Invoice</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+        }
+
+        .invoice {
+            border: 1px solid #ddd;
+            padding: 20px;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        .invoice-header {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .invoice-body {
+            margin-bottom: 20px;
+        }
+
+        .address {
+            display: flex;
+        }
+
+        .invoice-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+
+        .invoice-table th,
+        .invoice-table td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: left;
+        }
+
+        .invoice-total {
+            margin-top: 20px;
+            text-align: right;
+        }
+    </style>
 </head>
+
 <body>
-    <p>Hi</p>
+
+    <div class="invoice">
+        <div class="invoice-header">
+            <img src="https://www.stitchat.com/stitchatapi/public/assets/images/logo.png" style="height: 50px;">
+        </div>
+
+        <div class="invoice-body">
+            <p><strong>Order Number:</strong>
+                <%=orderDetails.order_id%>
+            </p>
+            <p><strong>Date:</strong>
+                <%=orderDetails.current_date%>
+            </p>
+            <p><strong>Delivery Date:</strong>
+                <%=orderDetails.delivery_date%>
+            </p>
+            <div class="address">
+                <div style="float: left; width: 50%;">
+                    <p><strong>Bill To:</strong></p>
+                    <address>
+                        <%=billingAddress.first_name +" "+ billingAddress.first_name%><br>
+                        <%=billingAddress.area+" ,"+billingAddress.street %><br>
+                            <%=billingAddress.city +","+billingAddress.state %><br>
+                                <%=billingAddress.pincode%><br>
+                                    <%=billingAddress.mobile_number%>
+                    </address>
+                </div>
+                <div style="float:right ; width: 50% ;text-align: right;">
+                    <p><strong>Bill From:</strong></p>
+                    <address>
+                        Stitchat<br>
+                        Sai Saraswati Complex<br>
+                        District Center,Bhubaneswar <br>
+                        Phone: 1234567890
+                    </address>
+                </div>
+            </div>
+
+        </div>
+
+        <table class="invoice-table">
+            <thead>
+                <tr>
+                    <th>Item</th>
+                    <th>Service</th>
+                    <th>Quantity</th>
+                    <th>Unit Price</th>
+                    <th>Item Total</th>
+                </tr>
+            </thead>
+            <tbody>
+                <% for(var i=0; i < cartDetails.length; i++){ %>
+                    <tr>
+                        <td>
+                            <%=cartDetails[i].item%>
+                        </td>
+                        <td>
+                            <%=cartDetails[i].service%>
+                        </td>
+                        <td>
+                            <%=cartDetails[i].quantity%>
+                        </td>
+                        <td>
+                            <%=cartDetails[i].unitPrice%>
+                        </td>
+                        <td>
+                            <%=cartDetails[i].itemTotal%>
+                        </td>
+                    </tr>
+                <%}%>
+
+            </tbody>
+        </table>
+
+        <div class="invoice-total">
+            <p><strong>Subtotal:</strong>
+                <%=orderDetails.item_total%>
+            </p>
+            <p><strong>Discount:</strong>
+                <%=orderDetails.discount%>
+            </p>
+            <p><strong>Delivery Charge:</strong>
+                <%=orderDetails.delivery_charges%>
+            </p>
+            <p><strong>Extra Charge:</strong>
+                <%=orderDetails.extra_charge%>
+            </p>
+            <p><strong>Total:</strong>
+                <%=orderDetails.total_price%>
+            </p>
+        </div>
+    </div>
+
 </body>
+
 </html>

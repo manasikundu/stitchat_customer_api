@@ -9,6 +9,8 @@ const FCM = require('fcm-node');
 const s3 = require("../config/s3Config");
 const dotenv = require("dotenv");
 dotenv.config();
+const Item = require('../model/categoryItemModel')
+const TailorService = require('../model/tailorServiceModel')
 const notificationService = require('../service/notificationService')
 const Boutique = require("../model/userBoutiqueInfoModel");
 const BoutiqueService = require("../service/userBoutiqueService");
@@ -16,6 +18,9 @@ const { generateAccessToken, auth } = require("../jwt");
 var ejs = require("ejs");
 var genearatePdf = require("html-pdf");
 const path = require("path");
+const fs = require('fs')
+const { dateFormat } = require('../customModule')
+
 
 exports.createOrder = async (req, res) => {
     try {
@@ -45,19 +50,14 @@ exports.createOrder = async (req, res) => {
 
         if (req.body.user_id) {
             const user = await Users.findOne({ where: { id: user_id } });
-            // console.log(user.first_name)
             if (user) {
-                const newOrder = await OrderService.createOrder(data);
-                if (newOrder) {
-                    const today = new Date();
-                    const year = today.getFullYear();
-                    const month = today.getMonth() + 1; // Months are zero-based, so we add 1.
-                    const day = today.getDate();
-                    const orderId = "STIAR" + day + month + year + newOrder.id;
-                    const updateOrderId = await OrderService.updateOrder(newOrder.id, { order_id: orderId });
-
-                    var cart = await cartService.getCart(user_id);
-                    if (cart.length != 0) {
+                var cart = await cartService.getCart(user_id);
+                if (cart.length != 0) {
+                    const newOrder = await OrderService.createOrder(data);
+                    if (newOrder) {
+                        const today = dateFormat(new Date())
+                        const orderId = "STIAR" + today.day + today.month + today.year + newOrder.id;
+                        const updateOrderId = await OrderService.updateOrder(newOrder.id, { order_id: orderId });
                         const updateOrderIdInCart = await cartService.updateCartByUserId(newOrder.user_id, { order_id: orderId });
                         if (updateOrderIdInCart != 0) {
                             newOrder.order_id = orderId
@@ -164,53 +164,73 @@ exports.createOrder = async (req, res) => {
                                 var notificationData = await notificationService.insertNotification(receiverData);
                             })
 
-                            // fcm.send(notification_body, async function (err, response) {
-                            //     if (err) {
-                            //         console.log(err);
-                            //     } else {
-                            //         var notificationData = await notificationService.insertNotification(senderData);
-                            //         console.log("Notification sent successfully:", response);
-                            //         console.log(JSON.stringify(notification_body, null, 2));
-                            //         // Sending notification to the boutique
-                            //         fcm.send(notification_body_receiver, async function (err, response) {
-                            //             if (err) {
-                            //                 console.error('Error sending notification to boutique:', err);
-                            //             } else {
-                            //                 var notificationDataReceiver = await notificationService.insertNotification(receiverData)
-                            //                 console.log('Notification sent to boutique:', response);
-                            //                 console.log(JSON.stringify(notification_body_receiver, null, 2));
-                            //             }
-                            //             return res.status(200).send({ message: "Order Placed Successfully", HasError: false, result: newOrder })
-                            //         })
-                            //     }
-                            // })
-                            // const orderDetails = await OrderService.orderDetails(newOrder.id)
-                            // var alphaNumericString = Math.random().toString(36).replace("0.", "");
-                            // var pdfName = "invoice" + "_" + alphaNumericString + ".pdf";
-                            // var pdfDirPath = path.join(__dirname,"../invoices",pdfName);
-                            // var htmls = fs.readFileSync("./views/invoice.ejs","utf8",function (err, resulte) {
-                            //         if (err) {
-                            //             consolr.log(err);
-                            //             return res.status(500).send({
-                            //                 message: "Failed to create invoice.",
-                            //             });
-                            //         }
-                            //     }
-                            // );
-                            // var options = { format: "A4", orientation: "portrait" };
-                            // var result1 = ejs.render(htmls);
-                            // genearatePdf.create(result1, options).toStream(function (err, stream) {
-                            //   stream.pipe(fs.createWriteStream(pdfDirPath));
-                            // });
+                            const addressDetails = await UsersAddress.findOne({ where: { id: newOrder.address_id } })
+                            var billingAddress = {}
+                            billingAddress.first_name = addressDetails.first_name
+                            billingAddress.last_name = addressDetails.last_name
+                            billingAddress.area = addressDetails.area
+                            billingAddress.street = addressDetails.street
+                            billingAddress.city = addressDetails.city
+                            billingAddress.state = addressDetails.state
+                            billingAddress.pincode = addressDetails.pincode
+                            billingAddress.mobile_number = addressDetails.mobile_number
+
+                            var orderDetails = {}
+                            orderDetails.order_id = newOrder.order_id
+                            orderDetails.delivery_date = newOrder.delivery_date
+                            orderDetails.item_total = newOrder.sum_amount
+                            orderDetails.discount = newOrder.discount_price
+                            orderDetails.delivery_charges = newOrder.delivery_price
+                            orderDetails.extra_charge = newOrder.extra_charge
+                            orderDetails.total_price = newOrder.total_price
+                            const today = dateFormat(new Date())
+                            orderDetails.current_date = today.year + "-" + today.month + "-" + today.day
+
+                            var cartData = []
+                            for (var i in cart) {
+                                var cartDetails = {}
+                                cartDetails.item_id = cart[i].item_id
+                                var item = await Item.findOne({ where: { id: cart[i].item_id } })
+                                cartDetails.item = item.name
+                                var service = await TailorService.findOne({ where: { id: cart[i].service_id } })
+                                cartDetails.service = service.name
+                                cartDetails.unitPrice = service.amount
+                                cartDetails.quantity = cart[i].quantity
+                                cartDetails.itemTotal = cart[i].quantity * service.amount
+                                cartData.push(cartDetails)
+                            }
+
+                            var pdfData = {
+                                billingAddress: billingAddress,
+                                orderDetails: orderDetails,
+                                cartDetails: cartData
+                            }
+                            var alphaNumericString = Math.random().toString(36).replace("0.", "");
+                            var pdfName = "invoice" + "_" + alphaNumericString + ".pdf";
+                            var pdfDirPath = path.join(__dirname, "../invoices", pdfName);
+                            var htmls = fs.readFileSync("./views/invoice.ejs", "utf8", function (err, resulte) {
+                                if (err) {
+                                    consolr.log(err);
+                                    return res.status(500).send({
+                                        message: "Failed to create invoice.",
+                                    });
+                                }
+                            }
+                            );
+                            var options = { format: "A4", orientation: "portrait" };
+                            var result1 = ejs.render(htmls, pdfData);
+                            genearatePdf.create(result1, options).toStream(function (err, stream) {
+                                stream.pipe(fs.createWriteStream(pdfDirPath));
+                            });
                             return res.status(200).send({ message: "Order Placed Sucessfully", HasError: false, result: newOrder })
                         } else {
                             return res.status(500).send({ message: "Failed to update in cart.", HasError: true, result: {} })
                         }
                     } else {
-                        return res.status(200).send({ message: "Please add item in cart to place order", HasError: false })
+                        return res.status(500).send({ message: "Failed to create order", HasError: true })
                     }
                 } else {
-                    return res.status(500).send({ message: "Failed to create order", HasError: true })
+                    return res.status(200).send({ message: "Please add item in cart to place order", HasError: false })
                 }
             } else {
                 return res.status(200).send({ message: "This user doesn't exist", HasError: false })

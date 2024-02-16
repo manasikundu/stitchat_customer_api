@@ -1,6 +1,6 @@
 const DataTypes = require("sequelize");
 const sequelize = require("../dbConnection");
-var TailorServiceCart = sequelize.define(
+var TailorService = sequelize.define(
   "sarter__tailor_sub_category",
   {
     id: {
@@ -17,6 +17,9 @@ var TailorServiceCart = sequelize.define(
     amount: {
       type: DataTypes.NUMERIC,
     },
+    measurement_flag: {
+      type: DataTypes.SMALLINT,
+    },
   },
   {
     sequelize,
@@ -26,5 +29,5 @@ var TailorServiceCart = sequelize.define(
   }
 );
 
-module.exports = TailorServiceCart;
+module.exports = TailorService;
 
