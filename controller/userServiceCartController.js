@@ -25,6 +25,7 @@ exports.createServiceCart = async (req, res) => {
     const repair_location = req.body.repair_location
     const amount = req.body.amount;
     const repair_description = req.body.repair_description
+    const quantity = req.body.quantity
     var method_name = await Service.getCallingMethodName()
     var apiEndpointInput = JSON.stringify(req.body)
     var apiTrack = await Service.trackApi(req.query.user_id, method_name, apiEndpointInput, req.query.device_id, req.query.device_info, req.ip)
@@ -44,7 +45,7 @@ exports.createServiceCart = async (req, res) => {
           var formattedDate = currentDate.toISOString().slice(0, 19).replace("T", " ")
           const data = {
             user_id, item_id, service_id, order_id: null, type, amount, service_date_time: null, status: 0, created_at: formattedDate, updated_at: formattedDate,
-            fit_type, fit_description, tailor_note, item_description, repair_location, repair_description
+            fit_type, fit_description, tailor_note, item_description, repair_location, repair_description, quantity
           }
           const newService = await cartService.createServiceCart(data)
           var dataJson = {}
