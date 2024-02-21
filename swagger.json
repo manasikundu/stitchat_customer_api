@@ -1,14 +1,14 @@
 {
     "info": {
-        "title": "STITCHAT",
+        "title": "STITCHAT CUSTOMER",
         "description": "Stitchat customer App Api Documentation",
         "servers": [
             {
-                "url": "http://localhost:8080/",
+                "url": "http://localhost:8000/",
                 "description": "Local server"
             },
             {
-                "url": "<your live url here>",
+                "url": "http://1.6.115.26:8000/",
                 "description": "Live server"
             }
         ]
@@ -53,7 +53,7 @@
                 "tags": [
                     "Users"
                 ],
-                "description": "OTP verification",
+                "description": "OTP verification and login",
                 "parameters": [
                     {
                         "in":"body",
@@ -119,7 +119,7 @@
                 "tags": [
                     "Users"
                 ],
-                "description": "home page",
+                "description": "Boutique list",
                 "parameters": [
                     {
                         "in":"body",
@@ -169,13 +169,10 @@
                         "schema": {
                             "type": "object",
                             "properties": {
-                                "mobile_number": {
+                                "name": {
                                     "type": "string"
                                 },
-                                "fcm_key": {
-                                    "type": "string"
-                                },
-                                "device_id": {
+                                "mobileNumber": {
                                     "type": "string"
                                 }
                             }
@@ -324,7 +321,7 @@
                 "tags": [
                     "Fashion Designers"
                 ],
-                "description": "Book appointment",
+                "description": "Book appointment for a fashion designer",
                 "parameters": [
                     {
                         "in":"body",
@@ -489,6 +486,289 @@
                     }
                 }
             }
+        },
+        "/addNewAddress": {
+        "post": {
+            "tags": [
+                "Address"
+            ],
+            "description": "Add and update user address",
+            "parameters": [
+                {
+                    "in":"body",
+                    "name":"body",
+                    "schema": {
+                        "type": "object",
+                        "properties": {
+                            "addressId": {
+                                "type": "integer",
+                                "description": "The ID of the address to update. Leave blank for adding a new address."
+                            },
+                            "first_name": {
+                                "type": "string"
+                            },
+                            "last_name": {
+                                "type": "string"
+                            },
+                            "user_id": {
+                                "type": "integer"
+                            },
+                            "street": {
+                                "type": "string"
+                            },
+                            "landmark": {
+                                "type": "string"
+                            },
+                            "state": {
+                                "type": "integer"
+                            },
+                            "city": {
+                                "type": "integer"
+                            },
+                            "mobile_number": {
+                                "type": "string"
+                            },
+                            "pincode": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            ],
+            "responses": {
+                "default": {
+                    "description": "Some error occured"
+                }
+            }
         }
-    }
+        },
+        "/contactUs": {
+            "post": {
+                "tags": [
+                    "Enquiry"
+                ],
+                "description": "Submit an enquiry or contact request",
+                "parameters": [
+                    {
+                        "in":"body",
+                        "name":"body",
+                        "schema": {
+                            "type": "object",
+                            "properties": {
+                                "name": {
+                                    "type": "string"
+                                },
+                                 "email": {
+                                        "type": "string"
+                                },
+                                "subject": {
+                                    "type": "string"
+                                },
+                                "message": {
+                                    "type": "string"
+                                },
+                                "add_date": {
+                                    "type": "string"
+                                },
+                                "user_id": {
+                                    "type": "integer"
+                                },
+                                "mobile_number": {
+                                    "type": "string"
+                                }
+                            }
+                        }
+                    }
+                ],
+                "responses": {
+                    "default": {
+                        "description": "Some error occured"
+                    }
+                }
+            }
+        },
+        "/boutiqueSlot": {
+            "post": {
+                "tags": [
+                    "Boutique"
+                ],
+                "description": "Fetch the slot for boutique",
+                "parameters": [
+                    {
+                        "in":"body",
+                        "name":"body",
+                        "schema": {
+                            "type": "object",
+                            "properties": {
+                                "customer_id": {
+                                    "type": "integer"
+                                },
+                                 "boutique_id": {
+                                        "type": "integer"
+                                }
+                            }
+                        }
+                    }
+                ],
+                "responses": {
+                    "default": {
+                        "description": "Some error occured"
+                    }
+                }
+            }
+        },
+        "/bookBoutiqueAppointment": {
+            "post": {
+                "tags": [
+                    "Boutique"
+                ],
+                "description": "Book a boutique",
+                "parameters": [
+                    {
+                        "in":"body",
+                        "name":"body",
+                        "schema": {
+                            "type": "object",
+                            "properties": {
+                                "boutique_id": {
+                                    "type": "integer"
+                                },
+                                 "customer_id": {
+                                        "type": "integer"
+                                },
+                                "appointment_date": {
+                                    "type": "string"
+                                },
+                                "start_time": {
+                                    "type": "string"
+                                },
+                                "end_time": {
+                                    "type": "string"
+                                }
+                            }
+                        }
+                    }
+                ],
+                "responses": {
+                    "default": {
+                        "description": "Some error occured"
+                    }
+                }
+            }
+        },
+        "/createServiceCart": {
+            "post": {
+                "tags": [
+                    "Alteration Order"
+                ],
+                "description": "Add items for alteration order",
+                "parameters": [
+                    {
+                        "in":"body",
+                        "name":"body",
+                        "schema": {
+                            "type": "object",
+                            "properties": {
+                                "user_id": {
+                                    "type": "integer"
+                                },
+                                 "item_id": {
+                                        "type": "integer"
+                                },
+                                "service_id": {
+                                    "type": "integer"
+                                },
+                                "type": {
+                                    "type": "integer"
+                                },
+                                "amount": {
+                                    "type": "number"
+                                },
+                                "fit_type": {
+                                    "type": "integer"
+                                },
+                                "tailor_note": {
+                                    "type": "string"
+                                },
+                                "item_description": {
+                                    "type": "string"
+                                },
+                                "repair_location": {
+                                    "type": "string"
+                                },
+                                "repair_description": {
+                                    "type": "string"
+                                },
+                                "quantity": {
+                                    "type": "integer"
+                                }
+                            }
+                        }
+                    }
+                ],
+                "responses": {
+                    "default": {
+                        "description": "Some error occured"
+                    }
+                }
+            }
+        },
+        "/createOrder": {
+            "post": {
+                "tags": [
+                    "Alteration Order"
+                ],
+                "description": "Place alteration order",
+                "parameters": [
+                    {
+                        "in":"body",
+                        "name":"body",
+                        "schema": {
+                            "type": "object",
+                            "properties": {
+                                "user_id": {
+                                    "type": "integer"
+                                },
+                                 "name": {
+                                        "type": "string"
+                                },
+                                "email": {
+                                    "type": "string"
+                                },
+                                "mobile_number": {
+                                    "type": "string"
+                                },
+                                "address_id": {
+                                    "type": "integer"
+                                },
+                                "coupon_id": {
+                                    "type": "integer"
+                                },
+                                "coupon_code": {
+                                    "type": "string"
+                                },
+                                "delivery_price": {
+                                    "type": "number"
+                                },
+                                "discount_price": {
+                                    "type": "number"
+                                },
+                                "extra_charge": {
+                                    "type": "number"
+                                },
+                                "coupon_amount": {
+                                    "type": "number"
+                                }
+                            }
+                        }
+                    }
+                ],
+                "responses": {
+                    "default": {
+                        "description": "Some error occured"
+                    }
+                }
+            }
+        }
+    }   
 }

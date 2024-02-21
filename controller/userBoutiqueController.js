@@ -194,7 +194,8 @@ exports.getNearestBoutiqueList = async (req, res) => {
     var sortedBoutiques = boutiquesWithin500km.sort((a, b) => a.distance - b.distance);
     var responseData = {};
     var expirationTime = 600;
-    var masked_number = sortedBoutiques[0].contact_number !== null ? Service.maskMobileNumber(sortedBoutiques[0].contact_number) : null;
+    // var masked_number = sortedBoutiques[0].contact_number !== null ? Service.maskMobileNumber(sortedBoutiques[0].contact_number) : null;
+    var masked_number = sortedBoutiques[0] && sortedBoutiques[0].contact_number !== null ? Service.maskMobileNumber(sortedBoutiques[0].contact_number) : "";
 
     if (sortedBoutiques.length === 1) {
       responseData = {
