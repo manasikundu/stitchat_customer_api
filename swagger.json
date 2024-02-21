@@ -23,8 +23,8 @@
                 "description": "To check mobile number",
                 "parameters": [
                     {
-                        "in":"body",
-                        "name":"body",
+                        "in": "body",
+                        "name": "body",
                         "schema": {
                             "type": "object",
                             "properties": {
@@ -56,8 +56,8 @@
                 "description": "OTP verification and login",
                 "parameters": [
                     {
-                        "in":"body",
-                        "name":"body",
+                        "in": "body",
+                        "name": "body",
                         "schema": {
                             "type": "object",
                             "properties": {
@@ -92,8 +92,8 @@
                 "description": "Fetch address from latitude and longitude",
                 "parameters": [
                     {
-                        "in":"body",
-                        "name":"body",
+                        "in": "body",
+                        "name": "body",
                         "schema": {
                             "type": "object",
                             "properties": {
@@ -122,8 +122,8 @@
                 "description": "Boutique list",
                 "parameters": [
                     {
-                        "in":"body",
-                        "name":"body",
+                        "in": "body",
+                        "name": "body",
                         "schema": {
                             "type": "object",
                             "properties": {
@@ -142,8 +142,8 @@
                                 "sort_type": {
                                     "type": "string"
                                 },
-                                "search":{
-                                    "type":"string"
+                                "search": {
+                                    "type": "string"
                                 }
                             }
                         }
@@ -164,8 +164,8 @@
                 "description": "Fashion designer listing",
                 "parameters": [
                     {
-                        "in":"body",
-                        "name":"body",
+                        "in": "body",
+                        "name": "body",
                         "schema": {
                             "type": "object",
                             "properties": {
@@ -194,8 +194,8 @@
                 "description": "Fashion designer details",
                 "parameters": [
                     {
-                        "in":"body",
-                        "name":"body",
+                        "in": "body",
+                        "name": "body",
                         "schema": {
                             "type": "object",
                             "properties": {
@@ -221,8 +221,8 @@
                 "description": "Time slot for book a fashion designer",
                 "parameters": [
                     {
-                        "in":"body",
-                        "name":"body",
+                        "in": "body",
+                        "name": "body",
                         "schema": {
                             "type": "object",
                             "properties": {
@@ -264,8 +264,8 @@
                 "description": "fetch city listing by state",
                 "parameters": [
                     {
-                        "in":"body",
-                        "name":"body",
+                        "in": "body",
+                        "name": "body",
                         "schema": {
                             "type": "object",
                             "properties": {
@@ -291,8 +291,8 @@
                 "description": "Fetch user address",
                 "parameters": [
                     {
-                        "in":"body",
-                        "name":"body",
+                        "in": "body",
+                        "name": "body",
                         "schema": {
                             "type": "object",
                             "properties": {
@@ -324,8 +324,8 @@
                 "description": "Book appointment for a fashion designer",
                 "parameters": [
                     {
-                        "in":"body",
-                        "name":"body",
+                        "in": "body",
+                        "name": "body",
                         "schema": {
                             "type": "object",
                             "properties": {
@@ -345,11 +345,11 @@
                                     "type": "string"
                                 },
                                 "address_id": {
-                                    "type": "integer"   
+                                    "type": "integer"
                                 },
                                 "total_fees": {
                                     "type": "string"
-                                }   
+                                }
                             }
                         }
                     }
@@ -369,8 +369,8 @@
                 "description": "Fetch all appointments",
                 "parameters": [
                     {
-                        "in":"body",
-                        "name":"body",
+                        "in": "body",
+                        "name": "body",
                         "schema": {
                             "type": "object",
                             "properties": {
@@ -394,7 +394,7 @@
                 }
             }
         },
-        "/deleteAddress": {
+        "/deleteAddress/{address_id}": {
             "delete": {
                 "tags": [
                     "Address"
@@ -402,21 +402,10 @@
                 "description": "Delete user address",
                 "parameters": [
                     {
-                        "in":"body",
-                        "name":"body",
+                        "in": "query",
+                        "name": "address_id",
                         "schema": {
-                            "type": "object",
-                            "properties": {
-                                "mobile_number": {
-                                    "type": "string"
-                                },
-                                "fcm_key": {
-                                    "type": "string"
-                                },
-                                "device_id": {
-                                    "type": "string"
-                                }
-                            }
+                            "type": "integer"
                         }
                     }
                 ],
@@ -435,8 +424,8 @@
                 "description": "Update user address",
                 "parameters": [
                     {
-                        "in":"body",
-                        "name":"body",
+                        "in": "body",
+                        "name": "body",
                         "schema": {
                             "type": "object",
                             "properties": {
@@ -468,8 +457,8 @@
                 "description": "user Profile",
                 "parameters": [
                     {
-                        "in":"body",
-                        "name":"body",
+                        "in": "body",
+                        "name": "body",
                         "schema": {
                             "type": "object",
                             "properties": {
@@ -488,59 +477,59 @@
             }
         },
         "/addNewAddress": {
-        "post": {
-            "tags": [
-                "Address"
-            ],
-            "description": "Add and update user address",
-            "parameters": [
-                {
-                    "in":"body",
-                    "name":"body",
-                    "schema": {
-                        "type": "object",
-                        "properties": {
-                            "addressId": {
-                                "type": "integer",
-                                "description": "The ID of the address to update. Leave blank for adding a new address."
-                            },
-                            "first_name": {
-                                "type": "string"
-                            },
-                            "last_name": {
-                                "type": "string"
-                            },
-                            "user_id": {
-                                "type": "integer"
-                            },
-                            "street": {
-                                "type": "string"
-                            },
-                            "landmark": {
-                                "type": "string"
-                            },
-                            "state": {
-                                "type": "integer"
-                            },
-                            "city": {
-                                "type": "integer"
-                            },
-                            "mobile_number": {
-                                "type": "string"
-                            },
-                            "pincode": {
-                                "type": "string"
+            "post": {
+                "tags": [
+                    "Address"
+                ],
+                "description": "Add and update user address",
+                "parameters": [
+                    {
+                        "in": "body",
+                        "name": "body",
+                        "schema": {
+                            "type": "object",
+                            "properties": {
+                                "addressId": {
+                                    "type": "integer",
+                                    "description": "The ID of the address to update. Leave blank for adding a new address."
+                                },
+                                "first_name": {
+                                    "type": "string"
+                                },
+                                "last_name": {
+                                    "type": "string"
+                                },
+                                "user_id": {
+                                    "type": "integer"
+                                },
+                                "street": {
+                                    "type": "string"
+                                },
+                                "landmark": {
+                                    "type": "string"
+                                },
+                                "state": {
+                                    "type": "integer"
+                                },
+                                "city": {
+                                    "type": "integer"
+                                },
+                                "mobile_number": {
+                                    "type": "string"
+                                },
+                                "pincode": {
+                                    "type": "string"
+                                }
                             }
                         }
                     }
-                }
-            ],
-            "responses": {
-                "default": {
-                    "description": "Some error occured"
+                ],
+                "responses": {
+                    "default": {
+                        "description": "Some error occured"
+                    }
                 }
             }
-        }
         },
         "/contactUs": {
             "post": {
@@ -550,16 +539,16 @@
                 "description": "Submit an enquiry or contact request",
                 "parameters": [
                     {
-                        "in":"body",
-                        "name":"body",
+                        "in": "body",
+                        "name": "body",
                         "schema": {
                             "type": "object",
                             "properties": {
                                 "name": {
                                     "type": "string"
                                 },
-                                 "email": {
-                                        "type": "string"
+                                "email": {
+                                    "type": "string"
                                 },
                                 "subject": {
                                     "type": "string"
@@ -595,16 +584,16 @@
                 "description": "Fetch the slot for boutique",
                 "parameters": [
                     {
-                        "in":"body",
-                        "name":"body",
+                        "in": "body",
+                        "name": "body",
                         "schema": {
                             "type": "object",
                             "properties": {
                                 "customer_id": {
                                     "type": "integer"
                                 },
-                                 "boutique_id": {
-                                        "type": "integer"
+                                "boutique_id": {
+                                    "type": "integer"
                                 }
                             }
                         }
@@ -625,16 +614,16 @@
                 "description": "Book a boutique",
                 "parameters": [
                     {
-                        "in":"body",
-                        "name":"body",
+                        "in": "body",
+                        "name": "body",
                         "schema": {
                             "type": "object",
                             "properties": {
                                 "boutique_id": {
                                     "type": "integer"
                                 },
-                                 "customer_id": {
-                                        "type": "integer"
+                                "customer_id": {
+                                    "type": "integer"
                                 },
                                 "appointment_date": {
                                     "type": "string"
@@ -664,16 +653,16 @@
                 "description": "Add items for alteration order",
                 "parameters": [
                     {
-                        "in":"body",
-                        "name":"body",
+                        "in": "body",
+                        "name": "body",
                         "schema": {
                             "type": "object",
                             "properties": {
                                 "user_id": {
                                     "type": "integer"
                                 },
-                                 "item_id": {
-                                        "type": "integer"
+                                "item_id": {
+                                    "type": "integer"
                                 },
                                 "service_id": {
                                     "type": "integer"
@@ -721,16 +710,16 @@
                 "description": "Place alteration order",
                 "parameters": [
                     {
-                        "in":"body",
-                        "name":"body",
+                        "in": "body",
+                        "name": "body",
                         "schema": {
                             "type": "object",
                             "properties": {
                                 "user_id": {
                                     "type": "integer"
                                 },
-                                 "name": {
-                                        "type": "string"
+                                "name": {
+                                    "type": "string"
                                 },
                                 "email": {
                                     "type": "string"
@@ -769,6 +758,632 @@
                     }
                 }
             }
+        },
+        "/orderList": {
+            "get": {
+                "tags": [
+                    "Boutique"
+                ],
+                "description": "Fetch the slot for boutique",
+                "responses": {
+                    "default": {
+                        "description": "Some error occured"
+                    }
+                }
+            }
+        },
+        "/aboutUs": {
+            "get": {
+                "tags": [
+                    "Enquiry"
+                ],
+                "description": "About Stitchat",
+                "responses": {
+                    "default": {
+                        "description": "Some error occured"
+                    }
+                }
+            }
+        },
+        "/contactInfo": {
+            "get": {
+                "tags": [
+                    "Enquiry"
+                ],
+                "description": "",
+                "responses": {
+                    "default": {
+                        "description": "Some error occured"
+                    }
+                }
+            }
+        },
+        "/fashionDesignerAppointmentDetails": {
+            "get": {
+                "tags": [
+                    "Fashion Designers"
+                ],
+                "description": "fetch fashion designers appointment details",
+                "responses": {
+                    "default": {
+                        "description": "Some error occured"
+                    }
+                }
+            }
+        },
+        "/orderDetails": {
+            "get": {
+                "tags": [
+                    "Boutique"
+                ],
+                "description": "Fetch order details",
+                "responses": {
+                    "default": {
+                        "description": "Some error occured"
+                    }
+                }
+            }
+        },
+        "/cancelAppointment": {
+            "delete": {
+                "tags": [
+                    "Boutique"
+                ],
+                "description": "Book a boutique",
+                "responses": {
+                    "default": {
+                        "description": "Some error occured"
+                    }
+                }
+            }
+        },
+        "/boutiqueDetails": {
+            "get": {
+                "tags": [
+                    "Boutique"
+                ],
+                "description": "Book a boutique",
+                "responses": {
+                    "default": {
+                        "description": "Some error occured"
+                    }
+                }
+            }
+        },
+        "/privacyPolicy": {
+            "get": {
+                "tags": [
+                    "Enquiry"
+                ],
+                "description": "Privacy policy of stitchat",
+                "responses": {
+                    "default": {
+                        "description": "Some error occured"
+                    }
+                }
+            }
+        },
+        "/addAndUpdateRating": {
+            "post": {
+                "tags": [
+                    "Enquiry"
+                ],
+                "description": "Add and update rating",
+                "parameters": [
+                    {
+                        "in": "body",
+                        "name": "body",
+                        "schema": {
+                            "type": "object",
+                            "properties": {
+                                "user_id": {
+                                    "type": "integer"
+                                },
+                                "rating_id": {
+                                    "type": "integer"
+                                },
+                                "rating_flag": {
+                                    "type": "integer"
+                                },
+                                "comment": {
+                                    "type": "string"
+                                },
+                                "rate": {
+                                    "type": "integer"
+                                }
+                            }
+                        }
+                    }
+                ],
+                "responses": {
+                    "default": {
+                        "description": "Some error occured"
+                    }
+                }
+            }
+        },
+        "/ratingList": {
+            "get": {
+                "tags": [
+                    "Enquiry"
+                ],
+                "description": "Rating list",
+                "responses": {
+                    "default": {
+                        "description": "Some error occured"
+                    }
+                }
+            }
+        },
+        "/cancelOrder": {
+            "delete": {
+                "tags": [
+                    "Enquiry"
+                ],
+                "description": "Rating list",
+                "responses": {
+                    "default": {
+                        "description": "Some error occured"
+                    }
+                }
+            }
+        },
+        "/profilePicUpload": {
+            "post": {
+                "tags": [
+                    "Users"
+                ],
+                "description": "Upload profile pic of a user",
+                "parameters": [
+                    {
+                        "in": "body",
+                        "name": "body",
+                        "schema": {
+                            "type": "object",
+                            "properties": {
+                                "user_id": {
+                                    "type": "integer"
+                                },
+                                "profile_image": {
+                                    "type": "string"
+                                }
+                            }
+                        }
+                    }
+                ],
+                "responses": {
+                    "default": {
+                        "description": "Some error occured"
+                    }
+                }
+            }
+        },
+        "/apiTrack": {
+            "get": {
+                "tags": [
+                    "Users"
+                ],
+                "description": "Track of all apis",
+                "responses": {
+                    "default": {
+                        "description": "Some error occured"
+                    }
+                }
+            }
+        },
+        "/itemListForTailor": {
+            "get": {
+                "tags": [
+                    "Master data"
+                ],
+                "description": "Fetch all item",
+                "responses": {
+                    "default": {
+                        "description": "Some error occured"
+                    }
+                }
+            }
+        },
+        "/serviceType": {
+            "get": {
+                "tags": [
+                    "Master data"
+                ],
+                "description": "Alteration service per item",
+                "responses": {
+                    "default": {
+                        "description": "Some error occured"
+                    }
+                }
+            }
+        },
+        "/getCart": {
+            "get": {
+                "tags": [
+                    "Alteration Order"
+                ],
+                "description": "fetch cart details",
+                "responses": {
+                    "default": {
+                        "description": "Some error occured"
+                    }
+                }
+            }
+        },
+        "/updateCart": {
+            "post": {
+                "tags": [
+                    "Alteration Order"
+                ],
+                "description": "update cart",
+                "parameters": [
+                    {
+                        "in": "body",
+                        "name": "body",
+                        "schema": {
+                            "type": "object",
+                            "properties": {
+                                "cart_id": {
+                                    "type": "integer"
+                                },
+                                "user_id": {
+                                    "type": "integer"
+                                },
+                                "item_id": {
+                                    "type": "integer"
+                                },
+                                "service_id": {
+                                    "type": "integer"
+                                },
+                                "type": {
+                                    "type": "integer"
+                                },
+                                "amount": {
+                                    "type": "integer"
+                                },
+                                "fit_type": {
+                                    "type": "integer"
+                                },
+                                "fit_description": {
+                                    "type": "string"
+                                },
+                                "tailor_note": {
+                                    "type": "string"
+                                },
+                                "item_description": {
+                                    "type": "string"
+                                },
+                                "repair_location": {
+                                    "type": "string"
+                                },
+                                "repair_description": {
+                                    "type": "string"
+                                },
+                                "quantity": {
+                                    "type": "integer"
+                                }
+                            }
+                        }
+                    }
+                ],
+                "responses": {
+                    "default": {
+                        "description": "Some error occured"
+                    }
+                }
+            }
+        },
+        "/createVideoInquire": {
+            "post": {
+                "tags": [
+                    "Enquiry"
+                ],
+                "description": "video enquiry request",
+                "parameters": [
+                    {
+                        "in": "body",
+                        "name": "body",
+                        "schema": {
+                            "type": "object",
+                            "properties": {
+                                "name": {
+                                    "type": "string"
+                                },
+                                "email": {
+                                    "type": "string"
+                                },
+                                "guest_email": {
+                                    "type": "string"
+                                },
+                                "item_id": {
+                                    "type": "integer"
+                                },
+                                "service_type": {
+                                    "type": "integer"
+                                },
+                                "note": {
+                                    "type": "string"
+                                },
+                                "date_time":{
+                                    "type":"string"
+                                }
+                            }
+                        }
+                    }
+                ],
+                "responses": {
+                    "default": {
+                        "description": "Some error occured"
+                    }
+                }
+            }
+        },
+        "/removeCart": {
+            "post": {
+                "tags": [
+                    "Alteration Order"
+                ],
+                "description": "remove cart",
+                "parameters": [
+                    {
+                        "in": "body",
+                        "name": "body",
+                        "schema": {
+                            "type": "object",
+                            "properties": {
+                                "cart_id": {
+                                    "type": "integer"
+                                },
+                                "user_id": {
+                                    "type": "integer"
+                                }
+                            }
+                        }
+                    }
+                ],
+                "responses": {
+                    "default": {
+                        "description": "Some error occured"
+                    }
+                }
+            }
+        },
+        "/applyCoupon": {
+            "post": {
+                "tags": [
+                    "Alteration Order"
+                ],
+                "description": "apply coupon for order",
+                "parameters": [
+                    {
+                        "in": "body",
+                        "name": "body",
+                        "schema": {
+                            "type": "object",
+                            "properties": {
+                                "coupon_code": {
+                                    "type": "string"
+                                }
+                            }
+                        }
+                    }
+                ],
+                "responses": {
+                    "default": {
+                        "description": "Some error occured"
+                    }
+                }
+            }
+        },
+        "/createShowroomRequest": {
+            "post": {
+                "tags": [
+                    "Showroom Order"
+                ],
+                "description": "Request to register as showroom",
+                "parameters": [
+                    {
+                        "in": "body",
+                        "name": "body",
+                        "schema": {
+                            "type": "object",
+                            "properties": {
+                                "name": {
+                                    "type": "string"
+                                },
+                                "type": {
+                                    "type": "string"
+                                },
+                                "registration_date": {
+                                    "type": "string"
+                                },
+                                "phone_no": {
+                                    "type": "string"
+                                },
+                                "email": {
+                                    "type": "string"
+                                },
+                                "website": {
+                                    "type": "string"
+                                },
+                                "logo": {
+                                    "type": "string"
+                                },
+                                "address": {
+                                    "type": "string"
+                                },
+                                "city": {
+                                    "type": "string"
+                                },
+                                "state": {
+                                    "type": "string"
+                                },
+                                "country": {
+                                    "type": "string"
+                                },
+                                "pincode": {
+                                    "type": "string"
+                                },
+                                "contact_person_name": {
+                                    "type": "string"
+                                },
+                                "contact_person_phone": {
+                                    "type": "string"
+                                },
+                                "contact_person_email": {
+                                    "type": "string"
+                                }
+                            }
+                        }
+                    }
+                ],
+                "responses": {
+                    "default": {
+                        "description": "Some error occured"
+                    }
+                }
+            }
+        },
+        "/getBoutiqueByPincode": {
+            "post": {
+                "tags": [
+                    "Showroom Order"
+                ],
+                "description": "get boutique by pincode",
+                "parameters": [
+                    {
+                        "in": "body",
+                        "name": "body",
+                        "schema": {
+                            "type": "object",
+                            "properties": {
+                                "user_id": {
+                                    "type": "pincode"
+                                }
+                            }
+                        }
+                    }
+                ],
+                "responses": {
+                    "default": {
+                        "description": "Some error occured"
+                    }
+                }
+            }
+        },
+        "/boutiqueAssign": {
+            "post": {
+                "tags": [
+                    "Showroom Order"
+                ],
+                "description": "Assign boutique to order",
+                "parameters": [
+                    {
+                        "in": "body",
+                        "name": "body",
+                        "schema": {
+                            "type": "object",
+                            "properties": {
+                                "boutique_id": {
+                                    "type": "integer"
+                                },
+                                "order_id": {
+                                    "type": "integer"
+                                }
+                            }
+                        }
+                    }
+                ],
+                "responses": {
+                    "default": {
+                        "description": "Some error occured"
+                    }
+                }
+            }
+        },
+        "/updateStatus": {
+            "post": {
+                "tags": [
+                    "Showroom Order"
+                ],
+                "description": "Update status",
+                "parameters": [
+                    {
+                        "in": "body",
+                        "name": "body",
+                        "schema": {
+                            "type": "object",
+                            "properties": {
+                                "status": {
+                                    "type": "integer"
+                                },
+                                "order_id": {
+                                    "type": "integer"
+                                }
+                            }
+                        }
+                    }
+                ],
+                "responses": {
+                    "default": {
+                        "description": "Some error occured"
+                    }
+                }
+            }
+        },
+        "/alterationType": {
+            "get": {
+                "tags": [
+                    "Showroom Order"
+                ],
+                "description": "Fetch alteration type",
+                "responses": {
+                    "default": {
+                        "description": "Some error occured"
+                    }
+                }
+            }
+        },
+        "/verifyPincode": {
+            "post": {
+                "tags": [
+                    "Showroom Order"
+                ],
+                "description": "verif pincode",
+                "parameters": [
+                    {
+                        "in": "body",
+                        "name": "body",
+                        "schema": {
+                            "type": "object",
+                            "properties": {
+                                "pincode": {
+                                    "type": "string"
+                                }
+                            }
+                        }
+                    }
+                ],
+                "responses": {
+                    "default": {
+                        "description": "Some error occured"
+                    }
+                }
+            }
+        },
+
+        "/sendNotification": {
+            "get": {
+                "tags": [
+                    "Showroom Order"
+                ],
+                "description": "send notification for each service",
+                "responses": {
+                    "default": {
+                        "description": "Some error occured"
+                    }
+                }
+            }
         }
-    }   
+    }
 }
