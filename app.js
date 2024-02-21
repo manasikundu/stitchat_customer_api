@@ -48,7 +48,9 @@ app.use("", videoInquire)
 app.use("", coupon)
 app.use("", ShowroomRequest)
 app.use("", showroomserviceOrder)
-
+const swaggerDocument = require('./swagger.json');
+const swaggerUi = require('swagger-ui-express');
+app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument));
 
 const port = 8000
 app.listen(port, () => {

@@ -1,0 +1,494 @@
+{
+    "info": {
+        "title": "STITCHAT",
+        "description": "Stitchat customer App Api Documentation",
+        "servers": [
+            {
+                "url": "http://localhost:8080/",
+                "description": "Local server"
+            },
+            {
+                "url": "<your live url here>",
+                "description": "Live server"
+            }
+        ]
+    },
+    "swagger": "2.0",
+    "paths": {
+        "/insertMobileNumber": {
+            "post": {
+                "tags": [
+                    "Users"
+                ],
+                "description": "To check mobile number",
+                "parameters": [
+                    {
+                        "in":"body",
+                        "name":"body",
+                        "schema": {
+                            "type": "object",
+                            "properties": {
+                                "mobile_number": {
+                                    "type": "string"
+                                },
+                                "fcm_key": {
+                                    "type": "string"
+                                },
+                                "device_id": {
+                                    "type": "string"
+                                }
+                            }
+                        }
+                    }
+                ],
+                "responses": {
+                    "default": {
+                        "description": "Some error occured"
+                    }
+                }
+            }
+        },
+        "/verifyOTP": {
+            "post": {
+                "tags": [
+                    "Users"
+                ],
+                "description": "OTP verification",
+                "parameters": [
+                    {
+                        "in":"body",
+                        "name":"body",
+                        "schema": {
+                            "type": "object",
+                            "properties": {
+                                "mobile_number": {
+                                    "type": "string"
+                                },
+                                "otp": {
+                                    "type": "string"
+                                },
+                                "first_name": {
+                                    "type": "string"
+                                },
+                                "last_name": {
+                                    "type": "string"
+                                }
+                            }
+                        }
+                    }
+                ],
+                "responses": {
+                    "default": {
+                        "description": "Some error occured"
+                    }
+                }
+            }
+        },
+        "/getAddress": {
+            "post": {
+                "tags": [
+                    "Address"
+                ],
+                "description": "Fetch address from latitude and longitude",
+                "parameters": [
+                    {
+                        "in":"body",
+                        "name":"body",
+                        "schema": {
+                            "type": "object",
+                            "properties": {
+                                "latitude": {
+                                    "type": "string"
+                                },
+                                "longitude": {
+                                    "type": "string"
+                                }
+                            }
+                        }
+                    }
+                ],
+                "responses": {
+                    "default": {
+                        "description": "Some error occured"
+                    }
+                }
+            }
+        },
+        "/homepage": {
+            "post": {
+                "tags": [
+                    "Users"
+                ],
+                "description": "home page",
+                "parameters": [
+                    {
+                        "in":"body",
+                        "name":"body",
+                        "schema": {
+                            "type": "object",
+                            "properties": {
+                                "filter_by_gender": {
+                                    "type": "string"
+                                },
+                                "filter_by_item": {
+                                    "type": "string"
+                                },
+                                "latitude": {
+                                    "type": "string"
+                                },
+                                "longitude": {
+                                    "type": "string"
+                                },
+                                "sort_type": {
+                                    "type": "string"
+                                },
+                                "search":{
+                                    "type":"string"
+                                }
+                            }
+                        }
+                    }
+                ],
+                "responses": {
+                    "default": {
+                        "description": "Some error occured"
+                    }
+                }
+            }
+        },
+        "/fashionDesignerListing": {
+            "post": {
+                "tags": [
+                    "Fashion Designers"
+                ],
+                "description": "Fashion designer listing",
+                "parameters": [
+                    {
+                        "in":"body",
+                        "name":"body",
+                        "schema": {
+                            "type": "object",
+                            "properties": {
+                                "mobile_number": {
+                                    "type": "string"
+                                },
+                                "fcm_key": {
+                                    "type": "string"
+                                },
+                                "device_id": {
+                                    "type": "string"
+                                }
+                            }
+                        }
+                    }
+                ],
+                "responses": {
+                    "default": {
+                        "description": "Some error occured"
+                    }
+                }
+            }
+        },
+        "/designersDetails": {
+            "post": {
+                "tags": [
+                    "Fashion Designers"
+                ],
+                "description": "Fashion designer details",
+                "parameters": [
+                    {
+                        "in":"body",
+                        "name":"body",
+                        "schema": {
+                            "type": "object",
+                            "properties": {
+                                "user_id": {
+                                    "type": "integer"
+                                }
+                            }
+                        }
+                    }
+                ],
+                "responses": {
+                    "default": {
+                        "description": "Some error occured"
+                    }
+                }
+            }
+        },
+        "/fashionDesignerTimeSlot": {
+            "post": {
+                "tags": [
+                    "Fashion Designers"
+                ],
+                "description": "Time slot for book a fashion designer",
+                "parameters": [
+                    {
+                        "in":"body",
+                        "name":"body",
+                        "schema": {
+                            "type": "object",
+                            "properties": {
+                                "user_id": {
+                                    "type": "integer"
+                                },
+                                "fashion_designer_id": {
+                                    "type": "integer"
+                                }
+                            }
+                        }
+                    }
+                ],
+                "responses": {
+                    "default": {
+                        "description": "Some error occured"
+                    }
+                }
+            }
+        },
+        "/getStateList": {
+            "get": {
+                "tags": [
+                    "Master data"
+                ],
+                "description": "State master data",
+                "responses": {
+                    "default": {
+                        "description": "Some error occured"
+                    }
+                }
+            }
+        },
+        "/getCityList": {
+            "post": {
+                "tags": [
+                    "Master data"
+                ],
+                "description": "fetch city listing by state",
+                "parameters": [
+                    {
+                        "in":"body",
+                        "name":"body",
+                        "schema": {
+                            "type": "object",
+                            "properties": {
+                                "state_id": {
+                                    "type": "integer"
+                                }
+                            }
+                        }
+                    }
+                ],
+                "responses": {
+                    "default": {
+                        "description": "Some error occured"
+                    }
+                }
+            }
+        },
+        "/addressList": {
+            "get": {
+                "tags": [
+                    "Address"
+                ],
+                "description": "Fetch user address",
+                "parameters": [
+                    {
+                        "in":"body",
+                        "name":"body",
+                        "schema": {
+                            "type": "object",
+                            "properties": {
+                                "mobile_number": {
+                                    "type": "string"
+                                },
+                                "fcm_key": {
+                                    "type": "string"
+                                },
+                                "device_id": {
+                                    "type": "string"
+                                }
+                            }
+                        }
+                    }
+                ],
+                "responses": {
+                    "default": {
+                        "description": "Some error occured"
+                    }
+                }
+            }
+        },
+        "/bookAppointment": {
+            "post": {
+                "tags": [
+                    "Fashion Designers"
+                ],
+                "description": "Book appointment",
+                "parameters": [
+                    {
+                        "in":"body",
+                        "name":"body",
+                        "schema": {
+                            "type": "object",
+                            "properties": {
+                                "fashion_designer_id": {
+                                    "type": "integer"
+                                },
+                                "user_id": {
+                                    "type": "integer"
+                                },
+                                "appointment_date": {
+                                    "type": "string"
+                                },
+                                "start_time": {
+                                    "type": "string"
+                                },
+                                "end_time": {
+                                    "type": "string"
+                                },
+                                "address_id": {
+                                    "type": "integer"   
+                                },
+                                "total_fees": {
+                                    "type": "string"
+                                }   
+                            }
+                        }
+                    }
+                ],
+                "responses": {
+                    "default": {
+                        "description": "Some error occured"
+                    }
+                }
+            }
+        },
+        "/appointmentList": {
+            "post": {
+                "tags": [
+                    "Fashion Designers"
+                ],
+                "description": "Fetch all appointments",
+                "parameters": [
+                    {
+                        "in":"body",
+                        "name":"body",
+                        "schema": {
+                            "type": "object",
+                            "properties": {
+                                "mobile_number": {
+                                    "type": "string"
+                                },
+                                "fcm_key": {
+                                    "type": "string"
+                                },
+                                "device_id": {
+                                    "type": "string"
+                                }
+                            }
+                        }
+                    }
+                ],
+                "responses": {
+                    "default": {
+                        "description": "Some error occured"
+                    }
+                }
+            }
+        },
+        "/deleteAddress": {
+            "delete": {
+                "tags": [
+                    "Address"
+                ],
+                "description": "Delete user address",
+                "parameters": [
+                    {
+                        "in":"body",
+                        "name":"body",
+                        "schema": {
+                            "type": "object",
+                            "properties": {
+                                "mobile_number": {
+                                    "type": "string"
+                                },
+                                "fcm_key": {
+                                    "type": "string"
+                                },
+                                "device_id": {
+                                    "type": "string"
+                                }
+                            }
+                        }
+                    }
+                ],
+                "responses": {
+                    "default": {
+                        "description": "Some error occured"
+                    }
+                }
+            }
+        },
+        "/updateProfile": {
+            "post": {
+                "tags": [
+                    "Users"
+                ],
+                "description": "Update user address",
+                "parameters": [
+                    {
+                        "in":"body",
+                        "name":"body",
+                        "schema": {
+                            "type": "object",
+                            "properties": {
+                                "mobile_number": {
+                                    "type": "string"
+                                },
+                                "last_name": {
+                                    "type": "string"
+                                },
+                                "id": {
+                                    "type": "integer"
+                                }
+                            }
+                        }
+                    }
+                ],
+                "responses": {
+                    "default": {
+                        "description": "Some error occured"
+                    }
+                }
+            }
+        },
+        "/userProfile": {
+            "post": {
+                "tags": [
+                    "Users"
+                ],
+                "description": "user Profile",
+                "parameters": [
+                    {
+                        "in":"body",
+                        "name":"body",
+                        "schema": {
+                            "type": "object",
+                            "properties": {
+                                "user_id": {
+                                    "type": "integer"
+                                }
+                            }
+                        }
+                    }
+                ],
+                "responses": {
+                    "default": {
+                        "description": "Some error occured"
+                    }
+                }
+            }
+        }
+    }
+}
