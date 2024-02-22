@@ -251,12 +251,9 @@ exports.apiTrackList = async (req, res) => {
 
 exports.userProfile = async (req, res) => {
   try {
-
     // const id = req.body.user_id
     const g_token = auth(req)
-    const id = g_token.user_id;
-
-
+    const id = g_token.user_id
     var result1 = await Service.getUserDetails(id)
     if (result1) {
       const customerInfo = {}
@@ -278,7 +275,7 @@ exports.userProfile = async (req, res) => {
       customerInfo.parent_id = result1.parent_id ? result1.parent_id : 0
       customerInfo.role = result1.role ? result1.role : 0
       if (result1.profile_photo) {
-        console.log(result1.profile_photo)
+        // console.log(result1.profile_photo)
         var photo = s3.getSignedUrl("getObject", {
           Bucket: process.env.AWS_BUCKET,
           Key: result1.profile_photo,
@@ -431,7 +428,9 @@ exports.privacyPolicy = async (req, res) => {
 
 exports.profilePicUpload = async (req, res) => {
   try {
-    var user_id = req.body.user_id
+    // var user_id = req.body.user_id
+    const g_token = auth(req)
+    const user_id = g_token.user_id
     var buf = Buffer.from(req.body.profile_image.replace(/^data:image\/\w+;base64,/, ""), 'base64')
     if (req.body.profile_image) {
       var extname
@@ -443,7 +442,7 @@ exports.profilePicUpload = async (req, res) => {
 
       var logo = user_id + extname
       var logoPath = "employee/" + logo;
-      console.log(logoPath)
+      // console.log(logoPath)
       var data = { 'profile_photo': logoPath }
       const params = {
         Bucket: process.env.AWS_BUCKET,
@@ -461,7 +460,7 @@ exports.profilePicUpload = async (req, res) => {
         }
       });
       const result = await Service.updateProfile(user_id, data)
-      console.log(result)
+      // console.log(result)
       if (result[0] != 0) {
         var photo = s3.getSignedUrl("getObject", {
           Bucket: process.env.AWS_BUCKET,

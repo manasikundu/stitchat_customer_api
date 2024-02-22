@@ -37,7 +37,8 @@
                                 "device_id": {
                                     "type": "string"
                                 }
-                            }
+                            },
+                            "required": ["mobile_number"]
                         }
                     }
                 ],
@@ -145,7 +146,8 @@
                                 "search": {
                                     "type": "string"
                                 }
-                            }
+                            },
+                            "required": ["latitude", "longitude"]
                         }
                     }
                 ],
@@ -202,7 +204,8 @@
                                 "user_id": {
                                     "type": "integer"
                                 }
-                            }
+                            },
+                            "required": ["user_id"]
                         }
                     }
                 ],
@@ -261,7 +264,7 @@
                 "tags": [
                     "Master data"
                 ],
-                "description": "fetch city listing by state",
+                "description": "Fetch city listing by state",
                 "parameters": [
                     {
                         "in": "body",
@@ -272,7 +275,8 @@
                                 "state_id": {
                                     "type": "integer"
                                 }
-                            }
+                            },
+                            "required": ["state_id"]
                         }
                     }
                 ],
@@ -296,13 +300,16 @@
                         "schema": {
                             "type": "object",
                             "properties": {
+                                "id": {
+                                    "type": "integer"
+                                },
+                                "city": {
+                                    "type": "integer"
+                                },
+                                "user_name": {
+                                    "type": "string"
+                                },
                                 "mobile_number": {
-                                    "type": "string"
-                                },
-                                "fcm_key": {
-                                    "type": "string"
-                                },
-                                "device_id": {
                                     "type": "string"
                                 }
                             }
@@ -350,7 +357,8 @@
                                 "total_fees": {
                                     "type": "string"
                                 }
-                            }
+                            },
+                            "required" :["fashion_designer_id", "user_id", "appointment_date", "start_time", "end_time", "address_id", "total_fees"]
                         }
                     }
                 ],
@@ -367,26 +375,6 @@
                     "Fashion Designers"
                 ],
                 "description": "Fetch all appointments",
-                "parameters": [
-                    {
-                        "in": "body",
-                        "name": "body",
-                        "schema": {
-                            "type": "object",
-                            "properties": {
-                                "mobile_number": {
-                                    "type": "string"
-                                },
-                                "fcm_key": {
-                                    "type": "string"
-                                },
-                                "device_id": {
-                                    "type": "string"
-                                }
-                            }
-                        }
-                    }
-                ],
                 "responses": {
                     "default": {
                         "description": "Some error occured"
@@ -394,7 +382,7 @@
                 }
             }
         },
-        "/deleteAddress/{address_id}": {
+        "/deleteAddress": {
             "delete": {
                 "tags": [
                     "Address"
@@ -421,7 +409,7 @@
                 "tags": [
                     "Users"
                 ],
-                "description": "Update user address",
+                "description": "Update user profile",
                 "parameters": [
                     {
                         "in": "body",
@@ -454,21 +442,7 @@
                 "tags": [
                     "Users"
                 ],
-                "description": "user Profile",
-                "parameters": [
-                    {
-                        "in": "body",
-                        "name": "body",
-                        "schema": {
-                            "type": "object",
-                            "properties": {
-                                "user_id": {
-                                    "type": "integer"
-                                }
-                            }
-                        }
-                    }
-                ],
+                "description": "Fetch user profile",
                 "responses": {
                     "default": {
                         "description": "Some error occured"
@@ -565,7 +539,8 @@
                                 "mobile_number": {
                                     "type": "string"
                                 }
-                            }
+                            },
+                            "required": ["name", "email"]
                         }
                     }
                 ],
@@ -595,7 +570,8 @@
                                 "boutique_id": {
                                     "type": "integer"
                                 }
-                            }
+                            },
+                            "required": ["customer_id", "boutique_id"]
                         }
                     }
                 ],
@@ -634,7 +610,8 @@
                                 "end_time": {
                                     "type": "string"
                                 }
-                            }
+                            },
+                            "required": ["boutique_id", "customer_id", "appointment_date", "start_time", "end_time"]
                         }
                     }
                 ],
@@ -691,7 +668,9 @@
                                 "quantity": {
                                     "type": "integer"
                                 }
-                            }
+                            },
+                            "required": ["user_id", "item_id", "service_id", "type", "amount", "fit_type", "tailor_note", "item_description", "repair_location", "repair_description", "quantity"
+                            ]
                         }
                     }
                 ],
@@ -764,7 +743,7 @@
                 "tags": [
                     "Boutique"
                 ],
-                "description": "Fetch the slot for boutique",
+                "description": "Order list",
                 "responses": {
                     "default": {
                         "description": "Some error occured"
@@ -790,7 +769,7 @@
                 "tags": [
                     "Enquiry"
                 ],
-                "description": "",
+                "description": "Contact info",
                 "responses": {
                     "default": {
                         "description": "Some error occured"
@@ -804,6 +783,15 @@
                     "Fashion Designers"
                 ],
                 "description": "fetch fashion designers appointment details",
+                "parameters": [
+                    {
+                        "in": "query",
+                        "name": "appointment_id",
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
                 "responses": {
                     "default": {
                         "description": "Some error occured"
@@ -817,6 +805,24 @@
                     "Boutique"
                 ],
                 "description": "Fetch order details",
+                "parameters": [
+                    {
+                        "in": "query",
+                        "name": "order_id",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    },
+                    {
+                        "in": "query",
+                        "name": "order_type",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
                 "responses": {
                     "default": {
                         "description": "Some error occured"
@@ -827,9 +833,9 @@
         "/cancelAppointment": {
             "delete": {
                 "tags": [
-                    "Boutique"
+                    "Fashion Designers"
                 ],
-                "description": "Book a boutique",
+                "description": "Cancel a appointment of fashion designer",
                 "responses": {
                     "default": {
                         "description": "Some error occured"
@@ -842,7 +848,33 @@
                 "tags": [
                     "Boutique"
                 ],
-                "description": "Book a boutique",
+                "description": "Details of a boutique",
+                "parameters": [
+                    {
+                        "in": "query",
+                        "name": "boutique_id",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    },
+                    {
+                        "in": "query",
+                        "name": "latitude",
+                        "required": false,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    },
+                    {
+                        "in": "query",
+                        "name": "longitude",
+                        "required": false,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
                 "responses": {
                     "default": {
                         "description": "Some error occured"
@@ -902,25 +934,21 @@
                 }
             }
         },
-        "/ratingList": {
-            "get": {
-                "tags": [
-                    "Enquiry"
-                ],
-                "description": "Rating list",
-                "responses": {
-                    "default": {
-                        "description": "Some error occured"
-                    }
-                }
-            }
-        },
         "/cancelOrder": {
             "delete": {
                 "tags": [
-                    "Enquiry"
+                    "Boutique"
                 ],
-                "description": "Rating list",
+                "description": "Cancel a order",
+                "parameters": [
+                    {
+                        "in": "query",
+                        "name": "order_id",
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
                 "responses": {
                     "default": {
                         "description": "Some error occured"
@@ -964,6 +992,56 @@
                     "Users"
                 ],
                 "description": "Track of all apis",
+                "parameters": [
+                    {
+                        "in": "query",
+                        "name": "method",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "in": "query",
+                        "name": "start_date",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "in": "query",
+                        "name": "end_date",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "in": "query",
+                        "name": "limit",
+                        "required": false,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    },
+                    {
+                        "in": "query",
+                        "name": "offset",
+                        "required": false,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    },
+                    {
+                        "in": "query",
+                        "name": "searchTerm",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
                 "responses": {
                     "default": {
                         "description": "Some error occured"
@@ -1123,7 +1201,7 @@
                 "tags": [
                     "Alteration Order"
                 ],
-                "description": "remove cart",
+                "description": "Remove item from cart",
                 "parameters": [
                     {
                         "in": "body",
@@ -1153,7 +1231,7 @@
                 "tags": [
                     "Alteration Order"
                 ],
-                "description": "apply coupon for order",
+                "description": "Apply coupon for order",
                 "parameters": [
                     {
                         "in": "body",
@@ -1249,7 +1327,7 @@
                 "tags": [
                     "Showroom Order"
                 ],
-                "description": "get boutique by pincode",
+                "description": "Get boutique by pincode",
                 "parameters": [
                     {
                         "in": "body",
@@ -1276,7 +1354,7 @@
                 "tags": [
                     "Showroom Order"
                 ],
-                "description": "Assign boutique to order",
+                "description": "Assign boutique for order",
                 "parameters": [
                     {
                         "in": "body",
@@ -1334,7 +1412,7 @@
         "/alterationType": {
             "get": {
                 "tags": [
-                    "Showroom Order"
+                    "Alteration Order"
                 ],
                 "description": "Fetch alteration type",
                 "responses": {
@@ -1349,7 +1427,7 @@
                 "tags": [
                     "Showroom Order"
                 ],
-                "description": "verif pincode",
+                "description": "Verify pincode",
                 "parameters": [
                     {
                         "in": "body",
@@ -1371,13 +1449,34 @@
                 }
             }
         },
-
         "/sendNotification": {
             "get": {
                 "tags": [
-                    "Showroom Order"
+                    "Notification"
                 ],
-                "description": "send notification for each service",
+                "description": "Send notification for each service",
+                "responses": {
+                    "default": {
+                        "description": "Some error occured"
+                    }
+                }
+            }
+        },
+        "/cancelAlterationOrder": {
+            "delete": {
+                "tags": [
+                    "Alteration Order"
+                ],
+                "description": "Cancel alteration order",
+                "parameters": [
+                    {
+                        "in": "query",
+                        "name": "order_id",
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
                 "responses": {
                     "default": {
                         "description": "Some error occured"

@@ -247,7 +247,7 @@ exports.createOrder = async (req, res) => {
     }
 }
 
-exports.cancelAlterationOrRepairOrder = async (req, res) => {
+exports.cancelAlterationOrder = async (req, res) => {
     try {
         var order_id = req.query.order_id
         var method_name = await Service.getCallingMethodName()
