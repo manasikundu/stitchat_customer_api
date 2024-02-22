@@ -17,20 +17,26 @@ const dotenv = require("dotenv");
 dotenv.config();
 const logService = require("../service/logService")
 
-
-
+const fs = require('fs');
+const path = require('path');
 
 var expirationTime = 600;
-var orderStatusConfig = [
-  { id: 1, status: "Order placed successfully" },
-  { id: 2, status: "Waiting for confirmation" },
-  { id: 3, status: "Order accepted by Boutique" },
-  { id: 4, status: "In progress" },
-  { id: 5, status: "Ready for Deliver" },
-  { id: 6, status: "Order Delivered" },
-  { id: 7, status: "Order Closed" },
-  { id: 8, status: "Order Cancelled" }
-];
+
+const configFilePath = path.join(__dirname, '..', 'config', 'config.json')
+const configFileContent = fs.readFileSync(configFilePath, 'utf-8')
+const config = JSON.parse(configFileContent)
+const orderStatusConfig = config.orderStatusConfig
+
+// var orderStatusConfig = [
+//   { id: 1, status: "Order placed successfully" },
+//   { id: 2, status: "Waiting for confirmation" },
+//   { id: 3, status: "Order accepted by Boutique" },
+//   { id: 4, status: "In progress" },
+//   { id: 5, status: "Ready for Deliver" },
+//   { id: 6, status: "Order Delivered" },
+//   { id: 7, status: "Order Closed" },
+//   { id: 8, status: "Order Cancelled" }
+// ];
 
 // Define the controller function for fetching order details
 exports.orderList = async (req, res) => {

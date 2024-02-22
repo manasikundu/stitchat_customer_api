@@ -314,6 +314,13 @@
                                 }
                             }
                         }
+                    },
+                    {
+                        "name": "Authorization",
+                        "in": "header",
+                        "description": "JWT token for authentication",
+                        "required": true,
+                        "type": "string"
                     }
                 ],
                 "responses": {
@@ -339,9 +346,6 @@
                                 "fashion_designer_id": {
                                     "type": "integer"
                                 },
-                                "user_id": {
-                                    "type": "integer"
-                                },
                                 "appointment_date": {
                                     "type": "string"
                                 },
@@ -355,11 +359,18 @@
                                     "type": "integer"
                                 },
                                 "total_fees": {
-                                    "type": "string"
+                                    "type": "number"
                                 }
                             },
-                            "required" :["fashion_designer_id", "user_id", "appointment_date", "start_time", "end_time", "address_id", "total_fees"]
+                            "required" :["fashion_designer_id", "appointment_date", "start_time", "end_time", "address_id", "total_fees"]
                         }
+                    },
+                    {
+                        "name": "Authorization",
+                        "in": "header",
+                        "description": "JWT token for authentication",
+                        "required": true,
+                        "type": "string"
                     }
                 ],
                 "responses": {
@@ -375,6 +386,15 @@
                     "Fashion Designers"
                 ],
                 "description": "Fetch all appointments",
+                "parameters": [
+                    {
+                        "name": "Authorization",
+                        "in": "header",
+                        "description": "JWT token for authentication",
+                        "required": true,
+                        "type": "string"
+                    }
+                ],
                 "responses": {
                     "default": {
                         "description": "Some error occured"
@@ -395,6 +415,13 @@
                         "schema": {
                             "type": "integer"
                         }
+                    },
+                    {
+                        "name": "Authorization",
+                        "in": "header",
+                        "description": "JWT token for authentication",
+                        "required": true,
+                        "type": "string"
                     }
                 ],
                 "responses": {
@@ -428,6 +455,13 @@
                                 }
                             }
                         }
+                    },
+                    {
+                        "name": "Authorization",
+                        "in": "header",
+                        "description": "JWT token for authentication",
+                        "required": true,
+                        "type": "string"
                     }
                 ],
                 "responses": {
@@ -443,6 +477,15 @@
                     "Users"
                 ],
                 "description": "Fetch user profile",
+                "parameters": [
+                    {
+                        "name": "Authorization",
+                        "in": "header",
+                        "description": "JWT token for authentication",
+                        "required": true,
+                        "type": "string"
+                    }
+                ],
                 "responses": {
                     "default": {
                         "description": "Some error occured"
@@ -744,6 +787,15 @@
                     "Boutique"
                 ],
                 "description": "Order list",
+                "parameters": [
+                    {
+                        "name": "Authorization",
+                        "in": "header",
+                        "description": "JWT token for authentication",
+                        "required": true,
+                        "type": "string"
+                    }
+                ],
                 "responses": {
                     "default": {
                         "description": "Some error occured"
@@ -790,6 +842,13 @@
                         "schema": {
                             "type": "integer"
                         }
+                    },
+                    {
+                        "name": "Authorization",
+                        "in": "header",
+                        "description": "JWT token for authentication",
+                        "required": true,
+                        "type": "string"
                     }
                 ],
                 "responses": {
@@ -830,12 +889,22 @@
                 }
             }
         },
-        "/cancelAppointment": {
+        "/cancelAppointment/{appointment_id}": {
             "delete": {
                 "tags": [
                     "Fashion Designers"
                 ],
                 "description": "Cancel a appointment of fashion designer",
+                "parameters": [
+                    {
+                        "in": "path",
+                        "name": "appointment_id",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
                 "responses": {
                     "default": {
                         "description": "Some error occured"
@@ -969,14 +1038,18 @@
                         "schema": {
                             "type": "object",
                             "properties": {
-                                "user_id": {
-                                    "type": "integer"
-                                },
                                 "profile_image": {
                                     "type": "string"
                                 }
                             }
                         }
+                    },
+                    {
+                        "name": "Authorization",
+                        "in": "header",
+                        "description": "JWT token for authentication",
+                        "required": true,
+                        "type": "string"
                     }
                 ],
                 "responses": {

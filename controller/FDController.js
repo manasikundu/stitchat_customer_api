@@ -13,20 +13,29 @@ const dotenv = require("dotenv");
 dotenv.config();
 const Appointment = require("../model/appointmentModel");
 const { tr } = require("date-fns/locale");
+const logService = require('../service/logService')
+const fs = require('fs');
+const path = require('path');
 
 var expirationTime = 600;
-const logService = require('../service/logService')
 
+const configFilePath = path.join(__dirname, '..', 'config', 'config.json')
+const configFileContent = fs.readFileSync(configFilePath, 'utf-8')
+const config = JSON.parse(configFileContent)
+const daysOfWeekConfig = config.daysOfWeekConfig
+const appointmentTimeConfig = config.appointmentTimeConfig
+const communicationModes = config.communicationModes
+const languages = config.languages
 
-var daysOfWeekConfig = [
-  { day: "Monday", value: 1 },
-  { day: "Tuesday", value: 2 },
-  { day: "Wednesday", value: 3 },
-  { day: "Thursday", value: 4 },
-  { day: "Friday", value: 5 },
-  { day: "Saturday", value: 6 },
-  { day: "Sunday", value: 7 },
-];
+// var daysOfWeekConfig = [
+//   { day: "Monday", value: 1 },
+//   { day: "Tuesday", value: 2 },
+//   { day: "Wednesday", value: 3 },
+//   { day: "Thursday", value: 4 },
+//   { day: "Friday", value: 5 },
+//   { day: "Saturday", value: 6 },
+//   { day: "Sunday", value: 7 },
+// ];
 
 var formattedDaysOfWeek = {};
 
@@ -36,14 +45,15 @@ for (var i = 0; i < daysOfWeekConfig.length; i++) {
   formattedDaysOfWeek[day] = value;
 }
 
-var appointmentTimeConfig = [
-  { slot: "start_time", time: "08:00" },
-  { slot: "end_time", time: "20.00" },
-  { slot: "duration", time: "30" },
-  { slot: "morning_slot", time: "12:00:00" },
-  { slot: "afternoon_slot", time: "17:00:00" },
-  { slot: "evening_slot", time: "20:00:00" },
-];
+// var appointmentTimeConfig = [
+//   { slot: "start_time", time: "08:00" },
+//   { slot: "end_time", time: "20.00" },
+//   { slot: "duration", time: "30" },
+//   { slot: "morning_slot", time: "12:00:00" },
+//   { slot: "afternoon_slot", time: "17:00:00" },
+//   { slot: "evening_slot", time: "20:00:00" },
+// ];
+// console.log(appointmentTimeConfig)
 
 var formattedAppointmentConfig = {};
 
@@ -53,11 +63,11 @@ for (var i = 0; i < appointmentTimeConfig.length; i++) {
   formattedAppointmentConfig[slot] = time;
 }
 
-var communicationModes = [
-  { id: 1, mode: "Call" },
-  { id: 2, mode: "Video Call" },
-  { id: 3, mode: "In Person Visit" },
-];
+// var communicationModes = [
+//   { id: 1, mode: "Call" },
+//   { id: 2, mode: "Video Call" },
+//   { id: 3, mode: "In Person Visit" },
+// ];
 var formattedCommunicationModes = {};
 
 for (var i = 0; i < communicationModes.length; i++) {
@@ -66,11 +76,11 @@ for (var i = 0; i < communicationModes.length; i++) {
   formattedCommunicationModes[id] = mode;
 }
 
-var languages = [
-  { id: 1, name: "English" },
-  { id: 2, name: "Hindi" },
-  { id: 3, name: "Odia" },
-];
+// var languages = [
+//   { id: 1, name: "English" },
+//   { id: 2, name: "Hindi" },
+//   { id: 3, name: "Odia" },
+// ];
 var formattedLanguages = {};
 
 for (var i = 0; i < languages.length; i++) {

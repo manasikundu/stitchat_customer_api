@@ -1,0 +1,40 @@
+{
+    "daysOfWeekConfig": [
+      { "day": "Monday", "value": 1 },
+      { "day": "Tuesday", "value": 2 },
+      { "day": "Wednesday", "value": 3 },
+      { "day": "Thursday", "value": 4 },
+      { "day": "Friday", "value": 5 },
+      { "day": "Saturday", "value": 6 },
+      { "day": "Sunday", "value": 7 }
+    ],
+    "appointmentTimeConfig": [
+      { "slot": "start_time", "time": "08:00" },
+      { "slot": "end_time", "time": "20.00" },
+      { "slot": "duration", "time": "30" },
+      { "slot": "morning_slot", "time": "12:00:00" },
+      { "slot": "afternoon_slot", "time": "17:00:00" },
+      { "slot": "evening_slot", "time": "20:00:00" }
+    ],
+    "communicationModes": [
+      { "id": 1, "mode": "Call" },
+      { "id": 2, "mode": "Video Call" },
+      { "id": 3, "mode": "In Person Visit" }
+    ],
+    "languages": [
+      { "id": 1, "name": "English" },
+      { "id": 2, "name": "Hindi" },
+      { "id": 3, "name": "Odia" }
+    ],
+    "orderStatusConfig": [
+      { "id": 1, "status": "Order placed successfully" },
+      { "id": 2, "status": "Waiting for confirmation" },
+      { "id": 3, "status": "Order accepted by Boutique" },
+      { "id": 4, "status": "In progress" },
+      { "id": 5, "status": "Ready for Deliver" },
+      { "id": 6, "status": "Order Delivered" },
+      { "id": 7, "status": "Order Closed" },
+      { "id": 8, "status": "Order Cancelled" }
+    ]
+}
+  
