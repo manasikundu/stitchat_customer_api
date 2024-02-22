@@ -207,6 +207,13 @@
                             },
                             "required": ["user_id"]
                         }
+                    },
+                    {
+                        "name": "Authorization",
+                        "in": "header",
+                        "description": "JWT token for authentication",
+                        "required": true,
+                        "type": "string"
                     }
                 ],
                 "responses": {

@@ -288,7 +288,7 @@ exports.fashionDesignerList = async (req, res) => {
 exports.FashionDesignerDetails = async (req, res) => {
   try {
     var user_id = req.body.user_id;//fashion designer id
-    const g_token = auth(req)
+    // const g_token = auth(req)
     var mobile_number = req.body.mobile_number;
     
     if (isNaN(user_id) || user_id === "") {

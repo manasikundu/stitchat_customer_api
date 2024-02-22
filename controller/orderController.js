@@ -324,7 +324,7 @@ exports.orderDetails = async (req, res) => {
               ...orderDetails,
               items: itemArray,
               order_track: order_track,
-              order_status_info: [orderStatusConfig],
+              order_status_info: orderStatusConfig,
             },
             HasError: false,
             Message: 'Order details retrieved successfully.',
@@ -451,7 +451,7 @@ exports.orderDetails = async (req, res) => {
           order_track_history.push(order_track_hist_json)
         }
       return res.status(200).send({
-        result: { ...orderHistory, items: itemArray, order_track: order_track_history, order_status_info: [orderStatusConfig] },
+        result: { ...orderHistory, items: itemArray, order_track: order_track_history, order_status_info: orderStatusConfig },
         HasError: false,
         Message: 'Order details retrieved successfully.',
         })
