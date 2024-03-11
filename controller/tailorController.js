@@ -13,15 +13,33 @@ exports.itemListForTailor = async (req, res) => {
         var method_name = await Service.getCallingMethodName()
         var apiEndpointInput = JSON.stringify(req.body)
         var apiTrack = await Service.trackApi(req.query.user_id,method_name,apiEndpointInput,req.query.device_id,req.query.device_info,req.ip)
-    
-        if (items.length > 0) {
-            var itemList = items.map(item => ({ item_id: item.id, item_name: item.name }))
+        var validItems = []
+        
+        for (var i in items) {
+            var itemService = await tailorService.serviceDetails(items[i].id)
+            if (itemService && itemService.length !== 0) {
+                validItems.push(items[i])
+            }
+        }
+        
+        if (validItems.length > 0) {
+            var itemList = validItems.map(item => ({ item_id: item.id, item_name: item.name }))
             itemList.sort((a, b) => a.id - b.id)
 
             return res.status(200).send({ message: "Item List retrieved successfully.", HasError: false, result: itemList })
         } else {
             return res.status(500).send({ message: "Items not found.", HasError: true, result: [] })
         }
+
+        // if (items.length > 0) {
+        //     // var itemService = tailorService.serviceDetails(items.id)
+        //     var itemList = items.map(item => ({ item_id: item.id, item_name: item.name }))
+        //     itemList.sort((a, b) => a.id - b.id)
+
+        //     return res.status(200).send({ message: "Item List retrieved successfully.", HasError: false, result: itemList })
+        // } else {
+        //     return res.status(500).send({ message: "Items not found.", HasError: true, result: [] })
+        // }
     } catch (error) {
         const logData = { user_id: "", status: 'false', message: error.message, device_id: '', created_at: Date.now(), updated_at: Date.now(), device_info: '', action: req.url }
         const log = await logService.createLog(logData)
@@ -41,6 +59,7 @@ exports.serviceType = async (req, res) => {
             if (item) {
                 item = item.toJSON()
                 var serviceDetails = await tailorService.serviceDetails(item_id)
+                console.log(serviceDetails)
                 var result = { ALTERED: [], REPAIRED: [] }
                 if (serviceDetails.length > 0) {
                     serviceDetails.forEach(service => {
