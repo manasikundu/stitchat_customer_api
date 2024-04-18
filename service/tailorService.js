@@ -52,9 +52,20 @@ exports.getItemForTailorWomen = async () => {
         return error
     }
 }
-exports.getItemForTailorKids = async () => {
+exports.getItemForTailorKidsBoy = async () => {
     try {
-        var query = `SELECT * FROM sarter__category_item_dic WHERE parent_id IN (SELECT id FROM sarter__category_item_dic WHERE parent_id in (1, 12)) and type in (2, 3) and alternation_flag=1`
+        var query = `SELECT * FROM sarter__category_item_dic WHERE parent_id IN (SELECT id FROM sarter__category_item_dic WHERE parent_id = 1) and type in (2, 3) and alternation_flag=1`
+        var result = await db.query(query)
+        return result[0]
+    } catch (error) {
+        console.log(error)
+        return error
+    }
+}
+
+exports.getItemForTailorKidsGirl = async () => {
+    try {
+        var query = `SELECT * FROM sarter__category_item_dic WHERE parent_id IN (SELECT id FROM sarter__category_item_dic WHERE parent_id= 12) and type in (2, 3) and alternation_flag=1`
         var result = await db.query(query)
         return result[0]
     } catch (error) {

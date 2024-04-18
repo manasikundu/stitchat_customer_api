@@ -93,7 +93,7 @@ exports.serviceType = async (req, res) => {
 }
 
 
-exports.alterationType = async (req, res) => {
+exports.alterationTypeOld = async (req, res) => {
     try {
         const itemsMen = await tailorService.getItemForTailorMen()
         const itemsWomen = await tailorService.getItemForTailorWomen()
@@ -113,11 +113,12 @@ exports.alterationType = async (req, res) => {
                 .map(({ id: service_id, name: service_name, amount, service_type, measurement_flag }) => ({
                     service_id,
                     service_name,
-                    amount,
+                    amount: amount,
                     service_type_id: service_type,
                     service_type_name: 'ALTER',
                     measurement_flag: measurement_flag,
                 }))
+
 
             result.push({
                 gender_type: 1,
@@ -126,6 +127,7 @@ exports.alterationType = async (req, res) => {
                 category_name: name,
                 alternation_flag: item.alternation_flag,
                 alternationType: servicesArray,
+                
             })
         }
 
@@ -220,5 +222,304 @@ exports.alterationType = async (req, res) => {
         const logData = { user_id: "", status: 'false', message: error.message, device_id: '', created_at: Date.now(), updated_at: Date.now(), device_info: '', action: req.url }
         const log = await logService.createLog(logData)
         return res.status(500).send({ HasError: false, message: 'Some error occurred.' })
+    }
+}
+
+exports.alterationType = async (req, res) => {
+    try {
+        const itemsMen = await tailorService.getItemForTailorMen()
+        const itemsWomen = await tailorService.getItemForTailorWomen()
+        const itemsKidsBoy = await tailorService.getItemForTailorKidsBoy()
+        const itemsKidsGirl = await tailorService.getItemForTailorKidsGirl()
+        const method_name = await Service.getCallingMethodName()
+        const apiEndpointInput = JSON.stringify(req.body)
+        const apiTrack = await Service.trackApi(req.query.user_id, method_name, apiEndpointInput, req.query.device_id, req.query.device_info, req.ip)
+
+        const result = {
+            ALTER: [],
+            REPAIR: [],
+            STICHING: []
+        }
+
+        // Process Men's items
+        const menAlterItems = []
+        const menRepairItems = []
+        const menStichingItems = []
+        for (var item of itemsMen) {
+            const { id, name } = item
+            const serviceDetails = await tailorService.serviceDetails(id)
+            const alterServicesArray = serviceDetails
+                .filter(service => service.service_type === 1)
+                .map(({ id: service_id, name: service_name, amount, service_type, measurement_flag }) => ({
+                    service_id,
+                    service_name,
+                    amount: amount,
+                    service_type_id: service_type,
+                    service_type_name: 'ALTER',
+                    measurement_flag: measurement_flag,
+                }))
+            const repairServicesArray = serviceDetails
+                .filter(service => service.service_type === 2)
+                .map(({ id: service_id, name: service_name, amount, service_type, measurement_flag }) => ({
+                    service_id,
+                    service_name,
+                    amount: amount,
+                    service_type_id: service_type,
+                    service_type_name: 'REPAIR',
+                    measurement_flag: measurement_flag,
+                }))
+            const stichingServicesArray = serviceDetails
+                .filter(service => service.service_type === 3)
+                .map(({ id: service_id, name: service_name, amount, service_type, measurement_flag }) => ({
+                    service_id,
+                    service_name,
+                    amount: amount,
+                    service_type_id: service_type,
+                    service_type_name: 'STICHING',
+                    measurement_flag: measurement_flag,
+                }))
+
+            menAlterItems.push({
+                category_item_id: id,
+                category_name: name,
+                alternation_flag: item.alternation_flag,
+                alternationType: alterServicesArray,
+            })
+
+            menRepairItems.push({
+                category_item_id: id,
+                category_name: name,
+                alternation_flag: item.alternation_flag,
+                repairType: repairServicesArray,
+            })
+
+            menStichingItems.push({
+                category_item_id: id,
+                category_name: name,
+                alternation_flag: item.alternation_flag,
+                stichingType: stichingServicesArray,
+            })
+        }
+
+        result.ALTER.push({gender_type: 1,gender_type_name: 'Men',items: menAlterItems})
+
+        result.REPAIR.push({gender_type: 1,gender_type_name: 'Men',items: menRepairItems})
+
+        result.STICHING.push({gender_type: 1,gender_type_name: 'Men',items: menStichingItems})
+
+        // Process Women's items
+        const womenAlterItems = []
+        const womenRepairItems = []
+        const womenStichingItems = []
+        for (var item of itemsWomen) {
+            const { id, name } = item
+            const serviceDetails = await tailorService.serviceDetails(id)
+            const alterServicesArray = serviceDetails
+                .filter(service => service.service_type === 1)
+                .map(({ id: service_id, name: service_name, amount, service_type, measurement_flag }) => ({
+                    service_id,
+                    service_name,
+                    amount,
+                    service_type_id: service_type,
+                    service_type_name: 'ALTER',
+                    measurement_flag,
+                }))
+            const repairServicesArray = serviceDetails
+                .filter(service => service.service_type === 2)
+                .map(({ id: service_id, name: service_name, amount, service_type, measurement_flag }) => ({
+                    service_id,
+                    service_name,
+                    amount,
+                    service_type_id: service_type,
+                    service_type_name: 'REPAIR',
+                    measurement_flag,
+                }))
+
+            const stichingServicesArray = serviceDetails
+                .filter(service => service.service_type === 3)
+                .map(({ id: service_id, name: service_name, amount, service_type, measurement_flag }) => ({
+                    service_id,
+                    service_name,
+                    amount,
+                    service_type_id: service_type,
+                    service_type_name: 'STICHING',
+                    measurement_flag,
+                }))    
+
+            womenAlterItems.push({
+                category_item_id: id,
+                category_name: name,
+                alternation_flag: item.alternation_flag,
+                alternationType: alterServicesArray,
+            })
+
+            womenRepairItems.push({
+                category_item_id: id,
+                category_name: name,
+                alternation_flag: item.alternation_flag,
+                repairType: repairServicesArray,
+            })
+
+            womenStichingItems.push({
+                category_item_id: id,
+                category_name: name,
+                alternation_flag: item.alternation_flag,
+                stichingType: stichingServicesArray,
+            })
+        }
+
+        result.ALTER.push({gender_type: 2,gender_type_name: 'Women',items: womenAlterItems})
+
+        result.REPAIR.push({gender_type: 2,gender_type_name: 'Women',items: womenRepairItems})
+
+        result.STICHING.push({gender_type: 2,gender_type_name: 'Women',items: womenStichingItems})
+
+        // Process Kids' items (boy)
+        const kidsAlterItemsBoy = []
+        const kidsRepairItemsBoy = []
+        const kidsStichingItemsBoy = []
+        for (var item of itemsKidsBoy) {
+            const { id, name } = item
+            const serviceDetails = await tailorService.serviceDetails(id)
+            const alterServicesArray = serviceDetails
+                .filter(service => service.service_type === 1)
+                .map(({ id: service_id, name: service_name, amount, service_type, measurement_flag }) => ({
+                    service_id,
+                    service_name,
+                    amount,
+                    service_type_id: service_type,
+                    service_type_name: 'ALTER',
+                    measurement_flag,
+                }))
+            const repairServicesArray = serviceDetails
+                .filter(service => service.service_type === 2)
+                .map(({ id: service_id, name: service_name, amount, service_type, measurement_flag }) => ({
+                    service_id,
+                    service_name,
+                    amount,
+                    service_type_id: service_type,
+                    service_type_name: 'REPAIR',
+                    measurement_flag,
+                }))
+
+            const stichingServicesArray = serviceDetails
+                .filter(service => service.service_type === 3)
+                .map(({ id: service_id, name: service_name, amount, service_type, measurement_flag }) => ({
+                    service_id,
+                    service_name,
+                    amount,
+                    service_type_id: service_type,
+                    service_type_name: 'STICHING',
+                    measurement_flag,
+                }))
+
+            kidsAlterItemsBoy.push({
+                category_item_id: id,
+                category_name: name,
+                alternation_flag: item.alternation_flag,
+                alternationType: alterServicesArray,
+            })
+
+            kidsRepairItemsBoy.push({
+                category_item_id: id,
+                category_name: name,
+                alternation_flag: item.alternation_flag,
+                repairType: repairServicesArray,
+            })
+
+            kidsStichingItemsBoy.push({
+                category_item_id: id,
+                category_name: name,
+                alternation_flag: item.alternation_flag,
+                stichingType: stichingServicesArray,
+            })
+        }
+
+        result.ALTER.push({gender_type: 3,gender_type_name: 'Kids (Boy)',items: kidsAlterItemsBoy})
+
+        result.REPAIR.push({gender_type: 3,gender_type_name: 'Kids (Boy)',items: kidsRepairItemsBoy})
+
+        result.STICHING.push({gender_type: 3,gender_type_name: 'Kids (Boy)',items: kidsStichingItemsBoy})
+
+
+        // Process Kids' items (girl)
+        const kidsAlterItemsGirl = []
+        const kidsRepairItemsGirl = []
+        const kidsStichingItemsGirl = []
+        for (var item of itemsKidsGirl) {
+            const { id, name } = item
+            const serviceDetails = await tailorService.serviceDetails(id)
+            const alterServicesArray = serviceDetails
+                .filter(service => service.service_type === 1)
+                .map(({ id: service_id, name: service_name, amount, service_type, measurement_flag }) => ({
+                    service_id,
+                    service_name,
+                    amount,
+                    service_type_id: service_type,
+                    service_type_name: 'ALTER',
+                    measurement_flag,
+                }))
+            const repairServicesArray = serviceDetails
+                .filter(service => service.service_type === 2)
+                .map(({ id: service_id, name: service_name, amount, service_type, measurement_flag }) => ({
+                    service_id,
+                    service_name,
+                    amount,
+                    service_type_id: service_type,
+                    service_type_name: 'REPAIR',
+                    measurement_flag,
+                }))
+
+            const stichingServicesArray = serviceDetails
+                .filter(service => service.service_type === 3)
+                .map(({ id: service_id, name: service_name, amount, service_type, measurement_flag }) => ({
+                    service_id,
+                    service_name,
+                    amount,
+                    service_type_id: service_type,
+                    service_type_name: 'STICHING',
+                    measurement_flag,
+                }))
+
+            kidsAlterItemsGirl.push({
+                category_item_id: id,
+                category_name: name,
+                alternation_flag: item.alternation_flag,
+                alternationType: alterServicesArray,
+            })
+
+            kidsRepairItemsGirl.push({
+                category_item_id: id,
+                category_name: name,
+                alternation_flag: item.alternation_flag,
+                repairType: repairServicesArray,
+            })
+
+            kidsStichingItemsGirl.push({
+                category_item_id: id,
+                category_name: name,
+                alternation_flag: item.alternation_flag,
+                stichingType: stichingServicesArray,
+            })
+        }
+
+        // result.ALTER.push({gender_type: 3,gender_type_name: 'Kids (Boy)',items: kidsAlterItemsBoy})
+
+        // result.REPAIR.push({gender_type: 3,gender_type_name: 'Kids (Boy)',items: kidsRepairItemsBoy})
+
+        // result.STICHING.push({gender_type: 3,gender_type_name: 'Kids (Boy)',items: kidsStichingItemsBoy})
+
+        result.ALTER.push({gender_type: 3,gender_type_name: 'Kids (Girl)',items: kidsAlterItemsGirl})
+
+        result.REPAIR.push({gender_type: 3,gender_type_name: 'Kids (Girl)',items: kidsRepairItemsGirl})
+
+        result.STICHING.push({gender_type: 3,gender_type_name: 'Kids (Girl)',items: kidsStichingItemsGirl})
+
+        return res.status(200).send({message: "Alteration Type Item List retrieved successfully.",HasError: false,result})
+    } catch (error) {
+        console.error(error)
+        const logData = {user_id: "",status: 'false',message: error.message,device_id: '',created_at: Date.now(),updated_at: Date.now(),device_info: '',action: req.url}
+        const log = await logService.createLog(logData)
+        return res.status(500).send({HasError: false,message: 'Some error occurred.'})
     }
 }
