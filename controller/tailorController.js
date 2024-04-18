@@ -503,12 +503,6 @@ exports.alterationType = async (req, res) => {
             })
         }
 
-        // result.ALTER.push({gender_type: 3,gender_type_name: 'Kids (Boy)',items: kidsAlterItemsBoy})
-
-        // result.REPAIR.push({gender_type: 3,gender_type_name: 'Kids (Boy)',items: kidsRepairItemsBoy})
-
-        // result.STICHING.push({gender_type: 3,gender_type_name: 'Kids (Boy)',items: kidsStichingItemsBoy})
-
         result.ALTER.push({gender_type: 3,gender_type_name: 'Kids (Girl)',items: kidsAlterItemsGirl})
 
         result.REPAIR.push({gender_type: 3,gender_type_name: 'Kids (Girl)',items: kidsRepairItemsGirl})
