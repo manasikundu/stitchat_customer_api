@@ -282,21 +282,21 @@ exports.alterationType = async (req, res) => {
             menAlterItems.push({
                 category_item_id: id,
                 category_name: name,
-                alternation_flag: item.alternation_flag,
-                alternationType: alterServicesArray,
+                alteration_flag: item.alternation_flag,
+                alterationType: alterServicesArray,
             })
 
             menRepairItems.push({
                 category_item_id: id,
                 category_name: name,
-                alternation_flag: item.alternation_flag,
+                alteration_flag: item.alternation_flag,
                 repairType: repairServicesArray,
             })
 
             menStichingItems.push({
                 category_item_id: id,
                 category_name: name,
-                alternation_flag: item.alternation_flag,
+                alteration_flag: item.alternation_flag,
                 stichingType: stichingServicesArray,
             })
         }
@@ -349,21 +349,21 @@ exports.alterationType = async (req, res) => {
             womenAlterItems.push({
                 category_item_id: id,
                 category_name: name,
-                alternation_flag: item.alternation_flag,
-                alternationType: alterServicesArray,
+                alteration_flag: item.alternation_flag,
+                alterationType: alterServicesArray,
             })
 
             womenRepairItems.push({
                 category_item_id: id,
                 category_name: name,
-                alternation_flag: item.alternation_flag,
+                alteration_flag: item.alternation_flag,
                 repairType: repairServicesArray,
             })
 
             womenStichingItems.push({
                 category_item_id: id,
                 category_name: name,
-                alternation_flag: item.alternation_flag,
+                alteration_flag: item.alternation_flag,
                 stichingType: stichingServicesArray,
             })
         }
@@ -416,21 +416,21 @@ exports.alterationType = async (req, res) => {
             kidsAlterItemsBoy.push({
                 category_item_id: id,
                 category_name: name,
-                alternation_flag: item.alternation_flag,
-                alternationType: alterServicesArray,
+                alteration_flag: item.alternation_flag,
+                alterationType: alterServicesArray,
             })
 
             kidsRepairItemsBoy.push({
                 category_item_id: id,
                 category_name: name,
-                alternation_flag: item.alternation_flag,
+                alteration_flag: item.alternation_flag,
                 repairType: repairServicesArray,
             })
 
             kidsStichingItemsBoy.push({
                 category_item_id: id,
                 category_name: name,
-                alternation_flag: item.alternation_flag,
+                alteration_flag: item.alternation_flag,
                 stichingType: stichingServicesArray,
             })
         }
@@ -484,21 +484,21 @@ exports.alterationType = async (req, res) => {
             kidsAlterItemsGirl.push({
                 category_item_id: id,
                 category_name: name,
-                alternation_flag: item.alternation_flag,
-                alternationType: alterServicesArray,
+                alteration_flag: item.alternation_flag,
+                alterationType: alterServicesArray,
             })
 
             kidsRepairItemsGirl.push({
                 category_item_id: id,
                 category_name: name,
-                alternation_flag: item.alternation_flag,
+                alteration_flag: item.alternation_flag,
                 repairType: repairServicesArray,
             })
 
             kidsStichingItemsGirl.push({
                 category_item_id: id,
                 category_name: name,
-                alternation_flag: item.alternation_flag,
+                alteration_flag: item.alternation_flag,
                 stichingType: stichingServicesArray,
             })
         }
